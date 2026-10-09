@@ -35,6 +35,38 @@ class InstallTest(TempArchive):
         self.assertEqual(out.count(MARK_BEGIN), 1)
 
 
+class DoctorTest(TempArchive):
+    def doctor_output(self, settings: dict) -> tuple:
+        import contextlib
+        import io
+        from unittest import mock
+        from artikeep import install
+        path = self.tmp / "settings.json"
+        path.write_text(json.dumps(settings))
+        out = io.StringIO()
+        with mock.patch.object(install, "CLAUDE_SETTINGS", path), mock.patch.object(install, "CODEX_HOOKS", self.tmp / "none.json"), \
+                mock.patch.object(install.shutil, "which", lambda _: None), contextlib.redirect_stdout(out):
+            rc = install.doctor(self.store)
+        return rc, out.getvalue()
+
+    def test_plugin_counts_as_installed(self):
+        rc, out = self.doctor_output({"enabledPlugins": {"artikeep@artikeep": True}, "cleanupPeriodDays": 3650})
+        self.assertEqual(rc, 0, out)
+        self.assertIn("from the artikeep plugin", out)
+
+    def test_plugin_plus_installer_is_flagged(self):
+        from artikeep.install import hook_command
+        hooks = {"Stop": [{"hooks": [{"type": "command", "command": hook_command("claude-code", "stop")}]}]}
+        rc, out = self.doctor_output({"enabledPlugins": {"artikeep@artikeep": True}, "hooks": hooks, "cleanupPeriodDays": 3650})
+        self.assertEqual(rc, 1)
+        self.assertIn("saved twice", out)
+
+    def test_short_transcript_retention_says_how_to_fix(self):
+        rc, out = self.doctor_output({"enabledPlugins": {"artikeep@artikeep": True}})
+        self.assertEqual(rc, 1)
+        self.assertIn('"cleanupPeriodDays": 3650', out)
+
+
 class SearchGalleryTest(TempArchive):
     def test_search_and_gallery_build(self):
         from artikeep import gallery, search, worker

@@ -340,21 +340,38 @@ def doctor(store: Store) -> int:
     for a, ts in sorted(last.items()):
         print("info  %-11s last saved %s" % (a, ts[:16].replace("T", " ")))
     print("info  %d items" % len(m["items"]))
+    def hook_cmds(data: dict) -> list:
+        return [h.get("command", "") for gs in (data.get("hooks") or {}).values() for g in gs for h in g.get("hooks", [])]
+
+    def mcp_registered(cli: str) -> bool:
+        if not shutil.which(cli):
+            return False
+        return subprocess.run([cli, "mcp", "get", "artikeep"], capture_output=True, text=True, timeout=60).returncode == 0
+
     if CLAUDE_SETTINGS.exists():
         data = json.loads(CLAUDE_SETTINGS.read_text(encoding="utf-8"))
-        cmds = [h.get("command", "") for gs in (data.get("hooks") or {}).values() for g in gs for h in g.get("hooks", [])]
+        cmds = hook_cmds(data)
         mine = [c for c in cmds if "artikeep" in c and " hook claude-code " in c]
-        line(len(mine) >= 4, "Claude Code hooks: %d of 4" % len(mine))
+        plugin = any(k.startswith("artikeep@") and v for k, v in (data.get("enabledPlugins") or {}).items())
+        if plugin and mine:
+            line(False, "Claude Code: both the plugin and installer hooks are on, every artifact is saved twice; "
+                        "keep one (artikeep install --uninstall --agents claude-code)")
+        elif plugin:
+            line(True, "Claude Code: hooks and MCP server from the artikeep plugin")
+        elif mine or (HOME / ".claude").exists():
+            line(len(mine) >= 4, "Claude Code hooks: %d of 4" % len(mine))
+            line(mcp_registered("claude"), "Claude Code: MCP server artikeep registered")
         line(not any(OLD_HOOK in c for c in cmds), "Claude Code: no leftover hooks of the old artifact_archive.py")
-        line((data.get("cleanupPeriodDays") or 30) >= 365, "Claude Code transcripts kept %s days" % (data.get("cleanupPeriodDays") or 30))
+        days = data.get("cleanupPeriodDays") or 30
+        line(days >= 365, "Claude Code keeps transcripts %s days%s" % (
+            days, "" if days >= 365 else ' (lost artifacts are recovered from them: set "cleanupPeriodDays": 3650 in %s)' % CLAUDE_SETTINGS))
     if CODEX_HOOKS.exists():
-        data = json.loads(CODEX_HOOKS.read_text(encoding="utf-8"))
-        cmds = [h.get("command", "") for gs in (data.get("hooks") or {}).values() for g in gs for h in g.get("hooks", [])]
-        line(len([c for c in cmds if " hook codex " in c]) >= 2, "Codex hooks: %d of 2" % len([c for c in cmds if " hook codex " in c]))
-    for agent, cli in (("claude-code", "claude"), ("codex", "codex")):
-        if shutil.which(cli):
-            r = subprocess.run([cli, "mcp", "get", "artikeep"], capture_output=True, text=True, timeout=60)
-            line(r.returncode == 0, "%s: MCP server artikeep registered" % agent)
+        n = len([c for c in hook_cmds(json.loads(CODEX_HOOKS.read_text(encoding="utf-8"))) if " hook codex " in c])
+        if n:
+            line(n >= 2, "Codex hooks: %d of 2" % n)
+            line(mcp_registered("codex"), "Codex: MCP server artikeep registered")
+        else:
+            print("info  Codex: not wired (artikeep install --agents codex)")
     errs = store.log / "errors.log"
     if errs.exists():
         recent = [ln for ln in errs.read_text(encoding="utf-8", errors="ignore").splitlines() if ln.startswith("--- ")][-3:]

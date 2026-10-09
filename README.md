@@ -48,7 +48,11 @@ pass commits after each capture and pushes.
 **Claude Code plugin.** Instead of `install`, Claude Code users can add the plugin:
 `/plugin marketplace add aquahitt/artikeep`, then `/plugin install artikeep@artikeep`.
 It brings the same hooks and MCP server; Codex still needs `artikeep install --agents codex`.
-Use one or the other for Claude Code, not both.
+Use one or the other for Claude Code, not both (`artikeep doctor` flags it). The plugin
+keeps copies in `~/artikeep` from the first artifact on; run `artikeep init` (with
+`--remote` if you want sync) to give that folder git history, and set
+`"cleanupPeriodDays": 3650` in `~/.claude/settings.json` yourself — a plugin cannot change
+it, and `doctor` reminds you.
 
 Claude Code deletes session transcripts after 30 days by default. `install` raises
 `cleanupPeriodDays` to ten years: transcripts are the last place a lost artifact can be
