@@ -21,7 +21,7 @@ agent search what you already have.
 | Claude Code | hooks, automatic | pages published with the `Artifact` tool (with all their files), Claude Design canvases, Claude Docs documents (exported tab by tab), unpublished pages in the session scratchpad |
 | Codex | hooks, automatic | documents a session writes that git does not keep — reports, pages, tables in temp folders, untracked or ignored files — plus the session's visualizations |
 | ChatGPT | `artikeep import chatgpt <export.zip>` | canvas documents, with every edit replayed as a version |
-| claude.ai | `artikeep import claude-ai <export.zip>` | artifacts from chats, with every update as a version |
+| claude.ai | `artikeep import claude-ai <export.zip>` | artifacts from chats, with every update as a version; React components open as live pages, offline too |
 | Anything else | `artikeep add <file or folder>`, or the MCP `save_artifact` tool | whatever you point it at |
 
 Files git already tracks are skipped: they are safe where they are.
@@ -94,7 +94,9 @@ with the changed text lines. Light and dark, English and Russian, usable on a ph
 
 Hooks only copy files and start a detached background pass, so an agent never waits on
 disk or network. The background pass renders viewers (Design canvases, Markdown
-documents), makes offline copies with CDN scripts and fonts vendored, updates the search
+documents, React components with the libraries claude.ai artifacts may import: React,
+Tailwind, recharts, lucide-react, lodash, d3, mathjs, PapaParse, SheetJS, three, Tone,
+Chart.js, and stand-ins for shadcn/ui), makes offline copies with CDN scripts and fonts vendored, updates the search
 index (SQLite FTS5) and the gallery, then commits and pushes. The on-disk layout is
 specified in [FORMAT.md](FORMAT.md); any tool can write into it.
 

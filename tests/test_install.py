@@ -67,6 +67,31 @@ class DoctorTest(TempArchive):
         self.assertIn('"cleanupPeriodDays": 3650', out)
 
 
+class ReactViewerTest(TempArchive):
+    def test_viewer_loads_only_what_the_component_imports(self):
+        from artikeep.viewers import make_react_viewer
+        code = 'import { LineChart } from "recharts";\nimport { Home } from "lucide-react";\nexport default () => <Home/>;'
+        e, _ = self.store.save_item("r", {"app.jsx": code.encode()}, agent="claude-ai", main="app.jsx", title="App")
+        d = self.store.item_dir(e)
+        make_react_viewer(d, e)
+        page = (d / "index.html").read_text(encoding="utf-8")
+        self.assertIn("artikeep react viewer", page)
+        for lib in ("react.production", "babel.min.js", "Recharts.js", "prop-types", "lucide-react"):
+            self.assertIn(lib, page)
+        for lib in ("three.min.js", "d3.min.js", "Tone.js"):
+            self.assertNotIn(lib, page)
+        self.assertLess(page.index("window.react = window.React"), page.index("lucide-react.min.js"))
+        self.assertNotIn("index.html", self.store.version_files(d))  # the viewer is rebuilt, not versioned
+
+    def test_real_page_is_not_replaced(self):
+        from artikeep.viewers import make_react_viewer
+        e, _ = self.store.save_item("r2", {"index.html": b"<title>Real</title>", "app.jsx": b"export default () => null"},
+                                    agent="import", main="app.jsx")
+        d = self.store.item_dir(e)
+        make_react_viewer(d, e)
+        self.assertEqual((d / "index.html").read_bytes(), b'<meta charset="utf-8">\n<title>Real</title>')
+
+
 class SearchGalleryTest(TempArchive):
     def test_search_and_gallery_build(self):
         from artikeep import gallery, search, worker

@@ -2,6 +2,8 @@
 
   canvas viewer   a Claude Design canvas (canvas.json + artboard pages) laid out as on the host
   doc viewer      Markdown documents (doc-*.md, or a Markdown main file) with tabs
+  react viewer    a React component (.jsx/.tsx, as claude.ai makes them) rendered with the libraries
+                  claude.ai offers, from CDN; the offline copy vendors them
   offline copy    index.offline.html with CDN scripts, styles and fonts vendored into _vendor/
 """
 from __future__ import annotations
@@ -205,6 +207,146 @@ def make_doc_viewer(item: Path, entry: dict) -> None:
     page.write_text(
         DOC_VIEWER.replace("__TITLE__", html.escape(entry.get("title") or tabs[0]["name"]))
         .replace("__DATA__", json.dumps(data, ensure_ascii=False).replace("</", "<\\/")),
+        encoding="utf-8",
+    )
+
+
+# ---------------------------------------------------------------- React components
+
+REACT_MARKS = ("<!-- artikeep react viewer -->",)
+CDN = {
+    "react": "https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js",
+    "react-dom": "https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js",
+    "babel": "https://unpkg.com/@babel/standalone@7.25.6/babel.min.js",
+    "tailwind": "https://cdn.tailwindcss.com/3.4.16",
+    "prop-types": "https://unpkg.com/prop-types@15.8.1/prop-types.min.js",
+    "recharts": "https://unpkg.com/recharts@2.12.7/umd/Recharts.js",
+    "lucide-react": "https://unpkg.com/lucide-react@0.383.0/dist/umd/lucide-react.min.js",
+    "lodash": "https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js",
+    "d3": "https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js",
+    "mathjs": "https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.2.0/math.min.js",
+    "papaparse": "https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js",
+    "xlsx": "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js",
+    "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js",
+    "tone": "https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js",
+    "chart.js": "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js",
+}
+# module name a component imports -> scripts it needs (in order)
+NEEDS = {"recharts": ["prop-types", "recharts"], "lucide-react": ["lucide-react"], "lodash": ["lodash"], "d3": ["d3"],
+         "mathjs": ["mathjs"], "papaparse": ["papaparse"], "xlsx": ["xlsx"], "three": ["three"], "tone": ["tone"],
+         "chart.js": ["chart.js"], "chart.js/auto": ["chart.js"]}
+IMPORT_RE = re.compile(r"""(?:\bfrom\s*|\bimport\s*\(?\s*|\brequire\s*\(\s*)["']([^"']+)["']""")
+
+REACT_VIEWER = """<!doctype html>
+""" + REACT_MARKS[0] + """
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__</title>
+<style>
+#artikeep-error{font:14px/1.5 -apple-system,system-ui,sans-serif;margin:16px;padding:14px 16px;border:1px solid #d9a6a0;border-radius:10px;background:#fdf3f2;color:#5e1b14}
+#artikeep-error pre{white-space:pre-wrap;overflow:auto;max-height:60vh;background:#fff;border:1px solid #eee;padding:10px;border-radius:6px;color:#222}
+</style>
+__SCRIPTS__
+</head><body>
+<div id="root"></div>
+<script type="application/json" id="artikeep-src">__SRC__</script>
+<script>
+(function () {
+  const RU = /^ru\\b/i.test(navigator.language || "");
+  const src = JSON.parse(document.getElementById("artikeep-src").textContent);
+  function fail(msg) {
+    const box = document.createElement("div"); box.id = "artikeep-error";
+    const h = document.createElement("b"); h.textContent = (RU ? "Компонент не отрисовался: " : "The component did not render: ") + msg;
+    const d = document.createElement("details"); const s = document.createElement("summary"); s.textContent = RU ? "Исходник" : "Source";
+    const pre = document.createElement("pre"); pre.textContent = src.code; d.append(s, pre); box.append(h, d);
+    document.body.prepend(box);
+  }
+  window.addEventListener("error", e => fail(e.message));
+  const h = React.createElement, cx = (...a) => a.filter(Boolean).join(" ");
+  const part = (tag, base) => React.forwardRef(({className, ...p}, ref) => h(tag, {ref, className: cx(base, className), ...p}));
+  const UI = {
+    Card: part("div", "rounded-lg border bg-white text-slate-950 shadow-sm"), CardHeader: part("div", "flex flex-col space-y-1.5 p-6"),
+    CardTitle: part("h3", "text-2xl font-semibold leading-none tracking-tight"), CardDescription: part("p", "text-sm text-slate-500"),
+    CardContent: part("div", "p-6 pt-0"), CardFooter: part("div", "flex items-center p-6 pt-0"),
+    Button: part("button", "inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50"),
+    Input: part("input", "flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"),
+    Textarea: part("textarea", "flex min-h-[80px] w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"),
+    Label: part("label", "text-sm font-medium leading-none"), Badge: part("span", "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold"),
+    Alert: part("div", "relative w-full rounded-lg border p-4"), AlertTitle: part("h5", "mb-1 font-medium leading-none tracking-tight"),
+    AlertDescription: part("div", "text-sm"), Separator: part("div", "shrink-0 bg-slate-200 h-px w-full"),
+    Progress: ({value = 0, className}) => h("div", {className: cx("relative h-4 w-full overflow-hidden rounded-full bg-slate-100", className)},
+      h("div", {className: "h-full bg-slate-900", style: {width: value + "%"}})),
+    Checkbox: ({checked, onCheckedChange, className, ...p}) => h("input", {type: "checkbox", checked: !!checked, onChange: e => onCheckedChange && onCheckedChange(e.target.checked), className, ...p}),
+    Switch: ({checked, onCheckedChange, className, ...p}) => h("input", {type: "checkbox", role: "switch", checked: !!checked, onChange: e => onCheckedChange && onCheckedChange(e.target.checked), className, ...p}),
+    Slider: ({value = [0], onValueChange, min = 0, max = 100, step = 1, className}) => h("input", {type: "range", min, max, step, value: value[0], className: cx("w-full", className), onChange: e => onValueChange && onValueChange([+e.target.value])}),
+  };
+  const TabsCtx = React.createContext(null);
+  UI.Tabs = ({defaultValue, value, onValueChange, className, children}) => { const [v, setV] = React.useState(defaultValue);
+    const cur = value !== undefined ? value : v; return h(TabsCtx.Provider, {value: {cur, set: x => { setV(x); onValueChange && onValueChange(x); }}}, h("div", {className}, children)); };
+  UI.TabsList = part("div", "inline-flex h-10 items-center justify-center rounded-md bg-slate-100 p-1");
+  UI.TabsTrigger = ({value, className, children}) => { const c = React.useContext(TabsCtx);
+    return h("button", {type: "button", onClick: () => c.set(value), className: cx("inline-flex items-center rounded-sm px-3 py-1.5 text-sm font-medium", c.cur === value && "bg-white shadow-sm", className)}, children); };
+  UI.TabsContent = ({value, className, children}) => React.useContext(TabsCtx).cur === value ? h("div", {className}, children) : null;
+  const passthrough = name => UI[name] || (UI[name] = part("div", ""));
+  const uiModule = new Proxy({}, {get: (_, k) => k === "__esModule" ? false : typeof k === "string" ? passthrough(k) : undefined});
+  window.react = React;  // lucide-react's UMD build looks React up under this name
+  const MODULES = {"react": () => React, "react-dom": () => ReactDOM, "react-dom/client": () => ReactDOM,
+    "recharts": () => window.Recharts, "lucide-react": () => window.LucideReact, "lodash": () => window._,
+    "d3": () => window.d3, "mathjs": () => window.math, "papaparse": () => window.Papa, "xlsx": () => window.XLSX,
+    "three": () => window.THREE, "tone": () => window.Tone, "chart.js": () => window.Chart, "chart.js/auto": () => window.Chart};
+  function require(name) {
+    if (name.startsWith("@/components/ui/")) return uiModule;
+    const get = MODULES[name];
+    const mod = get && get();
+    if (!mod) throw new Error((RU ? "библиотека недоступна без сети: " : "library not available offline: ") + name);
+    return mod;
+  }
+  let Comp;
+  try {
+    const out = Babel.transform(src.code, {filename: src.name, presets: [["react"], ["typescript", {isTSX: true, allExtensions: true}]],
+      plugins: ["transform-modules-commonjs"]}).code;
+    const module = {exports: {}};
+    new Function("require", "module", "exports", "React", out)(require, module, module.exports, React);
+    const ex = module.exports;
+    Comp = ex.default || (typeof ex === "function" ? ex : Object.values(ex).find(v => typeof v === "function"));
+    if (!Comp) throw new Error(RU ? "в файле нет экспортированного компонента" : "the file exports no component");
+  } catch (e) { fail(e.message); return; }
+  try { ReactDOM.createRoot(document.getElementById("root")).render(h(Comp)); } catch (e) { fail(e.message); }
+})();
+</script></body></html>
+"""
+
+
+def react_source(item: Path, entry: dict):
+    main = entry.get("main") or entry.get("source_name") or ""
+    if main.lower().endswith((".jsx", ".tsx")) and (item / main).exists():
+        return item / main
+    return None
+
+
+def make_react_viewer(item: Path, entry: dict) -> None:
+    srcf = react_source(item, entry)
+    if not srcf:
+        return
+    page = item / "index.html"
+    if page.exists():
+        if not _generated(page, REACT_MARKS):
+            return  # a real page lives here
+        if page.stat().st_mtime >= srcf.stat().st_mtime:
+            return
+    code = srcf.read_text(encoding="utf-8", errors="ignore")
+    wanted = ["react", "react-dom", "babel", "tailwind"]
+    for mod in IMPORT_RE.findall(code):
+        for need in NEEDS.get(mod, []):
+            if need not in wanted:
+                wanted.append(need)
+    scripts = "\n".join('<script src="%s"></script>' % CDN[k] for k in wanted if k != "lucide-react")
+    if "lucide-react" in wanted:  # needs window.react before it loads
+        scripts += '\n<script>window.react = window.React;</script>\n<script src="%s"></script>' % CDN["lucide-react"]
+    page.write_text(
+        REACT_VIEWER.replace("__TITLE__", html.escape(entry.get("title") or srcf.stem))
+        .replace("__SCRIPTS__", scripts)
+        .replace("__SRC__", json.dumps({"name": srcf.name, "code": code}, ensure_ascii=False).replace("</", "<\\/")),
         encoding="utf-8",
     )
 

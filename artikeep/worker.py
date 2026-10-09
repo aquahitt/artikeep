@@ -14,7 +14,7 @@ import time
 from artikeep import gallery, issues, search
 from artikeep.store import Store
 from artikeep.util import now_iso
-from artikeep.viewers import make_canvas_viewer, make_doc_viewer, make_offline
+from artikeep.viewers import make_canvas_viewer, make_doc_viewer, make_offline, make_react_viewer
 
 
 def run(store: Store, push: bool = True, wait: bool = False) -> None:
@@ -46,10 +46,12 @@ def one_pass(store: Store, push: bool) -> None:
             entry = by_dir.get(item.name, {})
             try:
                 make_doc_viewer(item, entry)
+                make_react_viewer(item, entry)
                 make_canvas_viewer(item)
                 for vd in sorted((item / "versions").iterdir()) if (item / "versions").exists() else []:
                     make_canvas_viewer(vd)
                     make_doc_viewer(vd, entry)
+                    make_react_viewer(vd, entry)
                 make_offline(item)
             except Exception:
                 store.error("viewers %s" % item.name)
