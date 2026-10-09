@@ -31,9 +31,10 @@ TEXT_SUFFIXES = {".md", ".txt", ".csv", ".json", ".py", ".js", ".jsx", ".ts", ".
 
 
 class Server:
-    def __init__(self, store: Store, scope: str, allow_save: bool):
+    def __init__(self, store: Store, scope: str, allow_save: bool, agent: str = "mcp"):
         self.store = store
         self.allow_save = allow_save
+        self.agent = agent if agent in AGENTS else "mcp"
         if scope == "all":
             self.scope = None
         else:
@@ -177,7 +178,7 @@ class Server:
         if fname.lower().endswith((".html", ".htm")):
             fname = "index.html"
         key = "mcp:%s:%s:%s" % (self.scope or "", slugify(title), fname)
-        entry, vdir = self.store.save_item(key, {fname: content.encode("utf-8")}, agent="mcp", title=title, main=fname,
+        entry, vdir = self.store.save_item(key, {fname: content.encode("utf-8")}, agent=self.agent, title=title, main=fname,
                                            project=self.scope, when=now_iso(), label=args.get("label"),
                                            description=args.get("description"))
         self.store.kick()
@@ -199,7 +200,10 @@ class Server:
                     "capabilities": {"tools": {}},
                     "serverInfo": {"name": "artikeep", "version": __version__},
                     "instructions": "Local archive of artifacts made by AI agents (Claude Code, Codex, chat exports). "
-                                    "Search it before recreating something that may already exist. " + self._scope_note(),
+                                    "Search it before recreating something that may already exist. " + self._scope_note()
+                                    + (" When the user asks to keep, save or archive something you made (a page, document, "
+                                       "code, table), call save_artifact with its full content and tell them it is saved."
+                                       if self.allow_save else ""),
                 }
             elif method == "ping":
                 result = {}
@@ -222,10 +226,10 @@ class Server:
             return {"jsonrpc": "2.0", "id": mid, "error": {"code": -32603, "message": str(ex)}}
 
 
-def serve(store: Store, scope: str | None = None, allow_save: bool | None = None) -> int:
+def serve(store: Store, scope: str | None = None, allow_save: bool | None = None, agent: str = "mcp") -> int:
     scope = scope or store.settings.get("mcp_scope") or "project"
     allow = store.settings.get("mcp_save") if allow_save is None else allow_save
-    server = Server(store, scope, bool(allow))
+    server = Server(store, scope, bool(allow), agent)
     for line in sys.stdin:
         line = line.strip()
         if not line:

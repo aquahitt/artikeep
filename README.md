@@ -20,6 +20,7 @@ agent search what you already have.
 |---|---|---|
 | Claude Code | hooks, automatic | pages published with the `Artifact` tool (with all their files), Claude Design canvases, Claude Docs documents (exported tab by tab), unpublished pages in the session scratchpad |
 | Codex | hooks, automatic | documents a session writes that git does not keep — reports, pages, tables in temp folders, untracked or ignored files — plus the session's visualizations |
+| Claude Desktop chat | MCP, on request | ask Claude to save what it made; the chat has no hooks, so this is the only live way in (the Code tab of Desktop is Claude Code and is captured automatically) |
 | ChatGPT | `artikeep import chatgpt <export.zip>` | canvas documents, with every edit replayed as a version |
 | claude.ai | `artikeep import claude-ai <export.zip>` | artifacts from chats, with every update as a version; React components open as live pages, offline too |
 | Anything else | `artikeep add <file or folder>`, or the MCP `save_artifact` tool | whatever you point it at |
@@ -35,9 +36,10 @@ python3 ~/artikeep-src/bin/artikeep install                # hooks + MCP for the
 python3 ~/artikeep-src/bin/artikeep doctor                 # check
 ```
 
-`install` finds Claude Code (`~/.claude`) and Codex (`~/.codex`), adds its hooks next to
-yours (nothing else is touched; every edited file is backed up first), registers the MCP
-server with each agent's own `mcp add`, and puts a short rules block into
+`install` finds Claude Code (`~/.claude`), Codex (`~/.codex`) and Claude Desktop, adds its
+hooks next to yours (nothing else is touched; every edited file is backed up first),
+registers the MCP server with each agent's own `mcp add` (for Desktop, in
+`claude_desktop_config.json`; reopen Desktop after), and puts a short rules block into
 `~/.claude/CLAUDE.md` and `~/.codex/AGENTS.md`. `--agents codex` limits it, `--dry-run`
 shows the changes, `--uninstall` removes them.
 

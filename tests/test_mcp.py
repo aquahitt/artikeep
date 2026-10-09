@@ -61,6 +61,16 @@ class McpTest(TempArchive):
         r = self.session(self.tool("read_artifact", id=out_dir))
         self.assertIn("outside", self.text(r[1]))
 
+    def test_desktop_saves_as_claude_desktop_and_is_told_to(self):
+        r = self.session(self.tool("save_artifact", title="Chat page", content="<!doctype html><title>Chat page</title>"),
+                         args=("--scope", "all", "--allow-save", "--agent", "claude-desktop"), cwd="/")
+        self.assertIn("save_artifact", r[0]["result"]["instructions"])
+        self.assertIn("version 1", self.text(r[1]))
+        e = [e for k, e in self.manifest()["items"].items() if k.startswith("mcp:")][0]
+        self.assertEqual((e["agent"], e["main"], e.get("project")), ("claude-desktop", "index.html", None))
+        plain = self.session(("tools/list", {}))
+        self.assertNotIn("save_artifact", plain[0]["result"]["instructions"])
+
     def test_save_when_allowed(self):
         r = self.session(("tools/list", {}), self.tool("save_artifact", title="Notes", content="# Notes\n\nA", filename="notes.md"),
                          self.tool("save_artifact", title="Notes", content="# Notes\n\nB", filename="notes.md"), args=("--allow-save",))

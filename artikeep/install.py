@@ -6,6 +6,8 @@ MCP server registered with `claude mcp add --scope user`, a rules block in
 ~/.claude/CLAUDE.md.
 Codex: hooks in ~/.codex/hooks.json (Stop, SessionStart), the MCP server registered
 with `codex mcp add`, a rules block in ~/.codex/AGENTS.md.
+Claude Desktop: the MCP server in claude_desktop_config.json, all projects, saving on (the
+chat has no hooks and reads no rules file; the server's instructions tell it when to save).
 Every edited file is backed up next to itself first (*.bak.artikeep.<time>).
 """
 from __future__ import annotations
@@ -28,6 +30,8 @@ CLAUDE_MD = HOME / ".claude" / "CLAUDE.md"
 CODEX_HOOKS = HOME / ".codex" / "hooks.json"
 CODEX_CONFIG = HOME / ".codex" / "config.toml"
 CODEX_AGENTS_MD = HOME / ".codex" / "AGENTS.md"
+DESKTOP_CONFIG = (HOME / "Library" / "Application Support" / "Claude" if sys.platform == "darwin"
+                  else HOME / ".config" / "Claude") / "claude_desktop_config.json"
 ENTRY = Path(__file__).resolve().parent.parent / "bin" / "artikeep"
 MARK_BEGIN, MARK_END = "<!-- artikeep:begin -->", "<!-- artikeep:end -->"
 OLD_MARKS = ("<!-- claude-artifacts:begin -->", "<!-- claude-artifacts:end -->")
@@ -160,6 +164,26 @@ def install_mcp(plan: Plan, agent: str, uninstall: bool) -> None:
     plan.say("%s: MCP server %s" % (agent, "registered" if ok else "NOT registered: " + (r.stderr or r.stdout).strip()[:300]))
 
 
+def desktop_server() -> dict:
+    """Claude Desktop starts MCP servers outside any repository and its chat has no hooks: so the
+    whole archive is in scope, and saving is on, because asking Claude to save is the only way in."""
+    cmd = launcher()
+    return {"command": cmd[0], "args": cmd[1:] + ["mcp", "--scope", "all", "--allow-save", "--agent", "claude-desktop"]}
+
+
+def install_desktop(plan: Plan, uninstall: bool) -> None:
+    data = json.loads(DESKTOP_CONFIG.read_text(encoding="utf-8")) if DESKTOP_CONFIG.exists() else {}
+    servers = data.setdefault("mcpServers", {})
+    servers.pop("artikeep", None)
+    if not uninstall:
+        servers["artikeep"] = desktop_server()
+    elif not servers:
+        data.pop("mcpServers")
+    plan.write(DESKTOP_CONFIG, json.dumps(data, ensure_ascii=False, indent=2) + "\n")
+    plan.say("Claude Desktop: MCP server %s in %s%s" % ("removed" if uninstall else "set (all projects, saving on)", DESKTOP_CONFIG,
+                                                        "" if uninstall else "; quit and reopen Claude Desktop to load it"))
+
+
 # ---------------------------------------------------------------- rules for the agents
 
 
@@ -275,6 +299,8 @@ def detect() -> list:
         found.append("claude-code")
     if (HOME / ".codex").exists() or shutil.which("codex"):
         found.append("codex")
+    if DESKTOP_CONFIG.parent.exists() or Path("/Applications/Claude.app").exists():
+        found.append("claude-desktop")
     return found
 
 
@@ -306,8 +332,12 @@ def run(store: Store, a) -> int:
         elif agent == "codex":
             install_codex_hooks(plan, a.uninstall)
             install_rules(plan, store, CODEX_AGENTS_MD, agent, a.uninstall)
+        elif agent == "claude-desktop":
+            if not a.no_mcp:
+                install_desktop(plan, a.uninstall)
+            continue  # no hooks, no rules file: the server's own instructions guide the chat
         else:
-            plan.say("unknown agent %s (known: claude-code, codex)" % agent)
+            plan.say("unknown agent %s (known: claude-code, codex, claude-desktop)" % agent)
             continue
         if not a.no_mcp:
             install_mcp(plan, agent, a.uninstall)
@@ -372,6 +402,13 @@ def doctor(store: Store) -> int:
             line(mcp_registered("codex"), "Codex: MCP server artikeep registered")
         else:
             print("info  Codex: not wired (artikeep install --agents codex)")
+    if DESKTOP_CONFIG.exists():
+        srv = (json.loads(DESKTOP_CONFIG.read_text(encoding="utf-8")).get("mcpServers") or {}).get("artikeep")
+        if srv:
+            line(Path(srv.get("command", "")).exists() and all(Path(x).exists() for x in srv.get("args", []) if x.startswith("/")),
+                 "Claude Desktop: MCP server artikeep configured (%s)" % " ".join([srv.get("command", "")] + srv.get("args", [])))
+        else:
+            print("info  Claude Desktop: not wired (artikeep install --agents claude-desktop)")
     errs = store.log / "errors.log"
     if errs.exists():
         recent = [ln for ln in errs.read_text(encoding="utf-8", errors="ignore").splitlines() if ln.startswith("--- ")][-3:]

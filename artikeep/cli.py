@@ -64,7 +64,7 @@ def main(argv=None) -> int:
     p.add_argument("--remote", help="git remote URL to push to (make it a private repository)")
 
     p = sub.add_parser("install", help="wire hooks and the MCP server into agents")
-    p.add_argument("--agents", default="auto", help="comma list: claude-code,codex (default: those found)")
+    p.add_argument("--agents", default="auto", help="comma list: claude-code,codex,claude-desktop (default: those found)")
     p.add_argument("--mcp-scope", choices=["project", "all"])
     p.add_argument("--mcp-save", action="store_true", help="let agents save through MCP")
     p.add_argument("--no-mcp", action="store_true")
@@ -103,6 +103,7 @@ def main(argv=None) -> int:
     p = sub.add_parser("mcp", help="run the MCP server on stdio")
     p.add_argument("--scope", choices=["project", "all"])
     p.add_argument("--allow-save", action="store_true", default=None)
+    p.add_argument("--agent", default="mcp", help="source recorded for saved items (e.g. claude-desktop)")
 
     a = ap.parse_args(argv)
     store = Store()
@@ -185,6 +186,6 @@ def main(argv=None) -> int:
     if a.cmd == "mcp":
         from artikeep.mcp_server import serve
         store.ensure()
-        return serve(store, a.scope, a.allow_save)
+        return serve(store, a.scope, a.allow_save, a.agent)
     ap.print_help()
     return 0

@@ -14,6 +14,12 @@ server shows an agent only the items made in the repository it is working in, an
 every result is labelled as archived data, not instructions. Widen it deliberately:
 `artikeep install --mcp-scope all`, or `"mcp_scope": "all"` in `artikeep.json`.
 
+**Claude Desktop is the exception.** Its chat runs outside any repository and has no hooks,
+so its server sees all projects and may save: asking Claude to save is the only way a chat
+artifact gets in. If you use connectors or web search in Desktop chats and want less exposure,
+remove the entry (`artikeep install --agents claude-desktop --uninstall`) and rely on data
+exports instead.
+
 **Writing through MCP is off** unless you enable it (`--mcp-save`). Saving cannot
 overwrite history: a save adds a version, and the previous ones stay.
 

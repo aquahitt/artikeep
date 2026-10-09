@@ -35,6 +35,25 @@ class InstallTest(TempArchive):
         self.assertEqual(out.count(MARK_BEGIN), 1)
 
 
+class DesktopTest(TempArchive):
+    def test_desktop_entry_keeps_other_keys_and_uninstalls_clean(self):
+        from unittest import mock
+        from artikeep import install
+        cfg = self.tmp / "claude_desktop_config.json"
+        original = {"preferences": {"x": 1}, "mcpServers": {"other": {"command": "foo"}}}
+        cfg.write_text(json.dumps(original))
+        with mock.patch.object(install, "DESKTOP_CONFIG", cfg):
+            install.install_desktop(install.Plan(False), uninstall=False)
+            data = json.loads(cfg.read_text())
+            self.assertEqual(data["preferences"], {"x": 1})
+            self.assertEqual(data["mcpServers"]["other"], {"command": "foo"})
+            args = data["mcpServers"]["artikeep"]["args"]
+            for a in ("mcp", "--scope", "all", "--allow-save", "claude-desktop"):
+                self.assertIn(a, args)
+            install.install_desktop(install.Plan(False), uninstall=True)
+            self.assertEqual(json.loads(cfg.read_text()), original)
+
+
 class DoctorTest(TempArchive):
     def doctor_output(self, settings: dict) -> tuple:
         import contextlib

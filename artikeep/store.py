@@ -26,7 +26,7 @@ from artikeep import config
 from artikeep.util import now_iso, slugify, title_of, write_bytes
 from artikeep.viewers import CANVAS_MARKS, DOC_MARKS, REACT_MARKS
 
-AGENTS = ("claude-code", "codex", "chatgpt", "claude-ai", "import", "mcp")
+AGENTS = ("claude-code", "codex", "claude-desktop", "chatgpt", "claude-ai", "import", "mcp")
 GITIGNORE = [".hooklog/", ".cache/", "*.tmp", ".DS_Store"]
 VERSION_SKIP_DIRS = {"versions", "_vendor", "server"}
 VERSION_SKIP_FILES = {"index.offline.html", "docs-ops.jsonl", "_thumb.jpg"}
