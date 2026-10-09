@@ -236,6 +236,36 @@ def install_rules(plan: Plan, store: Store, path: Path, agent: str, uninstall: b
     plan.say("%s: rules block %s in %s" % (agent, "removed" if uninstall else "set", path))
 
 
+# ---------------------------------------------------------------- the command itself
+
+
+def install_link(plan: Plan, uninstall: bool) -> None:
+    """`artikeep` on PATH: a symlink in ~/.local/bin, only if that folder is on PATH and the name is free."""
+    if not ENTRY.exists():
+        return  # installed with pip: the package already put the command on PATH
+    bindir = HOME / ".local" / "bin"
+    link = bindir / "artikeep"
+    ours = link.is_symlink() and Path(os.readlink(str(link))) == ENTRY
+    if uninstall:
+        if ours and not plan.dry:
+            link.unlink()
+        if ours:
+            plan.say("command: removed %s" % link)
+        return
+    if str(bindir) not in os.environ.get("PATH", "").split(os.pathsep):
+        plan.say("command: %s is not on PATH; run artikeep as %s" % (bindir, " ".join(launcher())))
+        return
+    if ours:
+        return
+    if link.exists() or link.is_symlink():
+        plan.say("command: %s exists and is not ours; left as is" % link)
+        return
+    if not plan.dry:
+        bindir.mkdir(parents=True, exist_ok=True)
+        link.symlink_to(ENTRY)
+    plan.say("command: %s -> %s" % (link, ENTRY))
+
+
 # ---------------------------------------------------------------- entry points
 
 
@@ -268,6 +298,7 @@ def run(store: Store, a) -> int:
             if not a.dry_run:
                 config.set_home(store.root)
         plan.say("archive: %s" % store.root)
+    install_link(plan, a.uninstall)
     for agent in agents:
         if agent == "claude-code":
             install_claude_hooks(plan, a.uninstall)
