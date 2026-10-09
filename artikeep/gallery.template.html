@@ -1,0 +1,799 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Artifact archive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=Unbounded:wght@500;700&display=swap">
+<style>
+:root{
+  --paper:#ECEFEA; --sheet:#F7F8F5; --raise:#FFFFFF; --ink:#1B2420; --ink-2:#4A5650; --ink-3:#626D67; --line:#C9D0C9; --line-2:#DDE2DC; --hover:#E2E7E1;
+  --page:#2E5E4E; --canvas:#2F5C9E; --doc:#6A4A86; --file:#7A5418; --draft:#7A817C;
+  --live:#2F5C9E; --exact:#2E5E4E; --recreated:#8F6109; --missing:#A23B2A; --deleted:#626D67;
+  --add-bg:#DCEBE2; --rem-bg:#F3DEDA; --hatch:rgba(27,36,32,.07); --scrim:rgba(20,26,23,.42); --focus:#2F5C9E;
+  --shadow:0 10px 30px rgba(27,36,32,.14),0 2px 6px rgba(27,36,32,.08);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#141A17; --sheet:#1C2420; --raise:#232C27; --ink:#E6ECE7; --ink-2:#B3BEB7; --ink-3:#8E9A92; --line:#36423C; --line-2:#29322D; --hover:#27302B;
+  --page:#7FC1A6; --canvas:#8FB2EA; --doc:#C3A3E0; --file:#E0B07A; --draft:#A3AAA5;
+  --live:#8FB2EA; --exact:#7FC1A6; --recreated:#E2B455; --missing:#F08F7C; --deleted:#8E9A92;
+  --add-bg:#1F3A2E; --rem-bg:#43251F; --hatch:rgba(230,236,231,.06); --scrim:rgba(0,0,0,.55); --focus:#8FB2EA;
+  --shadow:0 10px 30px rgba(0,0,0,.45),0 2px 6px rgba(0,0,0,.3);
+}}
+:root[data-theme="dark"]{
+  --paper:#141A17; --sheet:#1C2420; --raise:#232C27; --ink:#E6ECE7; --ink-2:#B3BEB7; --ink-3:#8E9A92; --line:#36423C; --line-2:#29322D; --hover:#27302B;
+  --page:#7FC1A6; --canvas:#8FB2EA; --doc:#C3A3E0; --file:#E0B07A; --draft:#A3AAA5;
+  --live:#8FB2EA; --exact:#7FC1A6; --recreated:#E2B455; --missing:#F08F7C; --deleted:#8E9A92;
+  --add-bg:#1F3A2E; --rem-bg:#43251F; --hatch:rgba(230,236,231,.06); --scrim:rgba(0,0,0,.55); --focus:#8FB2EA;
+  --shadow:0 10px 30px rgba(0,0,0,.45),0 2px 6px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{background:var(--paper)}
+body{margin:0;color:var(--ink);font:15px/1.5 "Golos Text",system-ui,sans-serif;background:var(--paper)}
+a{color:inherit}
+button{font:inherit;color:inherit}
+button:disabled{opacity:.4;cursor:default}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:6px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+h1,h2,h3{font-family:Unbounded,system-ui,sans-serif;margin:0;letter-spacing:-.01em}
+.ic{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ic.sm{width:15px;height:15px}
+
+/* ---------- primitives ---------- */
+.ib{position:relative;display:inline-grid;place-items:center;width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--sheet);cursor:pointer;color:var(--ink-2);padding:0;text-decoration:none;flex:none}
+.ib:hover:not(:disabled){background:var(--hover);color:var(--ink)}
+.ib.ghost{border-color:transparent;background:transparent}
+.ib.sm{width:30px;height:30px;border-radius:8px}
+[data-tip]{position:relative}
+[data-tip]:hover::after,[data-tip]:focus-visible::after{content:attr(data-tip);position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);background:var(--ink);color:var(--paper);font:500 12px/1.3 "Golos Text",system-ui;padding:5px 8px;border-radius:6px;white-space:nowrap;pointer-events:none;z-index:40;animation:tip .14s ease-out}
+@keyframes tip{from{opacity:0}to{opacity:1}}
+[data-tip-pos="below"]:hover::after,[data-tip-pos="below"]:focus-visible::after{bottom:auto;top:calc(100% + 8px)}
+.hacts [data-tip]:hover::after,.hacts [data-tip]:focus-visible::after{left:auto;right:0;transform:none}
+.cmp-bar [data-tip]:hover::after,.cmp-bar [data-tip]:focus-visible::after,.dh [data-tip]:hover::after,.dh [data-tip]:focus-visible::after{bottom:auto;top:calc(100% + 8px)}
+.cmp-bar>[data-tip]:last-child:hover::after,.dh>[data-tip]:last-child:hover::after,.dh>[data-tip]:last-child:focus-visible::after,.cmp-bar>[data-tip]:last-child:focus-visible::after{left:auto;right:0;transform:none}
+.btn{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:10px;border:1px solid var(--ink);background:transparent;cursor:pointer;text-decoration:none;font-size:14px;font-weight:500;white-space:nowrap}
+.btn.solid{background:var(--ink);color:var(--paper)}
+.seg{display:inline-flex;padding:3px;gap:2px;border-radius:12px;background:var(--line-2)}
+.seg button{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;border:0;border-radius:9px;background:transparent;cursor:pointer;color:var(--ink-2);font-size:13.5px;font-weight:500}
+.seg button[aria-pressed="true"]{background:var(--raise);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.14)}
+.seg.icons button{width:34px;padding:0;justify-content:center}
+.cb{display:flex;align-items:center;gap:10px;padding:5px 6px;margin:0 -6px;border-radius:8px;cursor:pointer}
+.cb:hover{background:var(--hover)}
+.cb input{position:absolute;opacity:0;width:1px;height:1px}
+.cb .box{width:18px;height:18px;border:1.5px solid var(--ink-3);border-radius:5px;display:grid;place-items:center;flex:none;transition:background .12s,border-color .12s}
+.cb .box .ic{width:13px;height:13px;stroke-width:2.6;opacity:0;stroke:var(--paper)}
+.cb input:checked + .box{background:var(--ink);border-color:var(--ink)}
+.cb input:checked + .box .ic{opacity:1}
+.cb input:focus-visible + .box{outline:2px solid var(--focus);outline-offset:2px}
+.cb .lab{display:flex;align-items:center;gap:8px;min-width:0}
+.cb .n{margin-left:auto;font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums;background:var(--line-2);border-radius:999px;padding:0 8px;min-width:26px;text-align:center}
+.cb.zero{opacity:.5}
+.dd{position:relative}
+.dd-btn{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 10px 0 12px;border:1px solid var(--line);border-radius:10px;background:var(--sheet);cursor:pointer;font-size:14px;white-space:nowrap}
+.dd-btn:hover{background:var(--hover)}
+.dd-btn .k{color:var(--ink-3)}
+.dd-btn .ic.chev{transition:transform .15s}
+.dd-btn[aria-expanded="true"] .ic.chev{transform:rotate(180deg)}
+.dd-menu{position:absolute;top:calc(100% + 6px);left:0;min-width:100%;margin:0;padding:6px;list-style:none;background:var(--raise);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);z-index:35}
+.dd-menu[hidden]{display:none}
+.dd-menu.right{left:auto;right:0}
+.dd-menu li{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;cursor:pointer;white-space:nowrap;font-size:14px}
+.dd-menu li .ic{opacity:0}
+.dd-menu li[aria-selected="true"] .ic{opacity:1}
+.dd-menu li.hl,.dd-menu li:hover{background:var(--hover)}
+.sw{width:10px;height:10px;border-radius:3px;background:var(--c);flex:none}
+.sw.canvas{border-radius:50%} .sw.doc{border-radius:1px;transform:rotate(45deg) scale(.85)} .sw.file{border-radius:1px 5px 1px 1px}
+.sw.st{border-radius:50%} .sw.missing{background:transparent;border:1.5px dashed var(--c)}
+.t-page{--c:var(--page)} .t-canvas{--c:var(--canvas)} .t-doc{--c:var(--doc)} .t-file{--c:var(--file)} .t-draft{--c:var(--draft)}
+.s-live{--c:var(--live)} .s-exact{--c:var(--exact)} .s-recreated{--c:var(--recreated)} .s-missing{--c:var(--missing)} .s-deleted{--c:var(--deleted)}
+.chip{display:inline-flex;align-items:center;gap:4px;height:30px;padding:0 3px 0 11px;border-radius:999px;background:var(--raise);border:1px solid var(--line);font-size:13px}
+.chip .ib{width:24px;height:24px;border-radius:50%;border:0;background:transparent}
+.chip .ib .ic{width:13px;height:13px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:10px;font-size:14px;display:flex;gap:8px;align-items:center;z-index:60;box-shadow:var(--shadow)}
+.toast[hidden]{display:none}
+
+/* ---------- header ---------- */
+.top{max-width:1440px;margin:0 auto;padding:22px 24px 6px;display:grid;grid-template-columns:auto 1fr auto;gap:14px 24px;align-items:center}
+.brand{display:flex;align-items:center;gap:12px}
+.mark{width:40px;height:40px;border-radius:12px;background:var(--ink);display:grid;place-items:center;color:var(--paper)}
+.mark .ic{width:22px;height:22px}
+.top h1{font-size:23px;font-weight:700}
+.counts{grid-column:1/-1;color:var(--ink-2);font-size:14px;margin:-2px 0 0;display:flex;flex-wrap:wrap;gap:4px 20px}
+.counts b{font-weight:600;color:var(--ink)}
+.search{position:relative;max-width:620px;width:100%;justify-self:center}
+.search>.ic{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--ink-3);pointer-events:none}
+.search input{width:100%;font:inherit;font-size:15px;height:44px;padding:0 84px 0 42px;border:1px solid var(--line);border-radius:12px;background:var(--sheet);color:var(--ink)}
+.search input::-webkit-search-cancel-button{display:none}
+.search .clear{position:absolute;right:42px;top:50%;transform:translateY(-50%)}
+.search kbd{position:absolute;right:10px;top:50%;transform:translateY(-50%);font:12px "Golos Text";color:var(--ink-3);border:1px solid var(--line);border-radius:6px;padding:1px 7px;background:var(--paper)}
+.hacts{display:flex;gap:8px}
+@media (max-width:760px){.top{grid-template-columns:1fr auto}.search{grid-column:1/-1;order:3;max-width:none}.top h1{font-size:19px}}
+.tabs{max-width:1440px;margin:10px auto 0;padding:0 24px;display:flex;gap:4px;border-bottom:1px solid var(--line)}
+.tabs button{display:inline-flex;align-items:center;gap:8px;background:none;border:0;border-bottom:3px solid transparent;padding:10px 12px;cursor:pointer;font-weight:500;color:var(--ink-2)}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+.tabs .n{font-size:12px;color:var(--ink-3);background:var(--line-2);border-radius:999px;padding:0 7px;font-weight:500}
+
+/* ---------- layout ---------- */
+.main{max-width:1440px;margin:0 auto;padding:18px 24px 80px;display:grid;grid-template-columns:232px 1fr;gap:28px}
+.facets{display:grid;align-content:start;gap:18px;font-size:14px;position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto;padding:0 4px 0 6px}
+.facets h4{margin:0 0 4px;font-size:12.5px;font-weight:600;color:var(--ink-3)}
+.facets .reset{display:inline-flex;align-items:center;gap:6px;background:none;border:0;padding:0;color:var(--ink-2);cursor:pointer;font-size:13px}
+.tool{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+.tool .grow{flex:1}
+.tool .count{font-size:14px;color:var(--ink-2)}
+.only-mobile{display:none}
+.ib .dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--canvas);border:2px solid var(--sheet)}
+@media (max-width:900px){.only-mobile{display:inline-grid}}
+.active{display:flex;flex-wrap:wrap;gap:6px;margin:-2px 0 14px}
+.active:empty{display:none}
+.recent{margin-bottom:26px}
+.sec-h{display:flex;align-items:baseline;gap:10px;margin:0 0 12px;flex-wrap:wrap}
+.sec-h h2{font-size:16px;font-weight:500}
+.sec-h span{font-size:13px;color:var(--ink-3)}
+
+/* cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--cw,230px),1fr));gap:16px}
+.size-s{--cw:180px} .size-m{--cw:230px} .size-l{--cw:320px}
+.card{position:relative;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;background:var(--sheet);overflow:hidden;transition:border-color .12s,box-shadow .12s}
+.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--c);z-index:1}
+.card:hover{border-color:var(--ink-3);box-shadow:var(--shadow)}
+.card.cur{outline:2px solid var(--focus);outline-offset:1px}
+.card .main-btn,.lrow .main-btn{position:absolute;inset:0;cursor:pointer;z-index:2;border:0;background:transparent;padding:0;border-radius:12px}
+.card .main-btn:focus-visible,.lrow .main-btn:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+.th{aspect-ratio:16/10;background:var(--line-2) center top/cover no-repeat;border-bottom:1px solid var(--line-2);position:relative}
+.th.none{display:grid;place-items:center;background:repeating-linear-gradient(135deg,var(--hatch) 0 8px,transparent 8px 16px)}
+.glyph{width:34px;height:34px;border:3px solid var(--c);opacity:.55}
+.glyph.page{border-radius:6px} .glyph.canvas{border-radius:50%} .glyph.doc{transform:rotate(45deg) scale(.8);border-radius:3px} .glyph.file{border-radius:3px 14px 3px 3px}
+.card .bd{padding:10px 12px 12px 16px;display:grid;gap:5px}
+.card h3{font-family:"Golos Text",system-ui;font-size:15px;font-weight:600;line-height:1.3;letter-spacing:0}
+.size-s .card h3{font-size:13.5px}
+.meta{display:flex;flex-wrap:wrap;gap:3px 12px;font-size:12.5px;color:var(--ink-3)}
+.meta .copy{color:var(--c)}
+.meta .mi{display:inline-flex;align-items:center;gap:4px}
+.qa{position:absolute;top:8px;right:8px;display:flex;gap:6px;z-index:3;opacity:0;transform:translateY(-4px);transition:opacity .12s,transform .12s}
+.card:hover .qa,.card:focus-within .qa{opacity:1;transform:none}
+.qa .ib{background:var(--raise);box-shadow:0 2px 8px rgba(0,0,0,.16);border-color:var(--line-2)}
+@media (hover:none){.qa{opacity:1;transform:none}}
+.stamp{position:absolute;bottom:10px;right:10px;transform:rotate(-4deg);border:2px solid var(--c);color:var(--c);background:color-mix(in srgb,var(--sheet) 85%,transparent);border-radius:6px;padding:1px 8px;font-size:12px;font-weight:600;z-index:1}
+.vstrip{display:flex;gap:3px;align-items:end;height:16px;margin-top:2px}
+.vstrip i{width:7px;border-radius:2px;background:var(--c);opacity:.35}
+.vstrip i:last-child{opacity:1}
+
+/* list */
+.list{display:grid;border:1px solid var(--line);border-radius:12px;background:var(--sheet);overflow:hidden}
+.lrow{position:relative;display:grid;grid-template-columns:84px minmax(0,1fr) 130px 110px 64px 120px 112px 104px;gap:14px;align-items:center;padding:10px 14px;border-top:1px solid var(--line-2)}
+.lrow:first-child{border-top:0}
+.lrow.head{font-size:12.5px;color:var(--ink-3);background:var(--paper)}
+.lrow:not(.head):hover{background:var(--paper)}
+.lrow.cur{background:color-mix(in srgb,var(--canvas) 10%,transparent)}
+.lrow .main-btn{border-radius:0}
+.lrow .th{aspect-ratio:16/10;border:1px solid var(--line-2);border-radius:6px}
+.lrow b{font-weight:600;display:block;line-height:1.3}
+.lrow small{color:var(--ink-3);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lrow .n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.lrow .acts{display:flex;gap:2px;justify-content:flex-end;position:relative;z-index:3}
+.tag{display:inline-flex;align-items:center;gap:6px;font-size:13px}
+@media (max-width:1150px){.lrow{grid-template-columns:72px minmax(0,1fr) 100px 60px 100px}.lrow .c-proj,.lrow .c-iss,.lrow .c-date{display:none}}
+@media (max-width:600px){.lrow{grid-template-columns:64px minmax(0,1fr) 70px}.lrow .tag,.lrow .n{display:none}}
+.group{margin-bottom:26px}
+.lost{margin-top:22px;border:1px dashed var(--missing);border-radius:12px;padding:2px 16px}
+.lost summary{display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--missing);font-weight:500;padding:10px 0;list-style:none}
+.lost summary::-webkit-details-marker{display:none}
+.lost summary .ic{transition:transform .15s}
+.lost[open] summary .ic{transform:rotate(180deg)}
+.lost ul{list-style:none;margin:0 0 12px;padding:0;columns:2 300px;column-gap:28px}
+.lost li{break-inside:avoid;border-left:3px solid var(--c);padding:3px 0 3px 10px;margin-bottom:6px}
+.lost li button{background:none;border:0;padding:0;cursor:pointer;text-align:left;font-weight:500}
+.lost li small{display:block;color:var(--ink-3);font-size:12.5px}
+.empty{padding:48px 0;color:var(--ink-2);display:grid;justify-items:start;gap:12px}
+
+/* drawer */
+.scrim{position:fixed;inset:0;background:var(--scrim);z-index:20}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(620px,100vw);background:var(--sheet);border-left:1px solid var(--line);z-index:21;display:grid;grid-template-rows:auto 1fr;box-shadow:-12px 0 40px rgba(0,0,0,.14)}
+.drawer[hidden],.scrim[hidden],.cmp[hidden],.help[hidden]{display:none}
+.dh{display:flex;gap:6px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line-2)}
+.dh h2{font-size:17px;font-weight:500;line-height:1.25;margin:0 auto 0 6px}
+.dh .nav{display:flex;gap:2px;padding-right:8px;border-right:1px solid var(--line-2)}
+.db{overflow:auto;padding:16px 18px 40px;display:grid;gap:18px;align-content:start}
+.pv{position:relative;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;height:340px}
+.pv iframe{width:200%;height:200%;border:0;transform:scale(.5);transform-origin:0 0}
+.pv>.ib{position:absolute;right:10px;bottom:10px;background:var(--raise);box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.pv.none{display:grid;place-items:center;background:repeating-linear-gradient(135deg,var(--hatch) 0 8px,transparent 8px 16px);color:var(--ink-2);text-align:center;padding:24px}
+.dacts{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.dacts .sp{flex:1}
+.facts{display:grid;grid-template-columns:110px 1fr;gap:7px 12px;font-size:14px;margin:0}
+.facts dt{color:var(--ink-3)} .facts dd{margin:0}
+.issues{display:flex;flex-wrap:wrap;gap:6px}
+.issue{display:inline-flex;align-items:center;gap:4px;height:26px;padding:0 9px 0 6px;border-radius:999px;border:1px solid var(--line);text-decoration:none;font-size:13px;background:var(--raise)}
+.issue:hover{border-color:var(--ink-3)}
+.issue .ic{width:14px;height:14px;color:var(--page)}
+.desc{color:var(--ink-2);margin:0}
+.vsec .sec-h{align-items:center}
+.vsec .sec-h h2{font-family:"Golos Text",system-ui;font-size:15px;font-weight:600;letter-spacing:0;margin-right:auto}
+.tl{list-style:none;margin:0;padding:0 0 0 14px;border-left:2px solid var(--line)}
+.tl li{position:relative;display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:7px 6px 9px 12px;border-radius:8px}
+.tl li::before{content:"";position:absolute;left:-21px;top:13px;width:10px;height:10px;border-radius:50%;background:var(--sheet);border:2px solid var(--c)}
+.tl li:first-child::before{background:var(--c)}
+.tl li.picked{background:color-mix(in srgb,var(--canvas) 10%,transparent)}
+.tl .vh{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.tl .vn{font-family:Unbounded,system-ui;font-size:12px}
+.tl .vl{font-weight:600}
+.tl small{grid-column:1;color:var(--ink-3)}
+.tl .va{grid-row:1/3;grid-column:2;display:flex;gap:2px;align-items:center}
+.tl .va .cb{margin:0;padding:6px}
+
+/* compare */
+.cmp{position:fixed;inset:0;z-index:30;background:var(--paper);display:grid;grid-template-rows:auto 1fr auto;padding:12px 14px 14px}
+.cmp-bar{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin-bottom:10px}
+.cmp-bar h2{font-size:16px;font-weight:500;margin-right:auto}
+.cmp-bar .grp{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.panes{display:grid;grid-template-columns:1fr 1fr;gap:12px;min-height:0}
+.cmp.solo .panes{grid-template-columns:1fr}
+.cmp.solo .pane.b{display:none}
+.pane{display:grid;grid-template-rows:auto 1fr;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--sheet);min-height:0}
+.pane header{padding:6px 8px 6px 12px;font-size:13px;border-bottom:1px solid var(--line-2);display:flex;gap:10px;align-items:center}
+.pane header .sum{color:var(--ink-3);margin-right:auto}
+.pane iframe{width:100%;height:100%;border:0;background:#fff}
+.diff{margin-top:12px;border:1px solid var(--line);border-radius:12px;background:var(--sheet);max-height:32vh;overflow:auto;padding:0 14px 12px}
+.diff.closed{padding-bottom:0}
+.diff.closed .dl,.diff.closed .more,.diff.closed p{display:none}
+.diff .dh2{display:flex;align-items:center;gap:8px;position:sticky;top:0;background:var(--sheet);padding:8px 0 6px}
+.diff .dh2 h3{font-family:"Golos Text",system-ui;font-size:14px;font-weight:600;letter-spacing:0;margin-right:auto}
+.diff p{margin:0;color:var(--ink-2)}
+.dl{display:grid;grid-template-columns:auto 1fr;gap:2px 8px;font-size:13.5px}
+.dl .op{font-weight:700;text-align:center;border-radius:4px;padding:0 6px}
+.dl .add{background:var(--add-bg)} .dl .rem{background:var(--rem-bg)}
+.dl .f{grid-column:1/-1;color:var(--ink-3);font-size:12px;margin-top:6px}
+.cmp-bar>[data-cmp-close]{order:3} .cmp-bar .grp{order:1} .cmp-bar>.seg{order:2}
+.dd-btn>span:not(.k){overflow:hidden;text-overflow:ellipsis;min-width:0}
+@media (max-width:860px){
+  .cmp{display:block;overflow:auto;padding:10px 12px 24px}
+  .cmp-bar h2{order:-1;flex:1 1 0;min-width:0}
+  .cmp-bar>[data-cmp-close]{order:0}
+  .cmp-bar .grp{order:1;width:100%;display:grid;grid-template-columns:36px minmax(0,1fr) 36px;gap:6px}
+  .cmp-bar .grp>:nth-child(1){grid-area:1/1} .cmp-bar .grp>:nth-child(2){grid-area:1/2} .cmp-bar .grp>:nth-child(3){grid-area:1/3}
+  .cmp-bar .grp>:nth-child(4){grid-area:2/2} .cmp-bar .grp>:nth-child(5){grid-area:2/3}
+  .cmp-bar .grp .dd-btn{width:100%}
+  .panes{display:grid;grid-template-columns:1fr}
+  .pane{height:62vh;min-height:0}
+  .diff{max-height:none}
+}
+@media (hover:none),(max-width:600px){[data-tip]:hover::after,[data-tip]:focus-visible::after{display:none}}
+
+/* drafts */
+.dgroup{margin-bottom:22px}
+.dgroup .sec-h h2{font-family:"Golos Text",system-ui;font-size:15px;letter-spacing:0}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.dcard{display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:center;border:1px solid var(--line);border-left:4px solid var(--draft);border-radius:10px;padding:9px 10px 9px 12px;background:var(--sheet);text-decoration:none}
+.dcard:hover{border-color:var(--ink-3)}
+.dcard b{font-weight:500;font-size:14px;line-height:1.3}
+.dcard small{grid-column:1;color:var(--ink-3);font-size:12.5px}
+.dcard .ic{grid-row:1/3;grid-column:2;color:var(--ink-3)}
+
+/* help */
+.help{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:var(--scrim)}
+.help-card{background:var(--raise);border-radius:16px;box-shadow:var(--shadow);padding:18px 20px 20px;width:min(460px,92vw)}
+.help-card h2{font-size:17px;font-weight:500;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.keys{display:grid;grid-template-columns:auto 1fr;gap:9px 14px;font-size:14px;margin:0}
+.keys dt{display:flex;gap:4px}
+kbd.k{font:12px "Golos Text";border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:1px 7px;background:var(--paper)}
+.keys dd{margin:0;color:var(--ink-2)}
+.only-mobile-flex{display:none}
+@media (max-width:900px){.main{grid-template-columns:1fr}.facets{display:none}
+  .facets.open{display:grid;position:fixed;left:0;right:0;bottom:0;top:auto;max-height:78vh;overflow:auto;z-index:26;background:var(--raise);border-radius:18px 18px 0 0;box-shadow:var(--shadow);padding:6px 20px 0;gap:14px}
+  .fscrim{position:fixed;inset:0;background:var(--scrim);z-index:25}
+  .only-mobile-flex{display:flex}
+  .fhead{position:sticky;top:0;background:var(--raise);align-items:center;justify-content:space-between;padding:10px 0 4px;z-index:1}
+  .fhead h3{font-size:17px;font-weight:500}
+  .ffoot{position:sticky;bottom:0;background:var(--raise);padding:12px 0 18px;border-top:1px solid var(--line-2)}
+  .ffoot .btn{width:100%;justify-content:center;height:44px}}
+@media (prefers-reduced-motion:no-preference){.drawer{animation:slide .18s ease-out}@keyframes slide{from{transform:translateX(24px);opacity:.6}to{transform:none;opacity:1}}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-archive" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="5" rx="1.5"/><path d="M5 9v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9M10 13h4"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><rect x="4" y="5" width="4" height="4" rx="1"/><rect x="4" y="15" width="4" height="4" rx="1"/><path d="M11 7h9M11 17h9"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></symbol>
+  <symbol id="i-auto" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></symbol>
+  <symbol id="i-ext" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></symbol>
+  <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18a4 4 0 0 1-.5-8A6 6 0 0 1 18 9a4.5 4.5 0 0 1-.5 9Z"/></symbol>
+  <symbol id="i-offline" viewBox="0 0 24 24"><path d="M3 3l18 18M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 5-2.7M14 10.3a10 10 0 0 1 5 2.7M2 9.5a15 15 0 0 1 4-2.3M12 20h.01"/></symbol>
+  <symbol id="i-compare" viewBox="0 0 24 24"><rect x="3" y="4" width="7.5" height="16" rx="1.5"/><rect x="13.5" y="4" width="7.5" height="16" rx="1.5"/></symbol>
+  <symbol id="i-swap" viewBox="0 0 24 24"><path d="M7 7h12l-3-3M17 17H5l3 3"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></symbol>
+  <symbol id="i-history" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4h4M12 8v4l3 2"/></symbol>
+  <symbol id="i-issue" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="1.6"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5h.01"/></symbol>
+  <symbol id="i-expand" viewBox="0 0 24 24"><path d="M14 4h6v6M10 20H4v-6M20 4l-6 6M4 20l6-6"/></symbol>
+  <symbol id="i-text" viewBox="0 0 24 24"><path d="M5 6h14M5 11h14M5 16h9"/></symbol>
+  <symbol id="i-single" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/></symbol>
+</svg>
+
+
+<header class="top">
+  <div class="brand"><span class="mark"><svg class="ic"><use href="#i-archive"/></svg></span><h1 data-i18n="title"></h1></div>
+  <label class="search"><span class="sr" data-i18n="search"></span><svg class="ic"><use href="#i-search"/></svg>
+    <input id="q" type="search" data-i18n-a="placeholder:searchPh" autocomplete="off">
+    <button class="ib ghost sm clear" id="qclear" type="button" data-i18n-a="aria-label:clearSearch" hidden><svg class="ic sm"><use href="#i-x"/></svg></button><kbd>/</kbd></label>
+  <div class="hacts">
+    <button class="ib" id="theme" type="button" data-tip-pos="below"></button>
+    <button class="ib" id="helpbtn" type="button" data-i18n-a="aria-label:keys,data-tip:keysTip" data-tip-pos="below"><svg class="ic"><use href="#i-help"/></svg></button>
+  </div>
+  <p class="counts" id="counts"></p>
+</header>
+<nav class="tabs" role="tablist" id="tabs"></nav>
+<main class="main" id="main"></main>
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" hidden role="dialog" aria-modal="true" aria-labelledby="dtitle"></aside>
+<section class="cmp" id="cmp" hidden role="dialog" aria-modal="true" data-i18n-a="aria-label:compareVersions"></section>
+<div class="help" id="help" hidden role="dialog" aria-modal="true" aria-labelledby="htitle"><div class="help-card" id="helpcard"></div></div>
+<div class="toast" id="toast" hidden role="status"><svg class="ic"><use href="#i-check"/></svg><span></span></div>
+<script type="application/json" id="data">__DATA__</script>
+<script>
+const D = JSON.parse(document.getElementById("data").textContent);
+
+/* ---------- language ---------- */
+const I18N = {
+  ru: {
+    title: "Архив артефактов", search: "Поиск", searchPh: "Название, текст, проект или номер задачи", clearSearch: "Очистить поиск",
+    keys: "Горячие клавиши", keysTip: "Горячие клавиши (?)", compareVersions: "Сравнение версий", close: "Закрыть",
+    kSearch: "Поиск", kGrid: "Сетка", kList: "Список", kArrows: "Предыдущий и следующий артефакт в панели; в сравнении — соседняя пара версий",
+    kC: "Сравнить первую и текущую версии открытого артефакта", kEsc: "Закрыть меню, сравнение, панель", kHelp: "Эта справка",
+    type: {page: "Страница", canvas: "Холст", doc: "Документ", file: "Файл"}, types: {page: "Страницы", canvas: "Холсты", doc: "Документы", file: "Файлы"},
+    copy: {live: "Сохранена", exact: "Восстановлена", recreated: "Воссоздана", missing: "Утеряна", deleted: "Удалена в источнике"},
+    copyFull: {live: "Сохранена hook-ом в момент создания", exact: "Восстановлена точно, по истории сессии", recreated: "Воссоздана по описанию: оригинала нет",
+      missing: "Утеряна: копии нет, осталась только ссылка на оригинал", deleted: "Удалена в источнике, копия осталась"},
+    liveBy: {import: "Добавлена вручную", chatgpt: "Импортирована из экспорта данных ChatGPT", "claude-ai": "Импортирована из экспорта данных claude.ai", mcp: "Сохранена агентом через MCP"},
+    agent: {"claude-code": "Claude Code", codex: "Codex", chatgpt: "ChatGPT", "claude-ai": "claude.ai", import: "Вручную", mcp: "Через MCP"},
+    groups: {none: "без групп", project: "по проекту", agent: "по источнику", type: "по типу", month: "по месяцу"},
+    sorts: {updated: "недавно изменённые", created: "недавно созданные", versions: "больше версий", title: "по названию"},
+    months: ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"],
+    monthsN: ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"],
+    forms: {item: ["артефакт", "артефакта", "артефактов"], version: ["версия", "версии", "версий"], page: ["страница", "страницы", "страниц"],
+      line: ["строка", "строки", "строк"], textLine: ["строка текста", "строки текста", "строк текста"], board: ["артборд", "артборда", "артбордов"],
+      projectIn: ["проекте", "проектах", "проектах"]},
+    noProject: "без проекта", stampRecreated: "воссоздан", stampDeleted: "удалён в источнике", restoredChip: "восстановлена",
+    openTab: "Открыть в новой вкладке", openAt: "Открыть: %s", copyLink: "Скопировать ссылку", firstCurrent: "Первая и текущая версии", details: "%s: подробнее",
+    colTitle: "Название", colProject: "Проект", colType: "Тип", colVersions: "Версий", colIssues: "Задачи", colChanged: "Изменён",
+    filters: "Фильтры", closeFilters: "Закрыть фильтры", fProject: "Проект", fAgent: "Источник", fType: "Тип", fCopy: "Копия", fMore: "Ещё",
+    linked: "Есть ссылки из задач", service: "Служебные проверки", resetAll: "Сбросить всё", show: "Показать %s", remove: "Убрать: %s", quote: "«%s»",
+    rest: "Все остальные", lost: "Утеряны, копии нет — %s. Остались только ссылки на оригиналы", issuesList: ", задачи %s", nothing: "Ничего не нашлось.",
+    resetFilters: "Сбросить фильтры", itemsAria: "Артефакты", view: "Вид", grid: "Сетка", list: "Список", gridKey: "Сетка (G)", listKey: "Список (L)",
+    cardSize: "Размер карточек", sizes: {s: "Мелкие карточки", m: "Средние карточки", l: "Крупные карточки"}, group: "Группы", order: "Порядок",
+    recent: "Недавние", recentNote: "последние изменённые — с них обычно продолжается работа",
+    drafts: "Черновики", draftsNote: "Страницы, которые агент собирал в рабочей папке сессии, но не публиковал. Hook копирует их в конце каждого хода.",
+    origin: {scratchpad: "scratchpad", brainstorm: "брейншторм"},
+    prev: "Предыдущий (←)", next: "Следующий (→)", closeEsc: "Закрыть (Esc)", preview: "Предпросмотр", fullScreen: "Открыть во весь экран",
+    lostText: "Копии нет — артефакт утерян до появления архива. Осталась ссылка на оригинал: она откроется, если вернётся доступ к аккаунту.",
+    noPreview: "Предпросмотра нет: откройте файл.", open: "Открыть", firstAndCurrent: "Первая и текущая", offline: "Версия без интернета",
+    serverSnap: "Снимок с сервера", folder: "Папка с файлами", originalAt: "Оригинал: %s",
+    created: "Создан", changed: "Изменён", issues: "Задачи", comparePicked: "Сравнить v%s и v%s", pickTwo: "Отметьте две версии",
+    current: "Текущая", noLabel: "Без подписи", openV: "Открыть v%s", compareWith: "Сравнить с v%s", pickTip: "Отметить для сравнения", pickV: "Отметить v%s для сравнения",
+    boardsChanged: ", изменено %s", boardsSame: ", артборды без изменений",
+    same: "Слева и справа одна и та же версия.", pairNote: "Текстовая разница посчитана для соседних версий и для пары «первая — текущая». Для этой пары — только сравнение глазами.",
+    diffHead: "Что изменилось в тексте: добавлено %s, убрано %s", leftLater: " (слева более поздняя)", textSame: "Текст не менялся", diffTitle: "Что изменилось в тексте",
+    showDiff: "Показать изменения", hideDiff: "Свернуть изменения", styleOnly: "Правки только в оформлении или картинках.", moreLines: "и ещё %s строк",
+    openSep: "Открыть отдельно", left: "Слева", right: "Справа", closeCmp: "Закрыть сравнение (Esc)", prevPair: "Предыдущая пара (←)", swap: "Поменять местами",
+    nextPair: "Следующая пара (→)", layout: "Раскладка", both: "Обе версии", leftOnly: "Только левая",
+    counts: "<b>%s</b> в %s", withCopy: "копии есть у %s, утеряно %s", inHistory: "%s в истории", updated: "обновлено %s",
+    tabItems: "Артефакты", tabDrafts: "Черновики", copied: "Ссылка на «%s» скопирована",
+    theme: "Тема: %s. Переключить", themeTip: "Тема: %s", themes: {auto: "как в системе", light: "светлая", dark: "тёмная"},
+  },
+  en: {
+    title: "Artifact archive", search: "Search", searchPh: "Title, text, project or issue number", clearSearch: "Clear search",
+    keys: "Keyboard shortcuts", keysTip: "Keyboard shortcuts (?)", compareVersions: "Version comparison", close: "Close",
+    kSearch: "Search", kGrid: "Grid", kList: "List", kArrows: "Previous and next item in the panel; in a comparison, the neighbouring pair of versions",
+    kC: "Compare the first and current versions of the open item", kEsc: "Close a menu, the comparison, the panel", kHelp: "This help",
+    type: {page: "Page", canvas: "Canvas", doc: "Document", file: "File"}, types: {page: "Pages", canvas: "Canvases", doc: "Documents", file: "Files"},
+    copy: {live: "Saved", exact: "Restored", recreated: "Recreated", missing: "Lost", deleted: "Deleted at source"},
+    copyFull: {live: "Saved by the hook when it was made", exact: "Restored exactly from the session history", recreated: "Recreated from a description: the original is gone",
+      missing: "Lost: no copy, only the link to the original remains", deleted: "Deleted at the source; the copy remains"},
+    liveBy: {import: "Added by hand", chatgpt: "Imported from a ChatGPT data export", "claude-ai": "Imported from a claude.ai data export", mcp: "Saved by an agent via MCP"},
+    agent: {"claude-code": "Claude Code", codex: "Codex", chatgpt: "ChatGPT", "claude-ai": "claude.ai", import: "Added by hand", mcp: "Via MCP"},
+    groups: {none: "none", project: "by project", agent: "by source", type: "by type", month: "by month"},
+    sorts: {updated: "recently changed", created: "recently created", versions: "most versions", title: "by title"},
+    months: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
+    monthsN: ["January","February","March","April","May","June","July","August","September","October","November","December"],
+    forms: {item: ["item", "items"], version: ["version", "versions"], page: ["page", "pages"], line: ["line", "lines"],
+      textLine: ["line of text", "lines of text"], board: ["artboard", "artboards"], projectIn: ["project", "projects"]},
+    noProject: "no project", stampRecreated: "recreated", stampDeleted: "deleted at source", restoredChip: "restored",
+    openTab: "Open in a new tab", openAt: "Open at %s", copyLink: "Copy link", firstCurrent: "First and current versions", details: "%s: details",
+    colTitle: "Title", colProject: "Project", colType: "Type", colVersions: "Versions", colIssues: "Issues", colChanged: "Changed",
+    filters: "Filters", closeFilters: "Close filters", fProject: "Project", fAgent: "Source", fType: "Type", fCopy: "Copy", fMore: "More",
+    linked: "Linked from issues", service: "Service checks", resetAll: "Reset all", show: "Show %s", remove: "Remove: %s", quote: "“%s”",
+    rest: "Everything else", lost: "Lost, no copy — %s. Only links to the originals remain", issuesList: ", issues %s", nothing: "Nothing found.",
+    resetFilters: "Reset filters", itemsAria: "Items", view: "View", grid: "Grid", list: "List", gridKey: "Grid (G)", listKey: "List (L)",
+    cardSize: "Card size", sizes: {s: "Small cards", m: "Medium cards", l: "Large cards"}, group: "Group", order: "Order",
+    recent: "Recent", recentNote: "last changed: where work usually continues",
+    drafts: "Drafts", draftsNote: "Pages an agent built in its session folder but did not publish. The hook copies them at the end of every turn.",
+    origin: {scratchpad: "scratchpad", brainstorm: "brainstorm"},
+    prev: "Previous (←)", next: "Next (→)", closeEsc: "Close (Esc)", preview: "Preview", fullScreen: "Open full screen",
+    lostText: "No copy: the item was lost before the archive existed. The link to the original remains and opens if access to the account returns.",
+    noPreview: "No preview: open the file.", open: "Open", firstAndCurrent: "First and current", offline: "Offline version",
+    serverSnap: "Server snapshot", folder: "Folder with files", originalAt: "Original: %s",
+    created: "Created", changed: "Changed", issues: "Issues", comparePicked: "Compare v%s and v%s", pickTwo: "Tick two versions",
+    current: "Current", noLabel: "No label", openV: "Open v%s", compareWith: "Compare with v%s", pickTip: "Tick to compare", pickV: "Tick v%s to compare",
+    boardsChanged: ", %s changed", boardsSame: ", artboards unchanged",
+    same: "Both sides show the same version.", pairNote: "Text changes are computed for neighbouring versions and for first vs current. For this pair, compare by eye.",
+    diffHead: "What changed in the text: %s added, %s removed", leftLater: " (the left one is later)", textSame: "The text did not change", diffTitle: "What changed in the text",
+    showDiff: "Show changes", hideDiff: "Collapse changes", styleOnly: "Only styling or images changed.", moreLines: "and %s more lines",
+    openSep: "Open separately", left: "Left", right: "Right", closeCmp: "Close comparison (Esc)", prevPair: "Previous pair (←)", swap: "Swap sides",
+    nextPair: "Next pair (→)", layout: "Layout", both: "Both versions", leftOnly: "Left only",
+    counts: "<b>%s</b> in %s", withCopy: "%s with a copy, %s lost", inHistory: "%s in history", updated: "updated %s",
+    tabItems: "Items", tabDrafts: "Drafts", copied: "Link to “%s” copied",
+    theme: "Theme: %s. Switch", themeTip: "Theme: %s", themes: {auto: "system", light: "light", dark: "dark"},
+  },
+};
+const LANG = D.lang === "ru" || D.lang === "en" ? D.lang : (/^ru\b/i.test(navigator.language || "") ? "ru" : "en");
+const L = I18N[LANG];
+const t = (k, ...a) => { let s = L[k] ?? k; a.forEach(x => { s = s.replace("%s", x); }); return s; };
+function plw(n, k) { const f = L.forms[k]; if (LANG !== "ru") return f[n === 1 ? 0 : 1]; const m10 = n % 10, m100 = n % 100; return f[m10 === 1 && m100 !== 11 ? 0 : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? 1 : 2]; }
+const pl = (n, k) => n + " " + plw(n, k);
+document.documentElement.lang = LANG;
+document.title = t("title");
+document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.dataset.i18n); });
+document.querySelectorAll("[data-i18n-a]").forEach(el => el.dataset.i18nA.split(",").forEach(p => { const [a, k] = p.split(":"); el.setAttribute(a, t(k)); }));
+
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const ic = (n, cls = "") => `<svg class="ic ${cls}"><use href="#i-${n}"/></svg>`;
+const ib = (icon, label, attrs = "", cls = "") => `<button class="ib ${cls}" type="button" aria-label="${esc(label)}" data-tip="${esc(label)}" ${attrs}>${ic(icon)}</button>`;
+const ia = (icon, label, href, cls = "") => `<a class="ib ${cls}" href="${esc(href)}" target="_blank" rel="noopener" aria-label="${esc(label)}" data-tip="${esc(label)}">${ic(icon)}</a>`;
+const fmt = s => { if (!s) return ""; const [y, m, d] = s.slice(0, 10).split("-").map(Number); const yr = y !== new Date().getFullYear();
+  return LANG === "ru" ? `${d} ${L.months[m - 1]}${yr ? " " + y : ""}` : `${L.months[m - 1]} ${d}${yr ? ", " + y : ""}`; };
+const monthKey = s => s ? s.slice(0, 7) : "";
+const monthName = k => { const [y, m] = k.split("-").map(Number); return L.monthsN[m - 1] + " " + y; };
+const projLabel = p => p || t("noProject");
+const agentLabel = a => L.agent[a] || a;
+const fileUrl = (base, main) => base + main.split("/").map(encodeURIComponent).join("/");
+const pageUrl = it => fileUrl(`items/${encodeURIComponent(it.dir)}/`, it.main || "index.html");
+const verUrl = (it, v) => fileUrl(`items/${encodeURIComponent(it.dir)}/${v.dir}/`, v.main || it.main || "index.html");
+const PREVIEWABLE = /\.(html?|svg|png|jpe?g|gif|webp|pdf|txt|md|csv|json)$/i;
+const issueUrl = (it, n) => it.repo ? `https://github.com/${it.repo}/issues/${n}` : null;
+const linkTo = it => location.href.split("#")[0] + "#a=" + encodeURIComponent(it.dir);
+
+const items = D.items;
+const MULTI_AGENT = new Set(items.map(i => i.agent)).size > 1;
+const S = loadState();
+function loadState() {
+  const st = {facetsOpen: false, tab: "items", q: "", projects: [], agents: [], types: [], copies: [], issuesOnly: false, service: false, view: "grid", size: "m", group: "none", sort: "updated", open: null, pick: [], cmp: null, solo: false, diffClosed: false};
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem("archive-ui") || "{}"); } catch (e) {}
+  ["view", "size", "group", "sort"].forEach(k => { if (saved[k]) st[k] = saved[k]; });
+  if (!L.groups[st.group]) st.group = "none";
+  const h = new URLSearchParams(location.hash.slice(1));
+  if (h.get("a")) st.open = h.get("a");
+  if (h.get("q")) st.q = h.get("q");
+  return st;
+}
+function saveUi() { try { localStorage.setItem("archive-ui", JSON.stringify({view: S.view, size: S.size, group: S.group, sort: S.sort})); } catch (e) {} }
+function setHash() { const p = new URLSearchParams(); if (S.open) p.set("a", S.open); if (S.q) p.set("q", S.q); history.replaceState(null, "", p.toString() ? "#" + p : location.pathname); }
+function toast(msg) { const el = document.getElementById("toast"); el.querySelector("span").textContent = msg; el.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => { el.hidden = true; }, 1800); }
+async function copy(text, msg) {
+  try { await navigator.clipboard.writeText(text); }
+  catch (e) { const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); }
+  toast(msg);
+}
+
+const haystack = it => (it.title + " " + it.desc + " " + it.project + " " + L.type[it.type] + " " + agentLabel(it.agent) + " " + it.issues.map(n => "#" + n + " " + n).join(" ") + " " + it.versions.map(v => v.label).join(" ")).toLowerCase();
+const filtersOn = () => S.q || S.projects.length || S.agents.length || S.types.length || S.copies.length || S.issuesOnly;
+const facetVal = {projects: it => it.project, agents: it => it.agent, types: it => it.type, copies: it => it.status};
+function pass(it, ignore) {
+  if (!S.service && it.service) return false;
+  if (S.q && !haystack(it).includes(S.q.toLowerCase())) return false;
+  for (const k of ["projects", "agents", "types", "copies"]) if (ignore !== k && S[k].length && !S[k].includes(facetVal[k](it))) return false;
+  if (S.issuesOnly && !it.issues.length) return false;
+  return true;
+}
+const sorters = {updated: (a, b) => b.updated.localeCompare(a.updated), created: (a, b) => b.created.localeCompare(a.created),
+  versions: (a, b) => b.versions.length - a.versions.length || b.updated.localeCompare(a.updated), title: (a, b) => a.title.localeCompare(b.title, LANG)};
+let visibleOrder = [];
+const TYPES = ["canvas", "page", "doc", "file"];
+
+function sumText(it, v) {
+  const s = v.sum || {};
+  if (s.boards != null) return pl(s.boards, "board") + (s.boardsChanged == null ? "" : s.boardsChanged ? t("boardsChanged", s.boardsChanged) : t("boardsSame"));
+  if (s.add != null) return `+${s.add} / −${s.rem} ${plw(Math.max(s.add, s.rem), "line")}`;
+  if (s.lines != null) return pl(s.lines, "textLine");
+  return "";
+}
+
+/* ---------- pieces ---------- */
+const thumb = it => it.thumb ? `<div class="th" style="background-image:url('items/${encodeURIComponent(it.dir)}/_thumb.jpg')"></div>` : `<div class="th none t-${it.type}"><span class="glyph ${it.type}"></span></div>`;
+const vstrip = it => it.versions.length > 1 ? `<div class="vstrip t-${it.type}" aria-hidden="true">${it.versions.map((v, i, a) => `<i style="height:${5 + Math.round(11 * (i + 1) / a.length)}px"></i>`).join("")}</div>` : "";
+const stamp = it => ["recreated", "deleted"].includes(it.status) ? `<span class="stamp s-${it.status}">${it.status === "recreated" ? t("stampRecreated") : t("stampDeleted")}</span>` : "";
+function quick(it, cls = "sm", pos = "below") {
+  const tp = pos ? ` data-tip-pos="${pos}"` : "";
+  const open = it.local ? ia("ext", t("openTab"), pageUrl(it), cls) : it.origin.href ? ia("cloud", t("openAt", it.origin.label), it.origin.href, cls) : "";
+  return open.replace("<a ", "<a" + tp + " ")
+    + ib("link", t("copyLink"), `data-copy-link="${esc(it.dir)}"` + tp, cls)
+    + (it.versions.length > 1 ? ib("compare", t("firstCurrent"), `data-quick-cmp="${esc(it.dir)}"` + tp, cls) : "");
+}
+function card(it) {
+  const iss = it.issues.length ? `<span class="mi">${ic("issue", "sm")}${it.issues.length === 1 ? "#" + it.issues[0] : it.issues.length}</span>` : "";
+  return `<article class="card t-${it.type}${S.open === it.dir ? " cur" : ""}">
+    <button class="main-btn" type="button" data-open="${esc(it.dir)}" aria-label="${esc(t("details", it.title))}"></button>
+    ${thumb(it)}${stamp(it)}<div class="qa">${quick(it)}</div>
+    <div class="bd"><h3>${esc(it.title)}</h3>
+      <div class="meta"><span>${L.type[it.type]}</span>${MULTI_AGENT ? `<span>${esc(agentLabel(it.agent))}</span>` : ""}<span>${fmt(it.updated)}</span>${it.versions.length > 1 ? `<span class="mi">${ic("history", "sm")}${it.versions.length}</span>` : ""}${iss}${it.status === "exact" ? `<span class="copy s-exact">${t("restoredChip")}</span>` : ""}</div>
+      ${vstrip(it)}</div></article>`;
+}
+function row(it) {
+  const sub = it.desc || (MULTI_AGENT ? agentLabel(it.agent) : "");
+  return `<div class="lrow t-${it.type}${S.open === it.dir ? " cur" : ""}"><button class="main-btn" type="button" data-open="${esc(it.dir)}" aria-label="${esc(t("details", it.title))}"></button>${thumb(it)}
+    <span><b>${esc(it.title)}</b><small>${esc(sub)}</small></span>
+    <span class="c-proj">${esc(projLabel(it.project))}</span>
+    <span class="tag"><span class="sw ${it.type} t-${it.type}"></span>${L.type[it.type]}</span>
+    <span class="n">${it.versions.length || "—"}</span>
+    <span class="c-iss">${it.issues.length ? it.issues.slice(0, 2).map(n => "#" + n).join(", ") + (it.issues.length > 2 ? " +" + (it.issues.length - 2) : "") : "—"}</span>
+    <span class="n c-date">${fmt(it.updated)}</span><span class="acts">${quick(it, "sm ghost", "")}</span></div>`;
+}
+const listHead = () => `<div class="lrow head"><span></span><span>${t("colTitle")}</span><span class="c-proj">${t("colProject")}</span><span class="tag">${t("colType")}</span><span class="n">${t("colVersions")}</span><span class="c-iss">${t("colIssues")}</span><span class="n c-date">${t("colChanged")}</span><span></span></div>`;
+function dropdown(key, label, options, cur, extraCls = "") {
+  return `<div class="dd" data-dd="${key}"><button class="dd-btn" type="button" aria-haspopup="listbox" aria-expanded="false"><span class="k">${label}</span><span>${esc(options[cur])}</span>${ic("chev", "chev")}</button>
+    <ul class="dd-menu ${extraCls}" role="listbox" aria-label="${label}" hidden>${Object.entries(options).map(([v, l]) => `<li role="option" data-value="${esc(v)}" aria-selected="${String(cur) === String(v)}">${ic("check")}${esc(l)}</li>`).join("")}</ul></div>`;
+}
+function cbox(attr, checked, lab, n) {
+  return `<label class="cb${n === 0 && !checked ? " zero" : ""}"><input type="checkbox" ${attr} ${checked ? "checked" : ""}><span class="box">${ic("check")}</span><span class="lab">${lab}</span><span class="n">${n}</span></label>`;
+}
+function facet(title, key, values, labelOf, swOf) {
+  if (values.length < 2 && !S[key].length) return "";
+  const pool = items.filter(it => pass(it, key));
+  return `<div role="group" aria-label="${title}"><h4>${title}</h4>${values.map(v => cbox(`data-f="${key}" value="${esc(v)}"`, S[key].includes(v), (swOf ? swOf(v) : "") + `<span>${esc(labelOf(v))}</span>`, pool.filter(it => facetVal[key](it) === v).length)).join("")}</div>`;
+}
+function renderFacets() {
+  const projects = [...new Set(items.map(i => i.project))].sort();
+  const agents = [...new Set(items.map(i => i.agent))].sort();
+  const types = TYPES.filter(v => items.some(i => i.type === v));
+  const copies = ["live", "exact", "recreated", "missing", "deleted"].filter(c => items.some(i => i.status === c));
+  const shown = items.filter(it => pass(it)).length;
+  const svc = items.filter(i => i.service).length;
+  return `${S.facetsOpen ? '<div class="fscrim" data-toggle-facets></div>' : ""}<aside class="facets${S.facetsOpen ? " open" : ""}" id="facets" aria-label="${t("filters")}">
+    <div class="fhead only-mobile-flex"><h3>${t("filters")}</h3>${ib("x", t("closeFilters"), "data-toggle-facets", "ghost")}</div>
+    ${facet(t("fProject"), "projects", projects, projLabel)}
+    ${facet(t("fAgent"), "agents", agents, agentLabel)}
+    ${facet(t("fType"), "types", types, v => L.type[v], v => `<span class="sw ${v} t-${v}"></span>`)}
+    ${facet(t("fCopy"), "copies", copies, v => L.copy[v], v => `<span class="sw st ${v === "missing" ? "missing" : ""} s-${v}"></span>`)}
+    <div role="group" aria-label="${t("fMore")}"><h4>${t("fMore")}</h4>${cbox('data-flag="issuesOnly"', S.issuesOnly, `<span>${t("linked")}</span>`, items.filter(i => i.issues.length).length)}
+      ${svc ? cbox('data-flag="service"', S.service, `<span>${t("service")}</span>`, svc) : ""}</div>
+    ${filtersOn() ? `<button class="reset" type="button" data-reset>${ic("x", "sm")}${t("resetAll")}</button>` : ""}
+    <div class="ffoot only-mobile-flex"><button class="btn solid" type="button" data-toggle-facets>${t("show", pl(shown, "item"))}</button></div>
+  </aside>`;
+}
+function activeChips() {
+  const chips = [];
+  if (S.q) chips.push([t("quote", S.q), "q", ""]);
+  S.projects.forEach(v => chips.push([projLabel(v), "projects", v]));
+  S.agents.forEach(v => chips.push([agentLabel(v), "agents", v]));
+  S.types.forEach(v => chips.push([L.type[v], "types", v]));
+  S.copies.forEach(v => chips.push([L.copy[v], "copies", v]));
+  if (S.issuesOnly) chips.push([t("linked"), "issuesOnly", ""]);
+  return `<div class="active">${chips.map(([l, k, v]) => `<span class="chip">${esc(l)}${ib("x", t("remove", l), `data-unchip="${k}" data-val="${esc(v)}"`)}</span>`).join("")}</div>`;
+}
+
+/* ---------- views ---------- */
+function renderItems() {
+  const list = items.filter(it => pass(it)).sort(sorters[S.sort]);
+  const showLost = S.copies.includes("missing");
+  const main = list.filter(it => showLost || it.status !== "missing"), lost = showLost ? [] : list.filter(it => it.status === "missing");
+  const recent = filtersOn() || S.group !== "none" || S.view !== "grid" ? [] : items.filter(it => !it.service && it.status !== "missing" && it.local).sort(sorters.updated).slice(0, 4);
+  const recentIds = new Set(recent.map(r => r.dir));
+  const body = arr => S.view === "grid" ? `<div class="grid size-${S.size}">${arr.map(card).join("")}</div>` : `<div class="list">${listHead()}${arr.map(row).join("")}</div>`;
+  let groups;
+  if (S.group === "project") groups = [...new Set(main.map(i => i.project))].map(p => [projLabel(p), main.filter(i => i.project === p)]);
+  else if (S.group === "agent") groups = [...new Set(main.map(i => i.agent))].map(a => [agentLabel(a), main.filter(i => i.agent === a)]);
+  else if (S.group === "type") groups = TYPES.map(ty => [L.types[ty], main.filter(i => i.type === ty)]);
+  else if (S.group === "month") groups = [...new Set(main.map(i => monthKey(i.updated)))].sort().reverse().map(k => [monthName(k), main.filter(i => monthKey(i.updated) === k)]);
+  else groups = [[recent.length ? t("rest") : null, main.filter(i => !recentIds.has(i.dir))]];
+  visibleOrder = [...recent, ...groups.flatMap(g => g[1]), ...lost].map(i => i.dir);
+  const head = (name, arr) => name ? `<div class="sec-h"><h2>${esc(name)}</h2><span>${pl(arr.length, "item")}</span></div>` : "";
+  const groupsHtml = groups.map(([n, arr]) => arr.length ? `<section class="group">${head(n, arr)}${body(arr)}</section>` : "").join("");
+  const lostHtml = lost.length ? `<details class="lost"><summary>${ic("chev")}${t("lost", lost.length)}</summary><ul>${lost.map(it =>
+    `<li class="t-${it.type}"><button type="button" data-open="${esc(it.dir)}">${esc(it.title)}</button><small>${L.type[it.type]}, ${fmt(it.updated)}${it.issues.length ? t("issuesList", it.issues.map(n => "#" + n).join(", ")) : ""}</small></li>`).join("")}</ul></details>` : "";
+  const empty = !main.length && !lost.length ? `<div class="empty"><p style="margin:0">${t("nothing")}</p>${filtersOn() ? `<button class="btn" type="button" data-reset>${ic("x", "sm")}${t("resetFilters")}</button>` : ""}</div>` : "";
+  return renderFacets() + `<section aria-label="${t("itemsAria")}">
+    <div class="tool">
+      <button class="ib only-mobile" type="button" data-toggle-facets aria-label="${t("filters")}" aria-expanded="${S.facetsOpen}" aria-controls="facets" data-tip="${t("filters")}">${ic("filter")}${filtersOn() ? `<span class="dot" aria-hidden="true"></span>` : ""}</button>
+      <span class="seg icons" role="group" aria-label="${t("view")}">${["grid", "list"].map(v => `<button type="button" data-view="${v}" aria-pressed="${S.view === v}" aria-label="${t(v)}" data-tip="${t(v + "Key")}">${ic(v)}</button>`).join("")}</span>
+      ${S.view === "grid" ? `<span class="seg" role="group" aria-label="${t("cardSize")}">${["s", "m", "l"].map(k => `<button type="button" data-size="${k}" aria-pressed="${S.size === k}" data-tip="${L.sizes[k]}" aria-label="${L.sizes[k]}">${k.toUpperCase()}</button>`).join("")}</span>` : ""}
+      ${dropdown("group", t("group"), L.groups, S.group)}${dropdown("sort", t("order"), L.sorts, S.sort)}
+      <span class="grow"></span><span class="count">${pl(main.length + lost.length, "item")}</span>
+    </div>${activeChips()}
+    ${recent.length ? `<section class="recent"><div class="sec-h"><h2>${t("recent")}</h2><span>${t("recentNote")}</span></div><div class="grid size-m">${recent.map(card).join("")}</div></section>` : ""}
+    ${groupsHtml}${lostHtml}${empty}</section>`;
+}
+function renderDrafts() {
+  const q = S.q.toLowerCase();
+  const list = D.drafts.filter(d => !q || (d.title + " " + d.folder + " " + d.project).toLowerCase().includes(q));
+  const folders = [...new Set(list.map(d => d.folder))];
+  return `<section style="grid-column:1/-1" aria-label="${t("drafts")}">
+    <p class="desc" style="margin:0 0 18px;max-width:70ch">${t("draftsNote")}</p>
+    ${folders.map(f => { const arr = list.filter(d => d.folder === f); return `<section class="dgroup"><div class="sec-h"><h2>${fmt(arr[0].date)}, ${esc(L.origin[arr[0].origin] || arr[0].origin)}</h2><span>${esc(projLabel(arr[0].project))}, ${pl(arr.length, "page")}</span></div>
+      <div class="dgrid">${arr.map(d => `<a class="dcard" href="${esc(encodeURI(d.path))}" target="_blank" rel="noopener"><b>${esc(d.title)}</b><small>${esc(d.path.split("/").slice(2).join("/"))}</small>${ic("ext")}</a>`).join("")}</div></section>`; }).join("") || `<div class="empty">${t("nothing")}</div>`}
+  </section>`;
+}
+
+/* ---------- drawer ---------- */
+function preview(it) {
+  if (!it.local) return `<div class="pv none"><p>${t("lostText")}</p></div>`;
+  if (!PREVIEWABLE.test(it.main || "")) return `<div class="pv none"><p>${t("noPreview")}</p></div>`;
+  return `<div class="pv"><iframe src="${pageUrl(it)}" title="${t("preview")}" loading="lazy"></iframe>${ia("expand", t("fullScreen"), pageUrl(it))}</div>`;
+}
+function renderDrawer() {
+  const dr = document.getElementById("drawer"), scrim = document.getElementById("scrim");
+  const it = items.find(i => i.dir === S.open);
+  if (!it) { dr.hidden = true; scrim.hidden = true; return; }
+  const cur = it.versions[it.versions.length - 1], vs = it.versions.slice().reverse(), idx = visibleOrder.indexOf(it.dir);
+  const picked = S.pick.length === 2;
+  const dirUrl = `items/${encodeURIComponent(it.dir)}/`;
+  dr.innerHTML = `<div class="dh"><span class="nav">${ib("left", t("prev"), `data-step="-1" ${idx <= 0 ? "disabled" : ""}`, "ghost")}${ib("right", t("next"), `data-step="1" ${idx < 0 || idx >= visibleOrder.length - 1 ? "disabled" : ""}`, "ghost")}</span>
+    <h2 id="dtitle">${esc(it.title)}</h2>${ib("link", t("copyLink"), `data-copy-link="${esc(it.dir)}"`, "ghost")}${ib("x", t("closeEsc"), "data-close", "ghost")}</div>
+  <div class="db">
+    ${preview(it)}
+    <div class="dacts">${it.local ? `<a class="btn solid" href="${pageUrl(it)}" target="_blank" rel="noopener">${ic("ext")}${t("open")}</a>` : ""}
+      ${it.versions.length > 1 ? `<button class="btn" type="button" data-cmp="1|${cur.n}">${ic("compare")}${t("firstAndCurrent")}</button>` : ""}<span class="sp"></span>
+      ${it.offline ? ia("offline", t("offline"), dirUrl + "index.offline.html") : ""}${it.server ? ia("cloud", t("serverSnap"), dirUrl + "server/index.html") : ""}${it.local ? ia("folder", t("folder"), dirUrl) : ""}${it.origin.href ? ia("archive", t("originalAt", it.origin.label), it.origin.href) : ""}</div>
+    <dl class="facts"><dt>${t("fProject")}</dt><dd>${esc(projLabel(it.project))}</dd><dt>${t("fAgent")}</dt><dd>${esc(agentLabel(it.agent))}</dd><dt>${t("fType")}</dt><dd><span class="tag"><span class="sw ${it.type} t-${it.type}"></span>${L.type[it.type]}</span></dd>
+      <dt>${t("fCopy")}</dt><dd class="s-${it.status}" style="color:var(--c)">${it.status === "live" && L.liveBy[it.agent] || L.copyFull[it.status]}</dd><dt>${t("created")}</dt><dd>${fmt(it.created)}</dd><dt>${t("changed")}</dt><dd>${fmt(it.updated)}${it.updated.length > 10 ? ", " + it.updated.slice(11) : ""}</dd>
+      ${it.issues.length ? `<dt>${t("issues")}</dt><dd class="issues">${it.issues.map(n => issueUrl(it, n) ? `<a class="issue" href="${issueUrl(it, n)}" target="_blank" rel="noopener">${ic("issue")}#${n}</a>` : `<span class="issue">${ic("issue")}#${n}</span>`).join("")}</dd>` : ""}</dl>
+    ${it.desc ? `<p class="desc">${esc(it.desc)}</p>` : ""}
+    ${it.versions.length ? `<div class="vsec"><div class="sec-h"><h2>${pl(it.versions.length, "version")}</h2>
+      ${it.versions.length > 2 ? `<button class="btn" type="button" data-cmp-picked ${picked ? "" : "disabled"}>${ic("compare")}${picked ? t("comparePicked", Math.min(...S.pick), Math.max(...S.pick)) : t("pickTwo")}</button>` : ""}</div>
+      <ol class="tl t-${it.type}">${vs.map(v => `<li class="${S.pick.includes(v.n) ? "picked" : ""}"><div class="vh"><span class="vn">v${v.n}</span><span class="vl">${esc(v.label || (v.n === cur.n ? t("current") : t("noLabel")))}</span></div>
+        <small>${esc(v.at)}${sumText(it, v) ? ", " + esc(sumText(it, v)) : ""}</small>
+        <span class="va">${ia("ext", t("openV", v.n), verUrl(it, v), "sm ghost")}${v.n > 1 ? ib("compare", t("compareWith", v.n - 1), `data-cmp="${v.n - 1}|${v.n}"`, "sm ghost") : ""}${it.versions.length > 2 ? `<label class="cb" data-tip="${t("pickTip")}"><input type="checkbox" data-pickv="${v.n}" ${S.pick.includes(v.n) ? "checked" : ""} aria-label="${t("pickV", v.n)}"><span class="box">${ic("check")}</span></label>` : ""}</span></li>`).join("")}</ol></div>` : ""}
+  </div>`;
+  dr.hidden = false; scrim.hidden = false;
+}
+
+/* ---------- compare ---------- */
+function diffBlock(it, a, b) {
+  const lo = Math.min(a, b), hi = Math.max(a, b);
+  let diff = null, note = "";
+  if (a === b) note = t("same");
+  else if (hi === lo + 1) diff = it.versions.find(v => v.n === hi).diff;
+  else if (lo === 1 && hi === it.versions[it.versions.length - 1].n) diff = it.firstLast;
+  else note = t("pairNote");
+  const closed = S.diffClosed ? " closed" : "";
+  const head = diff ? (diff.lines.length ? t("diffHead", diff.add, diff.rem) + (lo !== a ? t("leftLater") : "") : t("textSame")) : t("diffTitle");
+  const toggle = ib(S.diffClosed ? "up" : "chev", S.diffClosed ? t("showDiff") : t("hideDiff"), "data-diff-toggle", "sm ghost");
+  if (!diff || !diff.lines.length) return `<div class="diff${closed}"><div class="dh2">${ic("text")}<h3>${head}</h3>${toggle}</div><p>${note || t("styleOnly")}</p></div>`;
+  let lastFile = "";
+  const lines = diff.lines.map(l => { const f = l.file !== lastFile ? (lastFile = l.file, `<span class="f">${esc(l.file)}</span>`) : "";
+    return f + `<span class="op ${l.op === "+" ? "add" : "rem"}">${l.op === "+" ? "+" : "−"}</span><span class="${l.op === "+" ? "add" : "rem"}">${esc(l.text)}</span>`; }).join("");
+  return `<div class="diff${closed}"><div class="dh2">${ic("text")}<h3>${head}</h3>${toggle}</div><div class="dl">${lines}</div>${diff.more ? `<p class="more">${t("moreLines", diff.more)}</p>` : ""}</div>`;
+}
+function renderCompare() {
+  const box = document.getElementById("cmp");
+  if (!S.cmp) { box.hidden = true; return; }
+  const it = items.find(i => i.dir === S.cmp.dir), a = S.cmp.a, b = S.cmp.b, last = it.versions[it.versions.length - 1].n;
+  const opts = Object.fromEntries(it.versions.slice().reverse().map(v => [v.n, `v${v.n}, ${v.at}${v.label ? ", " + v.label.slice(0, 40) : ""}`]));
+  const pane = (n, side) => { const v = it.versions.find(x => x.n === n); return `<section class="pane ${side}"><header><b>v${v.n}</b><span>${esc(v.at)}</span><span class="sum">${esc(sumText(it, v))}</span>${ia("ext", t("openSep"), verUrl(it, v), "sm ghost")}</header><iframe src="${verUrl(it, v)}" title="${side === "a" ? t("left") : t("right")}: v${v.n}"></iframe></section>`; };
+  box.className = "cmp" + (S.solo ? " solo" : "");
+  box.innerHTML = `<div class="cmp-bar"><h2>${esc(it.title)}</h2>${ib("x", t("closeCmp"), "data-cmp-close")}
+    <span class="grp">${ib("left", t("prevPair"), `data-pair="-1" ${Math.min(a, b) <= 1 ? "disabled" : ""}`)}${dropdown("cmp-a", t("left"), opts, a)}${ib("swap", t("swap"), "data-swap")}${dropdown("cmp-b", t("right"), opts, b, "right")}${ib("right", t("nextPair"), `data-pair="1" ${Math.max(a, b) >= last ? "disabled" : ""}`)}</span>
+    <span class="seg icons" role="group" aria-label="${t("layout")}">${[["", "compare", t("both")], ["1", "single", t("leftOnly")]].map(([k, i, tt]) => `<button type="button" data-solo="${k}" aria-pressed="${S.solo === !!k}" aria-label="${tt}" data-tip="${tt}">${ic(i)}</button>`).join("")}</span></div>
+    <div class="panes">${pane(a, "a")}${pane(b, "b")}</div>${diffBlock(it, a, b)}`;
+  box.hidden = false;
+}
+function openCompare(dir, a, b) { S.cmp = {dir, a: +a, b: +b}; renderCompare(); const c = document.querySelector("#cmp [data-cmp-close]"); if (c) c.focus(); }
+
+/* ---------- help ---------- */
+document.getElementById("helpcard").innerHTML = `<h2 id="htitle">${t("keys")} <button class="ib ghost sm" type="button" data-help-close aria-label="${t("close")}">${ic("x", "sm")}</button></h2>
+  <dl class="keys"><dt><kbd class="k">/</kbd></dt><dd>${t("kSearch")}</dd><dt><kbd class="k">G</kbd></dt><dd>${t("kGrid")}</dd><dt><kbd class="k">L</kbd></dt><dd>${t("kList")}</dd>
+    <dt><kbd class="k">←</kbd><kbd class="k">→</kbd></dt><dd>${t("kArrows")}</dd>
+    <dt><kbd class="k">C</kbd></dt><dd>${t("kC")}</dd><dt><kbd class="k">Esc</kbd></dt><dd>${t("kEsc")}</dd><dt><kbd class="k">?</kbd></dt><dd>${t("kHelp")}</dd></dl>`;
+
+/* ---------- render ---------- */
+function render() {
+  const live = items.filter(i => !i.service), n = c => live.filter(i => i.status === c).length;
+  const vers = live.reduce((s, i) => s + i.versions.length, 0);
+  const projects = new Set(live.map(i => i.project)).size;
+  document.getElementById("counts").innerHTML = `<span>${t("counts", pl(live.length, "item"), pl(projects, "projectIn"))}</span><span>${t("withCopy", live.length - n("missing"), n("missing"))}</span><span>${t("inHistory", pl(vers, "version"))}</span><span>${t("updated", esc(D.built))}</span>`;
+  document.getElementById("tabs").innerHTML = [["items", t("tabItems"), live.length], ["drafts", t("tabDrafts"), D.drafts.length]].map(([k, l, c]) =>
+    `<button role="tab" type="button" data-tab="${k}" aria-selected="${S.tab === k}">${l}<span class="n">${c}</span></button>`).join("");
+  document.getElementById("main").innerHTML = S.tab === "items" ? renderItems() : renderDrafts();
+  document.getElementById("qclear").hidden = !S.q;
+  renderDrawer(); renderCompare(); setHash();
+}
+function openItem(dir) { S.open = dir; S.pick = []; render(); const c = document.querySelector("#drawer [data-close]"); if (c) c.focus(); }
+function closeItem() { const back = S.open; S.open = null; render(); const el = document.querySelector(`[data-open="${CSS.escape(back || "")}"]`); if (el) el.focus(); }
+function closeMenus() { document.querySelectorAll(".dd-menu:not([hidden])").forEach(m => { m.hidden = true; m.previousElementSibling.setAttribute("aria-expanded", "false"); }); }
+function chooseDd(dd, value) {
+  const key = dd.dataset.dd;
+  if (key === "cmp-a" || key === "cmp-b") { S.cmp[key.slice(-1)] = +value; renderCompare(); }
+  else { S[key] = value; saveUi(); render(); }
+  const btn = document.querySelector(`[data-dd="${key}"] .dd-btn`); if (btn) btn.focus();
+}
+
+document.addEventListener("click", e => {
+  const ddBtn = e.target.closest(".dd-btn");
+  if (ddBtn) { const menu = ddBtn.nextElementSibling, opening = menu.hidden; closeMenus(); if (opening) { menu.hidden = false; ddBtn.setAttribute("aria-expanded", "true");
+      const sel = menu.querySelector('[aria-selected="true"]') || menu.firstElementChild; menu.querySelectorAll("li").forEach(l => l.classList.toggle("hl", l === sel)); sel.scrollIntoView({block: "nearest"}); } return; }
+  const opt = e.target.closest(".dd-menu li");
+  if (opt) { chooseDd(opt.closest(".dd"), opt.dataset.value); return; }
+  closeMenus();
+  const el = e.target.closest("[data-open],[data-close],[data-tab],[data-view],[data-size],[data-reset],[data-cmp],[data-cmp-close],[data-cmp-picked],[data-toggle-facets],[data-copy-link],[data-quick-cmp],[data-unchip],[data-step],[data-pair],[data-swap],[data-solo],[data-diff-toggle],[data-help-close]");
+  if (!el) { if (e.target.id === "scrim") closeItem(); if (e.target.id === "help") e.target.hidden = true; return; }
+  if (el.disabled) return;
+  const d = el.dataset;
+  if (d.open) openItem(d.open);
+  else if (el.hasAttribute("data-close")) closeItem();
+  else if (d.tab) { S.tab = d.tab; render(); }
+  else if (d.view) { S.view = d.view; saveUi(); render(); }
+  else if (d.size) { S.size = d.size; saveUi(); render(); }
+  else if (el.hasAttribute("data-reset")) { Object.assign(S, {q: "", projects: [], agents: [], types: [], copies: [], issuesOnly: false}); q.value = ""; render(); }
+  else if (d.cmp) { const [a, b] = d.cmp.split("|"); openCompare(S.open, a, b); }
+  else if (el.hasAttribute("data-cmp-picked")) { if (S.pick.length === 2) openCompare(S.open, Math.min(...S.pick), Math.max(...S.pick)); }
+  else if (el.hasAttribute("data-cmp-close")) { S.cmp = null; renderCompare(); }
+  else if (el.hasAttribute("data-toggle-facets")) { S.facetsOpen = !S.facetsOpen; render(); document.querySelector("[data-toggle-facets]").focus(); }
+  else if (d.copyLink) { const it = items.find(i => i.dir === d.copyLink); copy(linkTo(it), t("copied", it.title)); }
+  else if (d.quickCmp) { const it = items.find(i => i.dir === d.quickCmp); S.open = it.dir; S.pick = []; render(); openCompare(it.dir, 1, it.versions[it.versions.length - 1].n); }
+  else if (d.unchip) { const k = d.unchip; if (k === "q") { S.q = ""; q.value = ""; } else if (k === "issuesOnly") S.issuesOnly = false; else S[k].splice(S[k].indexOf(d.val), 1); render(); }
+  else if (d.step) { const i = visibleOrder.indexOf(S.open) + +d.step; if (visibleOrder[i]) { S.open = visibleOrder[i]; S.pick = []; render(); const b = document.querySelector(`#drawer [data-step="${d.step}"]`); if (b && !b.disabled) b.focus(); else document.querySelector("#drawer [data-close]").focus(); } }
+  else if (d.pair) { const st = +d.pair, it = items.find(i => i.dir === S.cmp.dir), last = it.versions[it.versions.length - 1].n, na = S.cmp.a + st, nb = S.cmp.b + st;
+    if (Math.min(na, nb) >= 1 && Math.max(na, nb) <= last) { S.cmp.a = na; S.cmp.b = nb; renderCompare(); const b = document.querySelector(`#cmp [data-pair="${st}"]`); if (b && !b.disabled) b.focus(); } }
+  else if (el.hasAttribute("data-swap")) { [S.cmp.a, S.cmp.b] = [S.cmp.b, S.cmp.a]; renderCompare(); document.querySelector("#cmp [data-swap]").focus(); }
+  else if (d.solo !== undefined) { S.solo = !!d.solo; renderCompare(); }
+  else if (el.hasAttribute("data-diff-toggle")) { S.diffClosed = !S.diffClosed; renderCompare(); document.querySelector("#cmp [data-diff-toggle]").focus(); }
+  else if (el.hasAttribute("data-help-close")) document.getElementById("help").hidden = true;
+});
+document.addEventListener("change", e => {
+  const el = e.target;
+  if (el.dataset.f) { const arr = S[el.dataset.f]; el.checked ? arr.push(el.value) : arr.splice(arr.indexOf(el.value), 1); render(); const x = document.querySelector(`[data-f="${el.dataset.f}"][value="${CSS.escape(el.value)}"]`); if (x) x.focus(); }
+  else if (el.dataset.flag) { S[el.dataset.flag] = el.checked; render(); const x = document.querySelector(`[data-flag="${el.dataset.flag}"]`); if (x) x.focus(); }
+  else if (el.dataset.pickv) { const n = +el.dataset.pickv; el.checked ? S.pick.push(n) : S.pick.splice(S.pick.indexOf(n), 1); if (S.pick.length > 2) S.pick.shift(); renderDrawer(); const x = document.querySelector(`[data-pickv="${n}"]`); if (x) x.focus(); }
+});
+const q = document.getElementById("q"); q.value = S.q;
+q.addEventListener("input", () => { S.q = q.value.trim(); render(); q.focus(); });
+document.getElementById("qclear").addEventListener("click", () => { S.q = ""; q.value = ""; render(); q.focus(); });
+document.addEventListener("keydown", e => {
+  const menu = document.querySelector(".dd-menu:not([hidden])");
+  if (menu) {
+    const opts = [...menu.querySelectorAll("li")], i = opts.findIndex(o => o.classList.contains("hl"));
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); const n = opts[(i + (e.key === "ArrowDown" ? 1 : -1) + opts.length) % opts.length]; opts.forEach(o => o.classList.toggle("hl", o === n)); n.scrollIntoView({block: "nearest"}); return; }
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (opts[i]) chooseDd(menu.closest(".dd"), opts[i].dataset.value); return; }
+    if (e.key === "Escape" || e.key === "Tab") { const b = menu.previousElementSibling; closeMenus(); if (e.key === "Escape") b.focus(); return; }
+  }
+  const el = document.activeElement, typing = el && /INPUT|TEXTAREA/.test(el.tagName) && el.type !== "checkbox";
+  if (e.key === "Escape") { const h = document.getElementById("help"); if (!h.hidden) h.hidden = true; else if (S.cmp) { S.cmp = null; renderCompare(); } else if (S.open) closeItem(); else if (typing) q.blur(); return; }
+  if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key === "/") { e.preventDefault(); q.focus(); }
+  else if (e.key === "?") { document.getElementById("help").hidden = false; document.querySelector("[data-help-close]").focus(); }
+  else if ((e.key === "g" || e.key === "п") && S.tab === "items" && !S.open) { S.view = "grid"; saveUi(); render(); }
+  else if ((e.key === "l" || e.key === "д") && S.tab === "items" && !S.open) { S.view = "list"; saveUi(); render(); }
+  else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+    const st = e.key === "ArrowLeft" ? -1 : 1;
+    const b = S.cmp ? document.querySelector(`#cmp [data-pair="${st}"]`) : S.open ? document.querySelector(`#drawer [data-step="${st}"]`) : null;
+    if (b && !b.disabled) { e.preventDefault(); b.click(); }
+  }
+  else if ((e.key === "c" || e.key === "с") && S.open && !S.cmp) { const it = items.find(i => i.dir === S.open); if (it.versions.length > 1) openCompare(it.dir, 1, it.versions[it.versions.length - 1].n); }
+});
+document.getElementById("helpbtn").addEventListener("click", () => { document.getElementById("help").hidden = false; document.querySelector("[data-help-close]").focus(); });
+window.addEventListener("hashchange", () => {
+  const h = new URLSearchParams(location.hash.slice(1)), a = h.get("a") || null, qq = h.get("q") || "";
+  if (a !== S.open || qq !== S.q) { S.open = a; S.q = qq; q.value = qq; S.pick = []; render(); }
+});
+const themeBtn = document.getElementById("theme"), themes = ["auto", "light", "dark"], themeIcon = {auto: "auto", light: "sun", dark: "moon"};
+let theme = "auto"; try { theme = localStorage.getItem("archive-theme") || "auto"; } catch (e) {}
+function applyTheme() { if (theme === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", theme);
+  themeBtn.innerHTML = ic(themeIcon[theme]); themeBtn.dataset.tip = t("themeTip", L.themes[theme]); themeBtn.setAttribute("aria-label", t("theme", L.themes[theme])); }
+themeBtn.addEventListener("click", () => { theme = themes[(themes.indexOf(theme) + 1) % 3]; try { localStorage.setItem("archive-theme", theme); } catch (e) {} applyTheme(); });
+applyTheme(); render();
+</script>
+</body>
+</html>

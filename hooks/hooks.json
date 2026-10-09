@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {"matcher": "Artifact", "hooks": [{"type": "command", "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/bin/artikeep\" hook claude-code publish || true", "timeout": 30}]},
+      {"matcher": "mcp__claude_ai_Claude_Docs__.*", "hooks": [{"type": "command", "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/bin/artikeep\" hook claude-code docs || true", "timeout": 30}]}
+    ],
+    "Stop": [
+      {"hooks": [{"type": "command", "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/bin/artikeep\" hook claude-code stop || true", "timeout": 20}]}
+    ],
+    "SessionStart": [
+      {"hooks": [{"type": "command", "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/bin/artikeep\" hook claude-code check || true", "timeout": 30}]}
+    ]
+  }
+}

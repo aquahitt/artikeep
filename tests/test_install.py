@@ -1,0 +1,56 @@
+import json
+import unittest
+
+from tests.helpers import TempArchive
+
+
+class InstallTest(TempArchive):
+    def test_merge_keeps_foreign_hooks_and_replaces_ours(self):
+        from artikeep.install import hook_command, merge_hooks
+        hooks = {
+            "Stop": [{"hooks": [{"type": "command", "command": "other-tool --stop"}]},
+                     {"hooks": [{"type": "command", "command": "python3 ~/claude-artifacts/tools/artifact_archive.py drafts"}]}],
+            "PostToolUse": [{"matcher": "Artifact", "hooks": [{"type": "command", "command": hook_command("claude-code", "publish")}]}],
+        }
+        wanted = [("Stop", "", hook_command("codex", "stop"), 30)]
+        merge_hooks(hooks, wanted, uninstall=False)
+        cmds = [h["command"] for g in hooks["Stop"] for h in g["hooks"]]
+        self.assertEqual(len(cmds), 2)
+        self.assertIn("other-tool --stop", cmds)
+        self.assertNotIn("PostToolUse", hooks)  # our old entry gone, nothing else there
+        merge_hooks(hooks, wanted, uninstall=True)
+        self.assertEqual([h["command"] for g in hooks["Stop"] for h in g["hooks"]], ["other-tool --stop"])
+
+    def test_codex_stop_command_always_prints_json(self):
+        from artikeep.install import hook_command
+        self.assertTrue(hook_command("codex", "stop").endswith("|| echo '{}'"))
+        self.assertTrue(hook_command("claude-code", "stop").endswith("|| true"))
+
+    def test_rules_block_replaces_old_block(self):
+        from artikeep.install import MARK_BEGIN, OLD_MARKS, rules, strip_block
+        text = "# Mine\n\n%s\nold rules\n%s\n\n## After\n" % OLD_MARKS
+        out = strip_block(strip_block(text, *OLD_MARKS), MARK_BEGIN, "<!-- artikeep:end -->").rstrip("\n") + "\n\n" + rules(self.store, "codex")
+        self.assertNotIn("old rules", out)
+        self.assertIn("## After", out)
+        self.assertEqual(out.count(MARK_BEGIN), 1)
+
+
+class SearchGalleryTest(TempArchive):
+    def test_search_and_gallery_build(self):
+        from artikeep import gallery, search, worker
+        self.store.save_item("p", {"index.html": "<title>Тепловая карта</title><p>расходы по месяцам</p>".encode()},
+                             agent="codex", main="index.html")
+        self.store.save_item("f", {"deck.pptx": b"PK fake"}, agent="import", main="deck.pptx", title="Deck")
+        hits = search.search(self.store, "РАСХОДЫ")
+        self.assertEqual([h["title"] for h in hits], ["Тепловая карта"])
+        worker.one_pass(self.store, push=False)
+        html = (self.home / "index.html").read_text(encoding="utf-8")
+        data = json.loads(html.split('id="data">', 1)[1].split("</script>", 1)[0].replace("<\\/", "</"))
+        types = {i["title"]: (i["type"], i["agent"], i["main"]) for i in data["items"]}
+        self.assertEqual(types["Deck"], ("file", "import", "deck.pptx"))
+        self.assertEqual(types["Тепловая карта"], ("page", "codex", "index.html"))
+        self.assertEqual(gallery.origin_of({"url": "https://chatgpt.com/c/x"}, "k")["label"], "ChatGPT")
+
+
+if __name__ == "__main__":
+    unittest.main()

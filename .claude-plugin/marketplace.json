@@ -1,0 +1,14 @@
+{
+  "name": "artikeep",
+  "description": "artikeep: a local, versioned archive of artifacts made by AI agents.",
+  "owner": {
+    "name": "artikeep contributors"
+  },
+  "plugins": [
+    {
+      "name": "artikeep",
+      "source": "./",
+      "description": "Local, versioned archive of what AI agents make for you."
+    }
+  ]
+}

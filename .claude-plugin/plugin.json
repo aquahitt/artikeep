@@ -1,0 +1,10 @@
+{
+  "name": "artikeep",
+  "version": "0.1.0",
+  "description": "Keeps a local, versioned copy of every artifact you make with Claude Code (Artifact tool pages, Design canvases, Claude Docs documents, scratchpad drafts), with a gallery and an MCP server to search it.",
+  "author": {"name": "artikeep contributors"},
+  "homepage": "https://github.com/aquahitt/artikeep",
+  "repository": "https://github.com/aquahitt/artikeep",
+  "license": "MIT",
+  "keywords": ["artifacts", "archive", "backup", "versions", "mcp"]
+}

@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "artikeep"
+version = "0.1.0"
+description = "A local, versioned archive of what AI agents make for you: Claude Code, Codex, chat exports; gallery and MCP server."
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+dependencies = []
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: MacOS",
+  "Operating System :: POSIX :: Linux",
+  "Topic :: System :: Archiving :: Backup",
+]
+
+[project.urls]
+Homepage = "https://github.com/aquahitt/artikeep"
+
+[project.scripts]
+artikeep = "artikeep.cli:main"
+
+[tool.setuptools]
+packages = ["artikeep", "artikeep.adapters", "artikeep.importers"]
+
+[tool.setuptools.package-data]
+artikeep = ["gallery.template.html"]
