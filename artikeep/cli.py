@@ -3,7 +3,8 @@
   artikeep init [PATH]                  create an archive (git repo) and remember it
   artikeep install [--agents …]         wire hooks + MCP into Claude Code and/or Codex
   artikeep doctor                       check that capture works on this machine
-  artikeep open                         open the gallery in the browser
+  artikeep open                         open the gallery in the browser (static file)
+  artikeep serve [--port N] [--open]    the gallery as a local app: full-text search, live, actions
   artikeep search WORDS [--all]         search the archive
   artikeep add PATH… [--title T]        keep any file or page folder by hand
   artikeep import chatgpt|claude-ai EXPORT   import canvases / artifacts from a data export
@@ -41,6 +42,8 @@ def _hook(agent: str, event: str) -> int:
             fn(store, payload)
     except Exception:
         store.error("hook %s %s" % (agent, event))
+        from artikeep.notify import notify
+        notify(store, "hook", "artikeep: the %s %s hook failed, see %s/errors.log" % (agent, event, store.log))
         if agent == "codex" and event == "stop":
             print("{}")
     return 0
@@ -73,6 +76,10 @@ def main(argv=None) -> int:
 
     sub.add_parser("doctor", help="check that capture works")
     sub.add_parser("open", help="open the gallery")
+
+    p = sub.add_parser("serve", help="run the gallery as a local app on 127.0.0.1")
+    p.add_argument("--port", type=int, default=8765, help="app port; archived files are served on port + 1")
+    p.add_argument("--open", action="store_true", help="open it in the browser")
 
     p = sub.add_parser("search", help="search the archive")
     p.add_argument("words", nargs="*")
@@ -136,6 +143,9 @@ def main(argv=None) -> int:
         subprocess.run([opener, str(page)], check=False)
         print(page)
         return 0
+    if a.cmd == "serve":
+        from artikeep.server import serve
+        return serve(store, a.port, a.open)
     if a.cmd == "search":
         from artikeep.search import search
         hits = search(store, " ".join(a.words), scope=a.project, agent=a.agent, kind=a.type, limit=a.limit)

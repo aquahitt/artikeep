@@ -63,7 +63,8 @@ recovered from.
 ## Use
 
 ```bash
-artikeep open                      # the gallery: filters by project, source, type; versions; compare
+artikeep open                      # the gallery as a file: filters, versions, compare
+artikeep serve --open              # the same gallery as a local app (below)
 artikeep search kitchen layout     # full-text, any language
 artikeep add ~/Downloads/report.pdf --title "Q3 report"
 artikeep import chatgpt ~/Downloads/chatgpt-export.zip
@@ -91,6 +92,20 @@ By default an agent sees only items made in the repository it works in. See
 filters (project, source, type, how the copy was made), groups, full-text search,
 a panel per item with its version history, side-by-side comparison of any two versions
 with the changed text lines. Light and dark, English and Russian, usable on a phone.
+
+### As a local app
+
+`artikeep serve` runs the gallery on `http://127.0.0.1:8765` (archived files on the next
+port). On top of the file version it searches the full text of every item and highlights
+the match, updates by itself when an agent saves something, lets you rename and describe an
+item, make an old version current (as a new version: nothing is overwritten), delete an item
+(it stays in the archive's git history), show it in Finder, and add files or chat exports by
+dropping them on the page. Pages that load their own files with `fetch()` or ES modules,
+which browsers refuse over `file://`, work here. In Chrome, "Install as app" gives it its own
+window and dock icon.
+
+When capturing fails, artikeep also says so on the desktop (macOS notification, or
+`notify-send` on Linux), at most once an hour per kind of failure; `"notify": false` turns it off.
 
 ## How it works
 

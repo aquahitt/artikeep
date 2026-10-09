@@ -21,6 +21,8 @@ DEFAULTS = {
     "issue_links": True,
     # Gallery language: "auto" follows the browser, or "en" / "ru".
     "lang": "auto",
+    # Desktop notification when capturing fails (macOS osascript, Linux notify-send).
+    "notify": True,
     # MCP server: "project" shows only items made in the repository the agent works in;
     # "all" shows everything. Writing through MCP is off unless enabled.
     "mcp_scope": "project",

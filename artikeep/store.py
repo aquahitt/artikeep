@@ -211,6 +211,63 @@ class Store:
             self.save(m)
         return entry, vdir
 
+    # ------------------------------------------------------------ edits from the gallery
+
+    @staticmethod
+    def find(m: dict, folder: str):
+        for key, e in m["items"].items():
+            if e["dir"] == folder:
+                return key, e
+        raise KeyError(folder)
+
+    def edit(self, folder: str, title: str | None = None, description: str | None = None) -> dict:
+        with self.lock("manifest"):
+            m = self.load()
+            _, e = self.find(m, folder)
+            if title is not None and title.strip():
+                e["title"] = title.strip()
+            if description is not None:
+                if description.strip():
+                    e["description"] = description.strip()
+                else:
+                    e.pop("description", None)
+            self.save(m)
+        return e
+
+    def restore(self, folder: str, n: int) -> str | None:
+        """Make version n the current state again, as a new version: history is never rewritten."""
+        with self.lock("manifest"):
+            m = self.load()
+            _, e = self.find(m, folder)
+            v = next((v for v in e.get("versions") or [] if v["n"] == n), None)
+            if not v:
+                raise KeyError("version %s" % n)
+            item = self.item_dir(e)
+            files = self.version_files(item / v["dir"])
+            for f in item.iterdir():
+                if f.name in VERSION_SKIP_DIRS or f.name in VERSION_SKIP_FILES:
+                    continue
+                shutil.rmtree(f) if f.is_dir() else f.unlink()
+            for rel, data in files.items():
+                dst = item / rel
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                dst.write_bytes(data)
+            when = now_iso()
+            vdir = self.snapshot(item, e, when, "restored v%d" % n)
+            e["updated"] = when
+            self.save(m)
+        return vdir
+
+    def delete(self, folder: str) -> str:
+        """Drop an item from the archive. Its files stay in git history, so this can be undone."""
+        with self.lock("manifest"):
+            m = self.load()
+            key, e = self.find(m, folder)
+            shutil.rmtree(self.item_dir(e), ignore_errors=True)
+            del m["items"][key]
+            self.save(m)
+        return key
+
     # ------------------------------------------------------------ background work
 
     def kick(self) -> None:

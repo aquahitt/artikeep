@@ -347,7 +347,8 @@ def run(store: Store, a) -> int:
     return 0
 
 
-def doctor(store: Store) -> int:
+def doctor(store: Store, quick: bool = False) -> int:
+    """quick: read the agents' config files instead of asking their CLIs (seconds each)."""
     ok = True
 
     def line(good: bool, msg: str) -> None:
@@ -374,6 +375,13 @@ def doctor(store: Store) -> int:
         return [h.get("command", "") for gs in (data.get("hooks") or {}).values() for g in gs for h in g.get("hooks", [])]
 
     def mcp_registered(cli: str) -> bool:
+        if quick:
+            try:
+                if cli == "claude":
+                    return "artikeep" in (json.loads((HOME / ".claude.json").read_text(encoding="utf-8")).get("mcpServers") or {})
+                return "[mcp_servers.artikeep]" in CODEX_CONFIG.read_text(encoding="utf-8")
+            except Exception:
+                return False
         if not shutil.which(cli):
             return False
         return subprocess.run([cli, "mcp", "get", "artikeep"], capture_output=True, text=True, timeout=60).returncode == 0

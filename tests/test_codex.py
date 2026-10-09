@@ -11,7 +11,9 @@ def line(kind, payload, ts="2026-10-01T10:00:00.000Z"):
 
 class CodexTest(TempArchive):
     def rollout(self, repo):
-        report = self.write("tmp/report.md", "# Weekly report\n\nnumbers")
+        report = self.write("tmp/report.md", "# Weekly report\n\nnumbers ![chart](img/chart.png) [up](../secret.txt)")
+        self.write("tmp/img/chart.png", "PNGDATA")
+        self.write("secret.txt", "outside the document folder")
         gone = self.work / "tmp" / "deleted.html"
         tracked = repo / "README.md"
         lines = [
@@ -47,6 +49,9 @@ class CodexTest(TempArchive):
         e = items["codex:" + str(self.work / "tmp" / "report.md")]
         self.assertEqual((e["agent"], e["title"], e["main"]), ("codex", "Weekly report", "report.md"))
         self.assertEqual(e["project"], str(repo))
+        item = self.home / "items" / e["dir"]
+        self.assertEqual((item / "img" / "chart.png").read_text(), "PNGDATA")  # the image it shows came along
+        self.assertFalse((item / "secret.txt").exists())  # a reference climbing out is left alone
         self.assertEqual(codex.archive_rollout(self.store, self.rollout(repo)), 0)  # unchanged: nothing new
 
     def test_stop_hook_prints_json_even_when_broken(self):

@@ -23,7 +23,7 @@ import time
 from pathlib import Path
 
 from artikeep.store import Store
-from artikeep.util import git_tracked, now_iso, project_root, title_of
+from artikeep.util import git_tracked, local_refs, now_iso, project_root, title_of
 
 CODEX_HOME = Path.home() / ".codex"
 SESSIONS = CODEX_HOME / "sessions"
@@ -138,13 +138,20 @@ def archive_rollout(store: Store, path: Path) -> int:
         if str(store.root) in src:
             continue
         key = "codex:" + src
-        digest = hashlib.sha256(data).hexdigest()
-        if (m["items"].get(key) or {}).get("sha256") == digest:
-            continue
         p = Path(src)
         rel = "index.html" if p.suffix.lower() in (".html", ".htm") else p.name
+        files = {rel: data}
+        if p.suffix.lower() in (".html", ".htm", ".md", ".svg"):
+            for ref, blob in local_refs(p, data).items():
+                files.setdefault(ref, blob)  # images and styles the document shows
+        h = hashlib.sha256()
+        for name in sorted(files):
+            h.update(name.encode() + b"\0" + files[name])
+        digest = h.hexdigest()
+        if (m["items"].get(key) or {}).get("sha256") == digest:
+            continue
         _, vdir = store.save_item(
-            key, {rel: data}, agent="codex", title=title_of(p, data), main=rel, project=project,
+            key, files, agent="codex", title=title_of(p, data), main=rel, project=project,
             origin=src, when=ts or now_iso(), session=r.session, extra={"sha256": digest},
         )
         saved += 1 if vdir else 0
@@ -171,6 +178,8 @@ def cmd_stop(store: Store, payload: dict) -> None:
             store.kick()
     except Exception:
         store.error("codex stop")
+        from artikeep.notify import notify
+        notify(store, "codex", "artikeep: Codex deliverables not saved, see %s/errors.log" % store.log)
     print("{}")  # Codex expects JSON on stdout from a Stop hook
 
 

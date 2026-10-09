@@ -93,6 +93,22 @@ h1,h2,h3{font-family:Unbounded,system-ui,sans-serif;margin:0;letter-spacing:-.01
 .chip .ib .ic{width:13px;height:13px}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:10px;font-size:14px;display:flex;gap:8px;align-items:center;z-index:60;box-shadow:var(--shadow)}
 .toast[hidden]{display:none}
+.toast.err{background:var(--missing);color:#fff}
+dialog.dlg{border:0;padding:0;background:var(--raise);color:var(--ink);border-radius:16px;box-shadow:var(--shadow);width:min(480px,calc(100vw - 32px));max-height:calc(100vh - 32px)}
+dialog.dlg::backdrop{background:var(--scrim)}
+.dlg form{display:grid;gap:14px;padding:18px 20px 20px}
+.dlg h2{font-size:17px;font-weight:500;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.dlg p{margin:0;color:var(--ink-2)}
+.dlg label.f{display:grid;gap:6px;font-size:13px;color:var(--ink-2)}
+.dlg input[type=text],.dlg textarea{font:inherit;color:var(--ink);background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:9px 11px;width:100%}
+.dlg textarea{min-height:96px;resize:vertical}
+.dlg pre{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--sheet);border:1px solid var(--line-2);border-radius:10px;padding:10px 12px;max-height:55vh;overflow:auto}
+.dlg .row{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.dlg .msg{color:var(--missing);font-size:13px}
+.btn.danger{border-color:var(--missing);background:var(--missing);color:#fff}
+.drop{position:fixed;inset:12px;z-index:70;border:2px dashed var(--canvas);border-radius:20px;background:color-mix(in srgb,var(--paper) 88%,transparent);display:grid;place-items:center;font-size:18px;font-weight:500;pointer-events:none}
+.snip{margin:4px 0 0;font-size:12.5px;line-height:1.45;color:var(--ink-2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.snip mark,.lrow small mark{background:color-mix(in srgb,var(--canvas) 22%,transparent);color:inherit;border-radius:3px;padding:0 2px}
 
 /* ---------- header ---------- */
 .top{max-width:1440px;margin:0 auto;padding:22px 24px 6px;display:grid;grid-template-columns:auto 1fr auto;gap:14px 24px;align-items:center}
@@ -110,6 +126,7 @@ h1,h2,h3{font-family:Unbounded,system-ui,sans-serif;margin:0;letter-spacing:-.01
 .search kbd{position:absolute;right:10px;top:50%;transform:translateY(-50%);font:12px "Golos Text";color:var(--ink-3);border:1px solid var(--line);border-radius:6px;padding:1px 7px;background:var(--paper)}
 .hacts{display:flex;gap:8px}
 @media (max-width:760px){.top{grid-template-columns:1fr auto}.search{grid-column:1/-1;order:3;max-width:none}.top h1{font-size:19px}}
+@media (max-width:480px){.top{column-gap:12px}.brand{min-width:0;gap:10px}.top h1{font-size:17px}.hacts{gap:6px}}
 .tabs{max-width:1440px;margin:10px auto 0;padding:0 24px;display:flex;gap:4px;border-bottom:1px solid var(--line)}
 .tabs button{display:inline-flex;align-items:center;gap:8px;background:none;border:0;border-bottom:3px solid transparent;padding:10px 12px;cursor:pointer;font-weight:500;color:var(--ink-2)}
 .tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
@@ -282,7 +299,7 @@ kbd.k{font:12px "Golos Text";border:1px solid var(--line);border-bottom-width:2p
 .keys dd{margin:0;color:var(--ink-2)}
 .only-mobile-flex{display:none}
 @media (max-width:900px){.main{grid-template-columns:1fr}.facets{display:none}
-  .facets.open{display:grid;position:fixed;left:0;right:0;bottom:0;top:auto;max-height:78vh;overflow:auto;z-index:26;background:var(--raise);border-radius:18px 18px 0 0;box-shadow:var(--shadow);padding:6px 20px 0;gap:14px}
+  .facets.open{display:grid;position:fixed;left:0;right:0;bottom:0;top:auto;max-height:78vh;overflow:auto;scroll-padding:64px 0 96px;z-index:26;background:var(--raise);border-radius:18px 18px 0 0;box-shadow:var(--shadow);padding:6px 20px 0;gap:14px}
   .fscrim{position:fixed;inset:0;background:var(--scrim);z-index:25}
   .only-mobile-flex{display:flex}
   .fhead{position:sticky;top:0;background:var(--raise);align-items:center;justify-content:space-between;padding:10px 0 4px;z-index:1}
@@ -322,6 +339,11 @@ kbd.k{font:12px "Golos Text";border:1px solid var(--line);border-bottom-width:2p
   <symbol id="i-expand" viewBox="0 0 24 24"><path d="M14 4h6v6M10 20H4v-6M20 4l-6 6M4 20l6-6"/></symbol>
   <symbol id="i-text" viewBox="0 0 24 24"><path d="M5 6h14M5 11h14M5 16h9"/></symbol>
   <symbol id="i-single" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-4-4L4 16v4ZM13.5 6.5l4 4"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></symbol>
+  <symbol id="i-restore" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4h4"/><path d="m10 12 2 2 4-4"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 15V4M7 9l5-5 5 5M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/></symbol>
+  <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></symbol>
 </svg>
 
 
@@ -331,6 +353,9 @@ kbd.k{font:12px "Golos Text";border:1px solid var(--line);border-bottom-width:2p
     <input id="q" type="search" data-i18n-a="placeholder:searchPh" autocomplete="off">
     <button class="ib ghost sm clear" id="qclear" type="button" data-i18n-a="aria-label:clearSearch" hidden><svg class="ic sm"><use href="#i-x"/></svg></button><kbd>/</kbd></label>
   <div class="hacts">
+    <button class="ib" id="uploadbtn" type="button" data-i18n-a="aria-label:addFiles,data-tip:addFiles" data-tip-pos="below" hidden><svg class="ic"><use href="#i-upload"/></svg></button>
+    <input type="file" id="uploadinput" multiple hidden>
+    <button class="ib" id="statusbtn" type="button" data-i18n-a="aria-label:status,data-tip:status" data-tip-pos="below" hidden><svg class="ic"><use href="#i-pulse"/></svg></button>
     <button class="ib" id="theme" type="button" data-tip-pos="below"></button>
     <button class="ib" id="helpbtn" type="button" data-i18n-a="aria-label:keys,data-tip:keysTip" data-tip-pos="below"><svg class="ic"><use href="#i-help"/></svg></button>
   </div>
@@ -342,6 +367,8 @@ kbd.k{font:12px "Golos Text";border:1px solid var(--line);border-bottom-width:2p
 <aside class="drawer" id="drawer" hidden role="dialog" aria-modal="true" aria-labelledby="dtitle"></aside>
 <section class="cmp" id="cmp" hidden role="dialog" aria-modal="true" data-i18n-a="aria-label:compareVersions"></section>
 <div class="help" id="help" hidden role="dialog" aria-modal="true" aria-labelledby="htitle"><div class="help-card" id="helpcard"></div></div>
+<dialog class="dlg" id="dlg" aria-labelledby="dlgtitle"></dialog>
+<div class="drop" id="drop" hidden></div>
 <div class="toast" id="toast" hidden role="status"><svg class="ic"><use href="#i-check"/></svg><span></span></div>
 <script type="application/json" id="data">__DATA__</script>
 <script>
@@ -393,6 +420,14 @@ const I18N = {
     counts: "<b>%s</b> в %s", withCopy: "копии есть у %s, утеряно %s", inHistory: "%s в истории", updated: "обновлено %s",
     tabItems: "Артефакты", tabDrafts: "Черновики", copied: "Ссылка на «%s» скопирована",
     theme: "Тема: %s. Переключить", themeTip: "Тема: %s", themes: {auto: "как в системе", light: "светлая", dark: "тёмная"},
+    liveNow: "обновляется само", addFiles: "Добавить файлы или экспорт чатов", status: "Состояние архива", rename: "Переименовать",
+    reveal: "Показать в Finder", del: "Удалить из архива", restoreV: "Сделать v%s текущей", cancel: "Отмена", save: "Сохранить",
+    fTitle: "Название", fDesc: "Описание", editTitle: "Название и описание", delTitle: "Удалить из архива?",
+    delText: "«%s» исчезнет из архива и галереи. Файлы останутся в истории git архива: вернуть можно оттуда.", delBtn: "Удалить",
+    restoreTitle: "Сделать v%s текущей?", restoreText: "Текущая версия останется в истории, а восстановленная станет новой версией.", restoreBtn: "Сделать текущей",
+    saved: "Сохранено", deleted: "«%s» удалена из архива", restored: "v%s снова текущая", dropHere: "Отпустите, чтобы добавить в архив",
+    added: "Добавлено: %s", imported: "Импорт %s: %s документов, %s версий", failed: "Не получилось: %s", statusTitle: "Состояние архива",
+    loading: "Проверяю…", unchanged: "Без изменений: эта версия уже текущая",
   },
   en: {
     title: "Artifact archive", search: "Search", searchPh: "Title, text, project or issue number", clearSearch: "Clear search",
@@ -437,6 +472,14 @@ const I18N = {
     counts: "<b>%s</b> in %s", withCopy: "%s with a copy, %s lost", inHistory: "%s in history", updated: "updated %s",
     tabItems: "Items", tabDrafts: "Drafts", copied: "Link to “%s” copied",
     theme: "Theme: %s. Switch", themeTip: "Theme: %s", themes: {auto: "system", light: "light", dark: "dark"},
+    liveNow: "live", addFiles: "Add files or chat exports", status: "Archive status", rename: "Rename",
+    reveal: "Show in Finder", del: "Delete from the archive", restoreV: "Make v%s current", cancel: "Cancel", save: "Save",
+    fTitle: "Title", fDesc: "Description", editTitle: "Title and description", delTitle: "Delete from the archive?",
+    delText: "“%s” leaves the archive and the gallery. Its files stay in the archive's git history, where you can bring them back.", delBtn: "Delete",
+    restoreTitle: "Make v%s current?", restoreText: "The current version stays in history; the restored one becomes a new version.", restoreBtn: "Make current",
+    saved: "Saved", deleted: "“%s” deleted from the archive", restored: "v%s is current again", dropHere: "Drop to add to the archive",
+    added: "Added: %s", imported: "Imported from %s: %s documents, %s versions", failed: "Did not work: %s", statusTitle: "Archive status",
+    loading: "Checking…", unchanged: "Unchanged: that version is already current",
   },
 };
 const LANG = D.lang === "ru" || D.lang === "en" ? D.lang : (/^ru\b/i.test(navigator.language || "") ? "ru" : "en");
@@ -459,15 +502,21 @@ const monthKey = s => s ? s.slice(0, 7) : "";
 const monthName = k => { const [y, m] = k.split("-").map(Number); return L.monthsN[m - 1] + " " + y; };
 const projLabel = p => p || t("noProject");
 const agentLabel = a => L.agent[a] || a;
+const LIVE = window.ARTIKEEP_LIVE || null;
+const BASE = LIVE ? LIVE.content : "";
+const itemBase = it => `${BASE}items/${encodeURIComponent(it.dir)}/`;
 const fileUrl = (base, main) => base + main.split("/").map(encodeURIComponent).join("/");
-const pageUrl = it => fileUrl(`items/${encodeURIComponent(it.dir)}/`, it.main || "index.html");
-const verUrl = (it, v) => fileUrl(`items/${encodeURIComponent(it.dir)}/${v.dir}/`, v.main || it.main || "index.html");
+const pageUrl = it => fileUrl(itemBase(it), it.main || "index.html");
+const verUrl = (it, v) => fileUrl(`${itemBase(it)}${v.dir}/`, v.main || it.main || "index.html");
 const PREVIEWABLE = /\.(html?|svg|png|jpe?g|gif|webp|pdf|txt|md|csv|json)$/i;
 const issueUrl = (it, n) => it.repo ? `https://github.com/${it.repo}/issues/${n}` : null;
 const linkTo = it => location.href.split("#")[0] + "#a=" + encodeURIComponent(it.dir);
 
-const items = D.items;
-const MULTI_AGENT = new Set(items.map(i => i.agent)).size > 1;
+let items = D.items;
+let MULTI_AGENT = new Set(items.map(i => i.agent)).size > 1;
+let FTS = {q: "", hits: new Map()};  // full-text matches from the server: dir -> snippet
+const ftsHit = it => S.q && FTS.q === S.q && FTS.hits.has(it.dir);
+const snipHtml = s => esc(s).replace(/\[(.+?)\]/g, "<mark>$1</mark>");
 const S = loadState();
 function loadState() {
   const st = {facetsOpen: false, tab: "items", q: "", projects: [], agents: [], types: [], copies: [], issuesOnly: false, service: false, view: "grid", size: "m", group: "none", sort: "updated", open: null, pick: [], cmp: null, solo: false, diffClosed: false};
@@ -494,7 +543,7 @@ const filtersOn = () => S.q || S.projects.length || S.agents.length || S.types.l
 const facetVal = {projects: it => it.project, agents: it => it.agent, types: it => it.type, copies: it => it.status};
 function pass(it, ignore) {
   if (!S.service && it.service) return false;
-  if (S.q && !haystack(it).includes(S.q.toLowerCase())) return false;
+  if (S.q && !haystack(it).includes(S.q.toLowerCase()) && !ftsHit(it)) return false;
   for (const k of ["projects", "agents", "types", "copies"]) if (ignore !== k && S[k].length && !S[k].includes(facetVal[k](it))) return false;
   if (S.issuesOnly && !it.issues.length) return false;
   return true;
@@ -513,7 +562,7 @@ function sumText(it, v) {
 }
 
 /* ---------- pieces ---------- */
-const thumb = it => it.thumb ? `<div class="th" style="background-image:url('items/${encodeURIComponent(it.dir)}/_thumb.jpg')"></div>` : `<div class="th none t-${it.type}"><span class="glyph ${it.type}"></span></div>`;
+const thumb = it => it.thumb ? `<div class="th" style="background-image:url('${itemBase(it)}_thumb.jpg')"></div>` : `<div class="th none t-${it.type}"><span class="glyph ${it.type}"></span></div>`;
 const vstrip = it => it.versions.length > 1 ? `<div class="vstrip t-${it.type}" aria-hidden="true">${it.versions.map((v, i, a) => `<i style="height:${5 + Math.round(11 * (i + 1) / a.length)}px"></i>`).join("")}</div>` : "";
 const stamp = it => ["recreated", "deleted"].includes(it.status) ? `<span class="stamp s-${it.status}">${it.status === "recreated" ? t("stampRecreated") : t("stampDeleted")}</span>` : "";
 function quick(it, cls = "sm", pos = "below") {
@@ -530,12 +579,13 @@ function card(it) {
     ${thumb(it)}${stamp(it)}<div class="qa">${quick(it)}</div>
     <div class="bd"><h3>${esc(it.title)}</h3>
       <div class="meta"><span>${L.type[it.type]}</span>${MULTI_AGENT ? `<span>${esc(agentLabel(it.agent))}</span>` : ""}<span>${fmt(it.updated)}</span>${it.versions.length > 1 ? `<span class="mi">${ic("history", "sm")}${it.versions.length}</span>` : ""}${iss}${it.status === "exact" ? `<span class="copy s-exact">${t("restoredChip")}</span>` : ""}</div>
-      ${vstrip(it)}</div></article>`;
+      ${ftsHit(it) && FTS.hits.get(it.dir) ? `<p class="snip">${snipHtml(FTS.hits.get(it.dir))}</p>` : ""}${vstrip(it)}</div></article>`;
 }
 function row(it) {
   const sub = it.desc || (MULTI_AGENT ? agentLabel(it.agent) : "");
+  const subHtml = ftsHit(it) && FTS.hits.get(it.dir) ? snipHtml(FTS.hits.get(it.dir)) : esc(sub);
   return `<div class="lrow t-${it.type}${S.open === it.dir ? " cur" : ""}"><button class="main-btn" type="button" data-open="${esc(it.dir)}" aria-label="${esc(t("details", it.title))}"></button>${thumb(it)}
-    <span><b>${esc(it.title)}</b><small>${esc(sub)}</small></span>
+    <span><b>${esc(it.title)}</b><small>${subHtml}</small></span>
     <span class="c-proj">${esc(projLabel(it.project))}</span>
     <span class="tag"><span class="sw ${it.type} t-${it.type}"></span>${L.type[it.type]}</span>
     <span class="n">${it.versions.length || "—"}</span>
@@ -623,7 +673,7 @@ function renderDrafts() {
   return `<section style="grid-column:1/-1" aria-label="${t("drafts")}">
     <p class="desc" style="margin:0 0 18px;max-width:70ch">${t("draftsNote")}</p>
     ${folders.map(f => { const arr = list.filter(d => d.folder === f); return `<section class="dgroup"><div class="sec-h"><h2>${fmt(arr[0].date)}, ${esc(L.origin[arr[0].origin] || arr[0].origin)}</h2><span>${esc(projLabel(arr[0].project))}, ${pl(arr.length, "page")}</span></div>
-      <div class="dgrid">${arr.map(d => `<a class="dcard" href="${esc(encodeURI(d.path))}" target="_blank" rel="noopener"><b>${esc(d.title)}</b><small>${esc(d.path.split("/").slice(2).join("/"))}</small>${ic("ext")}</a>`).join("")}</div></section>`; }).join("") || `<div class="empty">${t("nothing")}</div>`}
+      <div class="dgrid">${arr.map(d => `<a class="dcard" href="${esc(BASE + encodeURI(d.path))}" target="_blank" rel="noopener"><b>${esc(d.title)}</b><small>${esc(d.path.split("/").slice(2).join("/"))}</small>${ic("ext")}</a>`).join("")}</div></section>`; }).join("") || `<div class="empty">${t("nothing")}</div>`}
   </section>`;
 }
 
@@ -639,14 +689,14 @@ function renderDrawer() {
   if (!it) { dr.hidden = true; scrim.hidden = true; return; }
   const cur = it.versions[it.versions.length - 1], vs = it.versions.slice().reverse(), idx = visibleOrder.indexOf(it.dir);
   const picked = S.pick.length === 2;
-  const dirUrl = `items/${encodeURIComponent(it.dir)}/`;
+  const dirUrl = itemBase(it);
   dr.innerHTML = `<div class="dh"><span class="nav">${ib("left", t("prev"), `data-step="-1" ${idx <= 0 ? "disabled" : ""}`, "ghost")}${ib("right", t("next"), `data-step="1" ${idx < 0 || idx >= visibleOrder.length - 1 ? "disabled" : ""}`, "ghost")}</span>
-    <h2 id="dtitle">${esc(it.title)}</h2>${ib("link", t("copyLink"), `data-copy-link="${esc(it.dir)}"`, "ghost")}${ib("x", t("closeEsc"), "data-close", "ghost")}</div>
+    <h2 id="dtitle">${esc(it.title)}</h2>${LIVE ? ib("edit", t("rename"), `data-act="edit"`, "ghost") : ""}${ib("link", t("copyLink"), `data-copy-link="${esc(it.dir)}"`, "ghost")}${ib("x", t("closeEsc"), "data-close", "ghost")}</div>
   <div class="db">
     ${preview(it)}
     <div class="dacts">${it.local ? `<a class="btn solid" href="${pageUrl(it)}" target="_blank" rel="noopener">${ic("ext")}${t("open")}</a>` : ""}
       ${it.versions.length > 1 ? `<button class="btn" type="button" data-cmp="1|${cur.n}">${ic("compare")}${t("firstAndCurrent")}</button>` : ""}<span class="sp"></span>
-      ${it.offline ? ia("offline", t("offline"), dirUrl + "index.offline.html") : ""}${it.server ? ia("cloud", t("serverSnap"), dirUrl + "server/index.html") : ""}${it.local ? ia("folder", t("folder"), dirUrl) : ""}${it.origin.href ? ia("archive", t("originalAt", it.origin.label), it.origin.href) : ""}</div>
+      ${it.offline ? ia("offline", t("offline"), dirUrl + "index.offline.html") : ""}${it.server ? ia("cloud", t("serverSnap"), dirUrl + "server/index.html") : ""}${it.local ? (LIVE ? ib("folder", t("reveal"), `data-act="reveal"`) : ia("folder", t("folder"), dirUrl)) : ""}${it.origin.href ? ia("archive", t("originalAt", it.origin.label), it.origin.href) : ""}${LIVE ? ib("trash", t("del"), `data-act="delete"`) : ""}</div>
     <dl class="facts"><dt>${t("fProject")}</dt><dd>${esc(projLabel(it.project))}</dd><dt>${t("fAgent")}</dt><dd>${esc(agentLabel(it.agent))}</dd><dt>${t("fType")}</dt><dd><span class="tag"><span class="sw ${it.type} t-${it.type}"></span>${L.type[it.type]}</span></dd>
       <dt>${t("fCopy")}</dt><dd class="s-${it.status}" style="color:var(--c)">${it.status === "live" && L.liveBy[it.agent] || L.copyFull[it.status]}</dd><dt>${t("created")}</dt><dd>${fmt(it.created)}</dd><dt>${t("changed")}</dt><dd>${fmt(it.updated)}${it.updated.length > 10 ? ", " + it.updated.slice(11) : ""}</dd>
       ${it.issues.length ? `<dt>${t("issues")}</dt><dd class="issues">${it.issues.map(n => issueUrl(it, n) ? `<a class="issue" href="${issueUrl(it, n)}" target="_blank" rel="noopener">${ic("issue")}#${n}</a>` : `<span class="issue">${ic("issue")}#${n}</span>`).join("")}</dd>` : ""}</dl>
@@ -655,7 +705,7 @@ function renderDrawer() {
       ${it.versions.length > 2 ? `<button class="btn" type="button" data-cmp-picked ${picked ? "" : "disabled"}>${ic("compare")}${picked ? t("comparePicked", Math.min(...S.pick), Math.max(...S.pick)) : t("pickTwo")}</button>` : ""}</div>
       <ol class="tl t-${it.type}">${vs.map(v => `<li class="${S.pick.includes(v.n) ? "picked" : ""}"><div class="vh"><span class="vn">v${v.n}</span><span class="vl">${esc(v.label || (v.n === cur.n ? t("current") : t("noLabel")))}</span></div>
         <small>${esc(v.at)}${sumText(it, v) ? ", " + esc(sumText(it, v)) : ""}</small>
-        <span class="va">${ia("ext", t("openV", v.n), verUrl(it, v), "sm ghost")}${v.n > 1 ? ib("compare", t("compareWith", v.n - 1), `data-cmp="${v.n - 1}|${v.n}"`, "sm ghost") : ""}${it.versions.length > 2 ? `<label class="cb" data-tip="${t("pickTip")}"><input type="checkbox" data-pickv="${v.n}" ${S.pick.includes(v.n) ? "checked" : ""} aria-label="${t("pickV", v.n)}"><span class="box">${ic("check")}</span></label>` : ""}</span></li>`).join("")}</ol></div>` : ""}
+        <span class="va">${ia("ext", t("openV", v.n), verUrl(it, v), "sm ghost")}${v.n > 1 ? ib("compare", t("compareWith", v.n - 1), `data-cmp="${v.n - 1}|${v.n}"`, "sm ghost") : ""}${LIVE && v.n !== cur.n ? ib("restore", t("restoreV", v.n), `data-restore="${v.n}"`, "sm ghost") : ""}${it.versions.length > 2 ? `<label class="cb" data-tip="${t("pickTip")}"><input type="checkbox" data-pickv="${v.n}" ${S.pick.includes(v.n) ? "checked" : ""} aria-label="${t("pickV", v.n)}"><span class="box">${ic("check")}</span></label>` : ""}</span></li>`).join("")}</ol></div>` : ""}
   </div>`;
   dr.hidden = false; scrim.hidden = false;
 }
@@ -703,7 +753,7 @@ function render() {
   const live = items.filter(i => !i.service), n = c => live.filter(i => i.status === c).length;
   const vers = live.reduce((s, i) => s + i.versions.length, 0);
   const projects = new Set(live.map(i => i.project)).size;
-  document.getElementById("counts").innerHTML = `<span>${t("counts", pl(live.length, "item"), pl(projects, "projectIn"))}</span><span>${t("withCopy", live.length - n("missing"), n("missing"))}</span><span>${t("inHistory", pl(vers, "version"))}</span><span>${t("updated", esc(D.built))}</span>`;
+  document.getElementById("counts").innerHTML = `<span>${t("counts", pl(live.length, "item"), pl(projects, "projectIn"))}</span><span>${t("withCopy", live.length - n("missing"), n("missing"))}</span><span>${t("inHistory", pl(vers, "version"))}</span><span>${LIVE ? t("liveNow") : t("updated", esc(D.built))}</span>`;
   document.getElementById("tabs").innerHTML = [["items", t("tabItems"), live.length], ["drafts", t("tabDrafts"), D.drafts.length]].map(([k, l, c]) =>
     `<button role="tab" type="button" data-tab="${k}" aria-selected="${S.tab === k}">${l}<span class="n">${c}</span></button>`).join("");
   document.getElementById("main").innerHTML = S.tab === "items" ? renderItems() : renderDrafts();
@@ -727,6 +777,8 @@ document.addEventListener("click", e => {
   const opt = e.target.closest(".dd-menu li");
   if (opt) { chooseDd(opt.closest(".dd"), opt.dataset.value); return; }
   closeMenus();
+  const act = e.target.closest("[data-act],[data-restore]");
+  if (act && LIVE) { closeMenus(); liveAction(act); return; }
   const el = e.target.closest("[data-open],[data-close],[data-tab],[data-view],[data-size],[data-reset],[data-cmp],[data-cmp-close],[data-cmp-picked],[data-toggle-facets],[data-copy-link],[data-quick-cmp],[data-unchip],[data-step],[data-pair],[data-swap],[data-solo],[data-diff-toggle],[data-help-close]");
   if (!el) { if (e.target.id === "scrim") closeItem(); if (e.target.id === "help") e.target.hidden = true; return; }
   if (el.disabled) return;
@@ -769,6 +821,7 @@ document.addEventListener("keydown", e => {
     if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (opts[i]) chooseDd(menu.closest(".dd"), opts[i].dataset.value); return; }
     if (e.key === "Escape" || e.key === "Tab") { const b = menu.previousElementSibling; closeMenus(); if (e.key === "Escape") b.focus(); return; }
   }
+  if (document.getElementById("dlg").open) return;
   const el = document.activeElement, typing = el && /INPUT|TEXTAREA/.test(el.tagName) && el.type !== "checkbox";
   if (e.key === "Escape") { const h = document.getElementById("help"); if (!h.hidden) h.hidden = true; else if (S.cmp) { S.cmp = null; renderCompare(); } else if (S.open) closeItem(); else if (typing) q.blur(); return; }
   if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
@@ -788,6 +841,112 @@ window.addEventListener("hashchange", () => {
   const h = new URLSearchParams(location.hash.slice(1)), a = h.get("a") || null, qq = h.get("q") || "";
   if (a !== S.open || qq !== S.q) { S.open = a; S.q = qq; q.value = qq; S.pick = []; render(); }
 });
+/* ---------- live mode: artikeep serve ---------- */
+async function api(path, opts = {}) {
+  const r = await fetch(LIVE.api + path, {...opts, headers: {...(opts.headers || {}), "X-Artikeep-Token": LIVE.token}});
+  let j = {}; try { j = await r.json(); } catch (e) {}
+  if (!r.ok) throw new Error(j.error || String(r.status));
+  return j;
+}
+function toastErr(msg) { toast(msg); const el = document.getElementById("toast"); el.classList.add("err"); setTimeout(() => el.classList.remove("err"), 1900); }
+function dialog({title, body = "", ok, danger = false, cancel = true, submit}) {
+  const dlg = document.getElementById("dlg"), back = document.activeElement;
+  dlg.innerHTML = `<form method="dialog"><h2 id="dlgtitle">${esc(title)}${ib("x", t("close"), 'value="cancel" formnovalidate data-dlg-x', "ghost sm")}</h2>${body}<p class="msg" hidden></p>
+    <div class="row">${cancel ? `<button class="btn" value="cancel" formnovalidate>${t("cancel")}</button>` : ""}${ok ? `<button class="btn ${danger ? "danger" : "solid"}" value="ok">${esc(ok)}</button>` : ""}</div></form>`;
+  const form = dlg.querySelector("form"), msg = dlg.querySelector(".msg");
+  dlg.querySelector("[data-dlg-x]").addEventListener("click", () => dlg.close());
+  form.addEventListener("submit", async e => {
+    if (e.submitter && e.submitter.value !== "ok") return;
+    e.preventDefault();
+    const btn = form.querySelector('[value="ok"]'); btn.disabled = true;
+    try { await submit(new FormData(form)); dlg.close(); }
+    catch (ex) { msg.textContent = t("failed", ex.message); msg.hidden = false; btn.disabled = false; }
+  });
+  dlg.addEventListener("close", () => { if (back && document.contains(back)) back.focus(); }, {once: true});
+  dlg.showModal();
+  const first = dlg.querySelector("input, textarea") || dlg.querySelector('[value="ok"]') || dlg.querySelector("[data-dlg-x]");
+  if (first) first.focus();
+  return dlg;
+}
+function liveAction(el) {
+  const it = items.find(i => i.dir === S.open); if (!it) return;
+  const post = (action, body = {}) => api(`item/${encodeURIComponent(it.dir)}/${action}`, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)});
+  if (el.dataset.restore) {
+    const n = +el.dataset.restore;
+    dialog({title: t("restoreTitle", n), body: `<p>${t("restoreText")}</p>`, ok: t("restoreBtn"),
+      submit: async () => { const r = await post("restore", {n}); await refresh(true); toast(r.note === "unchanged" ? t("unchanged") : t("restored", n)); }});
+  } else if (el.dataset.act === "edit") {
+    dialog({title: t("editTitle"), ok: t("save"),
+      body: `<label class="f">${t("fTitle")}<input type="text" name="title" required value="${esc(it.title)}"></label><label class="f">${t("fDesc")}<textarea name="description">${esc(it.desc)}</textarea></label>`,
+      submit: async fd => { await post("edit", {title: fd.get("title"), description: fd.get("description")}); await refresh(true); toast(t("saved")); }});
+  } else if (el.dataset.act === "delete") {
+    dialog({title: t("delTitle"), body: `<p>${esc(t("delText", it.title))}</p>`, ok: t("delBtn"), danger: true,
+      submit: async () => { await post("delete"); S.open = null; await refresh(true); toast(t("deleted", it.title)); }});
+  } else if (el.dataset.act === "reveal") {
+    post("reveal").catch(ex => toastErr(t("failed", ex.message)));
+  }
+}
+async function refresh(force) {
+  const dlgOpen = document.getElementById("dlg").open, menuOpen = document.querySelector(".dd-menu:not([hidden])");
+  if (!force && (dlgOpen || menuOpen)) return;
+  const d = await api("data");
+  D.items = d.items; D.drafts = d.drafts; D.built = d.built; SIG = d.sig;
+  items = D.items; MULTI_AGENT = new Set(items.map(i => i.agent)).size > 1;
+  if (S.open && !items.some(i => i.dir === S.open)) S.open = null;
+  if (S.cmp && !items.some(i => i.dir === S.cmp.dir)) S.cmp = null;
+  const keepScroll = document.querySelector("#drawer .db") ? document.querySelector("#drawer .db").scrollTop : 0;
+  render();
+  const db = document.querySelector("#drawer .db"); if (db) db.scrollTop = keepScroll;
+  if (S.q) runFts(true);
+}
+let SIG = D.sig, ftsTimer = null;
+function runFts(now) {
+  clearTimeout(ftsTimer);
+  const q0 = S.q;
+  if (!LIVE || q0.length < 2) { FTS = {q: "", hits: new Map()}; return; }
+  ftsTimer = setTimeout(async () => {
+    try {
+      const r = await api("search?q=" + encodeURIComponent(q0));
+      if (S.q !== q0) return;
+      FTS = {q: q0, hits: new Map(r.hits.map(h => [h.id, h.snippet]))};
+      render();
+    } catch (e) {}
+  }, now ? 0 : 220);
+}
+async function upload(files) {
+  for (const f of files) {
+    try {
+      const r = await api("upload?name=" + encodeURIComponent(f.name), {method: "POST", body: f});
+      toast(r.kind === "file" ? t("added", f.name) : t("imported", r.kind === "chatgpt" ? "ChatGPT" : "claude.ai", r.docs, r.versions));
+    } catch (ex) { toastErr(t("failed", ex.message)); }
+  }
+  await refresh(true);
+}
+if (LIVE) {
+  const ub = document.getElementById("uploadbtn"), ui = document.getElementById("uploadinput"), sb = document.getElementById("statusbtn"), drop = document.getElementById("drop");
+  ub.hidden = false; sb.hidden = false;
+  ub.addEventListener("click", () => ui.click());
+  ui.addEventListener("change", () => { if (ui.files.length) upload([...ui.files]); ui.value = ""; });
+  sb.addEventListener("click", async () => {
+    const pre = dialog({title: t("statusTitle"), body: `<pre>${t("loading")}</pre>`, cancel: false}).querySelector("pre");
+    let text; try { text = (await api("doctor")).text; } catch (ex) { text = t("failed", ex.message); }
+    pre.textContent = text;  // harmless if the dialog was closed meanwhile: pre is just detached
+  });
+  drop.textContent = t("dropHere");
+  let depth = 0;
+  const hasFiles = e => e.dataTransfer && [...e.dataTransfer.types].includes("Files");
+  addEventListener("dragenter", e => { if (!hasFiles(e)) return; e.preventDefault(); depth++; drop.hidden = false; });
+  addEventListener("dragleave", e => { if (!hasFiles(e)) return; depth = Math.max(0, depth - 1); if (!depth) drop.hidden = true; });
+  addEventListener("dragover", e => { if (hasFiles(e)) e.preventDefault(); });
+  addEventListener("drop", e => { if (!hasFiles(e)) return; e.preventDefault(); depth = 0; drop.hidden = true; upload([...e.dataTransfer.files]); });
+  q.addEventListener("input", () => runFts(false));
+  setInterval(async () => {
+    if (document.hidden) return;
+    try { const r = await api("version"); if (r.sig !== SIG) await refresh(false); } catch (e) {}
+  }, 2500);
+  if (S.q) runFts(true);
+}
+
 const themeBtn = document.getElementById("theme"), themes = ["auto", "light", "dark"], themeIcon = {auto: "auto", light: "sun", dark: "moon"};
 let theme = "auto"; try { theme = localStorage.getItem("archive-theme") || "auto"; } catch (e) {}
 function applyTheme() { if (theme === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", theme);

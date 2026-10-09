@@ -25,8 +25,8 @@ class TempArchive(unittest.TestCase):
         from artikeep.store import Store
         self.store = Store(self.home).ensure()
         self.store.kick = lambda: None  # no detached workers in tests
-        (self.home / "artikeep.json").write_text(json.dumps({"issue_links": False, "thumbnails": "off", "git_push": False}))
-        self.store.settings.update({"issue_links": False, "thumbnails": "off", "git_push": False})
+        (self.home / "artikeep.json").write_text(json.dumps({"issue_links": False, "thumbnails": "off", "git_push": False, "notify": False}))
+        self.store.settings.update({"issue_links": False, "thumbnails": "off", "git_push": False, "notify": False})
 
     def tearDown(self):
         if self._env is None:

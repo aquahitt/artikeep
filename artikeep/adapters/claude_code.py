@@ -44,6 +44,13 @@ def _say(msg: str) -> None:
     print(json.dumps({"systemMessage": msg}, ensure_ascii=False))
 
 
+def _alarm(store: Store, kind: str, msg: str) -> None:
+    """Say it in the session and on the desktop: a failed capture must be seen."""
+    from artikeep.notify import notify
+    _say(msg)
+    notify(store, kind, msg)
+
+
 # ---------------------------------------------------------------- Artifact tool
 
 
@@ -157,13 +164,13 @@ def cmd_publish(store: Store, payload: dict) -> None:
         result = handle_artifact(store, payload)
     except Exception:
         store.error("publish")
-        _say(_t(store, "artikeep: копия не сохранена, см. %s/errors.log", "artikeep: copy not saved, see %s/errors.log") % store.log)
+        _alarm(store, "publish", _t(store, "artikeep: копия не сохранена, см. %s/errors.log", "artikeep: copy not saved, see %s/errors.log") % store.log)
         return
     if result is None:
         return
     store.kick()
     if result.startswith("partial"):
-        _say(_t(store, "artikeep: сохранено не всё (%s)", "artikeep: not everything was saved (%s)") % result)
+        _alarm(store, "partial", _t(store, "artikeep: сохранено не всё (%s)", "artikeep: not everything was saved (%s)") % result)
 
 
 # ---------------------------------------------------------------- Claude Docs
@@ -305,8 +312,8 @@ def cmd_docs(store: Store, payload: dict) -> None:
         _save_docs_state(store, st)
     store.kick()
     if is_export and not saved:
-        _say(_t(store, "artikeep: экспорт документа не удалось раскодировать, см. .hooklog/payloads.jsonl",
-                "artikeep: could not decode the document export, see .hooklog/payloads.jsonl"))
+        _alarm(store, "docs", _t(store, "artikeep: экспорт документа не удалось раскодировать, см. .hooklog/payloads.jsonl",
+                                 "artikeep: could not decode the document export, see .hooklog/payloads.jsonl"))
 
 
 def docs_reminder(store: Store, payload: dict):
@@ -465,7 +472,7 @@ def cmd_check(store: Store, payload: dict, days: int = 3) -> None:
             msg += _t(store, " Без исходника: %s.", " Source gone: %s.") % ", ".join(lost[:5])
         msg += _t(store, " Проверьте, что hook artikeep подключён (artikeep doctor).",
                   " Check that the artikeep hook is installed (artikeep doctor).")
-        _say(msg)
+        _alarm(store, "missed", msg)
 
 
 COMMANDS = {"publish": cmd_publish, "docs": cmd_docs, "stop": cmd_stop, "drafts": cmd_stop, "check": cmd_check}

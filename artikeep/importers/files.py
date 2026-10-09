@@ -4,7 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from artikeep.store import Store
-from artikeep.util import git_root, now_iso, title_of
+from artikeep.util import git_root, local_refs, now_iso, title_of
 
 MAX_BYTES = 50 * 1024 * 1024
 SKIP_PARTS = {"node_modules", ".git", "__pycache__"}
@@ -28,6 +28,9 @@ def add_path(store: Store, path, title=None, agent="import", label=None, project
         data = p.read_bytes()
         main = "index.html" if p.suffix.lower() in (".html", ".htm") else p.name
         files = {main: data}
+        if p.suffix.lower() in (".html", ".htm", ".md", ".svg"):
+            for ref, blob in local_refs(p, data).items():
+                files.setdefault(ref, blob)
         title = title or title_of(p, data)
     else:
         raise SystemExit("%s: no such file or folder" % p)

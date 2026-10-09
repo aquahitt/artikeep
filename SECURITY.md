@@ -20,6 +20,13 @@ artifact gets in. If you use connectors or web search in Desktop chats and want 
 remove the entry (`artikeep install --agents claude-desktop --uninstall`) and rely on data
 exports instead.
 
+**`artikeep serve` listens on 127.0.0.1 only.** Archived pages are served from a second
+port, a different origin, so their JavaScript can neither read the gallery nor call its API.
+Every API call needs a token that exists only in the gallery page of the current run, the
+API answers no CORS preflight, and it rejects any Host header other than 127.0.0.1 or
+localhost (DNS rebinding). The content port serves `items/` and `drafts/` and nothing else:
+not the manifest, logs or cache.
+
 **Writing through MCP is off** unless you enable it (`--mcp-save`). Saving cannot
 overwrite history: a save adds a version, and the previous ones stay.
 

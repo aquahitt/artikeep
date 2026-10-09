@@ -105,5 +105,7 @@ def sync(store: Store, push: bool) -> None:
             r = git(store, "push", "-q", "origin", "HEAD", check=False)
             if r.returncode != 0:
                 store.note("push.log", r.stderr.strip())
+                from artikeep.notify import notify
+                notify(store, "push", "artikeep: the archive is not syncing (git push failed, see .hooklog/push.log)", every=86400)
     except Exception:
         store.error("worker git")

@@ -129,6 +129,37 @@ def project_root(cwd) -> str | None:
     return s
 
 
+REF_RES = (
+    re.compile(r"""(?:src|href|poster)\s*=\s*["']([^"'#?]+)"""),          # HTML
+    re.compile(r"""url\(\s*["']?([^"')#?]+)"""),                          # CSS
+    re.compile(r"""!?\[[^\]]*\]\(\s*<?([^)\s>#?]+)"""),                    # Markdown links and images
+)
+REF_MAX_BYTES = 20 * 1024 * 1024
+
+
+def local_refs(path, data: bytes, limit: int = 200) -> dict:
+    """Local files a page or document points to (images, styles, scripts), keyed by the
+    relative path it uses. Only files inside the document's own folder tree: a reference
+    that climbs out ("../x") or is absolute or remote would need rewriting, so it is left."""
+    base = Path(path).resolve().parent
+    text = data[:2_000_000].decode("utf-8", errors="ignore")
+    out = {}
+    for rx in REF_RES:
+        for ref in rx.findall(text):
+            ref = ref.strip()
+            if not ref or ref.startswith(("/", "data:", "mailto:", "javascript:")) or "://" in ref or ".." in Path(ref).parts:
+                continue
+            target = (base / ref).resolve()
+            if base not in target.parents or not target.is_file() or target.stat().st_size > REF_MAX_BYTES:
+                continue
+            rel = str(target.relative_to(base))
+            if rel not in out and target != Path(path).resolve():
+                out[rel] = target.read_bytes()
+                if len(out) >= limit:
+                    return out
+    return out
+
+
 def git_root(path) -> str | None:
     """Main checkout of the repository holding path, or None outside git."""
     p = Path(path)
