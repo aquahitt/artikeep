@@ -167,11 +167,25 @@ macOS или `notify-send` в Linux), не чаще раза в час для к
 
 ### Плагин для Claude Code
 
-Плагин ([быстрый старт](#claude-code-плагин-рекомендуется)) приносит те же hook-и и
-MCP-сервер, что и `install --agents claude-code`. Для Claude Code выберите что-то одно, не оба
-способа: иначе каждый артефакт сохранится дважды (`artikeep doctor` об этом предупредит).
-Остальное, что делает `install`, плагину недоступно: подключить Codex и Claude Desktop,
-добавить блок правил в `CLAUDE.md` и поднять `cleanupPeriodDays` (`doctor` напомнит).
+Плагин ([быстрый старт](#claude-code-плагин-рекомендуется)) — то же сохранение, что и
+`install --agents claude-code`, только им управляет сам Claude Code:
+
+- **Hook-и** копируют каждую страницу, опубликованную инструментом `Artifact`, каждый холст
+  Claude Design и документ Claude Docs, а также неопубликованные страницы из scratchpad
+  сессии. При старте сессии они подбирают публикации, которые hook пропустил за последние
+  три дня.
+- **MCP-сервер** даёт Claude `search_artifacts`, `read_artifact`, `list_versions` и
+  `diff_versions`: прежде чем делать работу заново, он ищет её в архиве.
+- **Обновление и удаление** — средствами Claude Code: `claude plugin update artikeep@artikeep`,
+  `claude plugin uninstall artikeep@artikeep` (или то же через `/plugin`). Архив остаётся
+  на месте.
+
+`uvx artikeep doctor` покажет, что делает плагин. Для Claude Code выберите плагин или
+`install`, не оба: иначе каждый артефакт сохранится дважды (`doctor` предупредит). Остальное
+из `install` подключается отдельно: Codex и Claude Desktop — `artikeep install --agents
+codex,claude-desktop`, `cleanupPeriodDays` пропишите сами (`doctor` напомнит). Блок правил в
+`CLAUDE.md` плагин не добавляет: когда искать в архиве, Claude подсказывают инструкции
+самого MCP-сервера.
 
 ## Использование
 

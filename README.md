@@ -162,12 +162,24 @@ recovered from.
 
 ### Claude Code plugin
 
-The plugin ([quick start](#claude-code-the-plugin-recommended)) brings the same hooks and
-MCP server as `install --agents claude-code`. Use one
-or the other for Claude Code, not both: every artifact would be saved twice (`artikeep
-doctor` flags it). What the plugin cannot do is the rest of `install`: wire Codex and
-Claude Desktop, add the rules block to `CLAUDE.md`, and raise `cleanupPeriodDays`
-(`doctor` reminds you).
+The plugin ([quick start](#claude-code-the-plugin-recommended)) is the same capture as
+`install --agents claude-code`, packaged so Claude Code manages it:
+
+- **Hooks** copy every page published with the `Artifact` tool, every Claude Design canvas
+  and Claude Docs document, and unpublished pages from the session scratchpad. At session
+  start they pick up publishes a hook missed in the last three days.
+- **The MCP server** gives Claude `search_artifacts`, `read_artifact`, `list_versions` and
+  `diff_versions`, so it looks in the archive before redoing work.
+- **Updates and removal** go through Claude Code: `claude plugin update artikeep@artikeep`,
+  `claude plugin uninstall artikeep@artikeep` (or the same under `/plugin`). The archive
+  stays where it is.
+
+`uvx artikeep doctor` shows what the plugin is doing. Use the plugin or `install` for
+Claude Code, not both: every artifact would be saved twice (`doctor` flags it). For the
+rest of what `install` does, run it for those parts: Codex and Claude Desktop with
+`artikeep install --agents codex,claude-desktop`; `cleanupPeriodDays` you set yourself
+(`doctor` reminds you). The plugin adds no rules block to `CLAUDE.md`; the MCP server's
+own instructions tell Claude when to search.
 
 ## Use
 
