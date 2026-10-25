@@ -275,6 +275,11 @@ scripts/readme-media/make.sh                   # пересобрать скри
 Скриншоты сняты с синтетического архива (`scripts/readme-media/seed.py`), а не с чьего-то
 настоящего; для пересборки нужны Playwright с Chromium и Pillow.
 
+Релиз — это запушенный тег `vX.Y.Z`: `.github/workflows/publish.yml` прогоняет тесты, собирает
+пакет, публикует его в PyPI и создаёт GitHub release из записи в CHANGELOG. Вспомогательные
+скрипты лежат в `.github/ci/`, порядок действий — для человека или для Claude Code (`/release`) —
+в [`.claude/skills/release/SKILL.md`](https://github.com/aquahitt/artikeep/blob/main/.claude/skills/release/SKILL.md).
+
 ## Лицензия
 
 MIT. Изменения перечислены в [CHANGELOG.md](https://github.com/aquahitt/artikeep/blob/main/CHANGELOG.md).

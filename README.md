@@ -268,6 +268,11 @@ scripts/readme-media/make.sh                   # rebuild the README screenshots 
 The screenshots come from a synthetic archive (`scripts/readme-media/seed.py`), not from
 anyone's real one; rebuilding them needs Playwright with Chromium and Pillow.
 
+A release is a pushed tag `vX.Y.Z`: `.github/workflows/publish.yml` tests, builds, publishes
+to PyPI and creates the GitHub release from the CHANGELOG entry. The helpers are in
+`.github/ci/`; the steps, for a person or for Claude Code (`/release`), are in
+[`.claude/skills/release/SKILL.md`](https://github.com/aquahitt/artikeep/blob/main/.claude/skills/release/SKILL.md).
+
 ## License
 
 MIT. Changes are listed in [CHANGELOG.md](https://github.com/aquahitt/artikeep/blob/main/CHANGELOG.md).
