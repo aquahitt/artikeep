@@ -1,5 +1,9 @@
 name: test
-on: [push, pull_request]
+on:
+  push:
+    branches: ["**"]  # tags go through publish.yml, which calls this
+  pull_request:
+  workflow_call:  # publish.yml runs the suite before releasing
 jobs:
   unit:
     strategy:

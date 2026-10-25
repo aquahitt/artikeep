@@ -1,19 +1,78 @@
+# Publishes a release: push a tag vX.Y.Z on main (see .claude/skills/release/SKILL.md).
+# Tests, checks that the tag, the version files and CHANGELOG.md agree, builds, uploads to
+# PyPI through trusted publishing, then creates the GitHub release from the CHANGELOG entry.
+# PyPI trusts this file by name (publish.yml) and the environment "pypi": keep both.
 name: publish
 on:
-  release:
-    types: [published]
+  push:
+    tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to publish again, e.g. v0.2.1 (files already on PyPI are skipped)"
+        required: true
+
+env:
+  TAG: ${{ inputs.tag || github.ref_name }}
+
 jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - run: python .github/ci/release.py check --tag "$TAG"
+      - run: python -m pip install build && .github/ci/build.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
   pypi:
+    needs: build
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
       id-token: write  # trusted publishing: no PyPI token stored in the repository
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-python@v6
+      - uses: actions/download-artifact@v4
         with:
-          python-version: "3.13"
-      - run: python -m pip install build && python -m build
-      - run: python -m pip install dist/*.whl && artikeep --version
+          name: dist
+          path: dist/
       - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: ${{ github.event_name == 'workflow_dispatch' }}  # a manual rerun finishes a half-done release
+
+  github-release:
+    needs: pypi
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - run: python3 .github/ci/release.py notes > notes.md
+      - run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/* --clobber
+          else
+            gh release create "$TAG" dist/* --verify-tag --latest --title "artikeep ${TAG#v}" --notes-file notes.md
+          fi
