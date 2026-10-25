@@ -2,11 +2,13 @@
 
 **Never lose what your AI agents make.**
 
+English · [Русский](https://github.com/aquahitt/artikeep/blob/main/README.ru.md)
+
 [![test](https://github.com/aquahitt/artikeep/actions/workflows/test.yml/badge.svg)](https://github.com/aquahitt/artikeep/actions/workflows/test.yml)
 ![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-2E5E4E)
 ![dependencies: none](https://img.shields.io/badge/dependencies-none-2E5E4E)
 ![macOS | Linux](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-2E5E4E)
-[![MIT](https://img.shields.io/badge/license-MIT-2E5E4E)](LICENSE)
+[![MIT](https://img.shields.io/badge/license-MIT-2E5E4E)](https://github.com/aquahitt/artikeep/blob/main/LICENSE)
 
 Agents publish pages, canvases and documents to places you don't control: a hosted
 artifact link, a chat you can lose access to, a temp folder that gets cleaned. artikeep
@@ -14,7 +16,7 @@ keeps a copy of each one on your disk the moment it is made. Every change become
 version, a gallery lets you browse and compare versions, and an MCP server lets any
 agent search what you already have.
 
-![Search the archive, open an item, compare its first and current versions](docs/media/demo.gif)
+![Search the archive, open an item, compare its first and current versions](https://raw.githubusercontent.com/aquahitt/artikeep/main/docs/media/demo.gif)
 
 - **Automatic where it can be.** Hooks in Claude Code and Codex capture without the
   model having to remember anything.
@@ -28,14 +30,18 @@ agent search what you already have.
 ## Quick start
 
 ```bash
-git clone https://github.com/aquahitt/artikeep ~/artikeep-src
-python3 ~/artikeep-src/bin/artikeep init ~/artikeep        # the archive folder (a git repo)
-python3 ~/artikeep-src/bin/artikeep install                # hooks + MCP for the agents found
-python3 ~/artikeep-src/bin/artikeep doctor                 # check
+uv tool install git+https://github.com/aquahitt/artikeep   # or: pipx install git+https://github.com/aquahitt/artikeep
+artikeep init ~/artikeep        # the archive folder (a git repo)
+artikeep install                # hooks + MCP for the agents found
+artikeep doctor                 # check
 ```
 
 From now on, whatever Claude Code or Codex makes lands in `~/artikeep`. Open the
 gallery with `artikeep open`, or `artikeep serve --open` for the local app.
+
+No package manager? A clone works as is, with no install step:
+`git clone https://github.com/aquahitt/artikeep ~/artikeep-src`, then
+`python3 ~/artikeep-src/bin/artikeep init ~/artikeep` and so on.
 
 Claude Code only? Use the plugin instead of `install`:
 `/plugin marketplace add aquahitt/artikeep`, then `/plugin install artikeep@artikeep`
@@ -57,8 +63,8 @@ Files git already tracks are skipped: they are safe where they are.
 ## The gallery
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/media/gallery-dark.png">
-  <img alt="The gallery: items from Claude Code, Codex, Claude Desktop, ChatGPT and claude.ai with filters by project, source and type" src="docs/media/gallery-light.png">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/aquahitt/artikeep/main/docs/media/gallery-dark.png">
+  <img alt="The gallery: items from Claude Code, Codex, Claude Desktop, ChatGPT and claude.ai with filters by project, source and type" src="https://raw.githubusercontent.com/aquahitt/artikeep/main/docs/media/gallery-light.png">
 </picture>
 
 `index.html` at the archive root: a static page that works from disk. Grid or list,
@@ -69,12 +75,12 @@ with the changed text lines. Light and dark, English and Russian, usable on a ph
 <table>
   <tr>
     <td width="50%"><picture>
-      <source media="(prefers-color-scheme: dark)" srcset="docs/media/versions-dark.png">
-      <img alt="An item's panel: preview, where it came from, and its version history" src="docs/media/versions-light.png">
+      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/aquahitt/artikeep/main/docs/media/versions-dark.png">
+      <img alt="An item's panel: preview, where it came from, and its version history" src="https://raw.githubusercontent.com/aquahitt/artikeep/main/docs/media/versions-light.png">
     </picture></td>
     <td width="50%"><picture>
-      <source media="(prefers-color-scheme: dark)" srcset="docs/media/compare-dark.png">
-      <img alt="Two versions side by side, with the text lines that changed" src="docs/media/compare-light.png">
+      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/aquahitt/artikeep/main/docs/media/compare-dark.png">
+      <img alt="Two versions side by side, with the text lines that changed" src="https://raw.githubusercontent.com/aquahitt/artikeep/main/docs/media/compare-light.png">
     </picture></td>
   </tr>
   <tr>
@@ -82,8 +88,8 @@ with the changed text lines. Light and dark, English and Russian, usable on a ph
     <td>Compare any two versions: both pages live, plus what changed in the text.</td>
   </tr>
   <tr>
-    <td><img alt="Full-text search across every item, with matches highlighted" src="docs/media/search-light.png"></td>
-    <td align="center"><img alt="The gallery on a phone" src="docs/media/mobile-light.png" width="210"></td>
+    <td><img alt="Full-text search across every item, with matches highlighted" src="https://raw.githubusercontent.com/aquahitt/artikeep/main/docs/media/search-light.png"></td>
+    <td align="center"><img alt="The gallery on a phone" src="https://raw.githubusercontent.com/aquahitt/artikeep/main/docs/media/mobile-light.png" width="210"></td>
   </tr>
   <tr>
     <td>Full-text search across every item and source, in any language.</td>
@@ -150,8 +156,8 @@ artikeep scan claude-code          # recover publishes missed in the last 30 day
 artikeep rebuild                   # rebuild gallery and search index, commit and push
 ```
 
-(`artikeep` here is the command `install` linked into `~/.local/bin`, the one from
-`pip install .`, or `python3 <clone>/bin/artikeep`.)
+(`artikeep` here is the command `uv tool` or `pipx` installed, the one `install` linked into
+`~/.local/bin` for a clone, or `python3 <clone>/bin/artikeep`.)
 
 **From any agent**, through MCP:
 
@@ -164,7 +170,7 @@ artikeep rebuild                   # rebuild gallery and search index, commit an
 | `save_artifact` | keep a page or document (off unless `--mcp-save`) |
 
 By default an agent sees only items made in the repository it works in. See
-[SECURITY.md](SECURITY.md) for why, and how to widen it.
+[SECURITY.md](https://github.com/aquahitt/artikeep/blob/main/SECURITY.md) for why, and how to widen it.
 
 ## Settings
 
@@ -185,7 +191,7 @@ The archive is `~/artikeep` unless `artikeep init <path>` chose another folder (
 
 ## How it works
 
-<img alt="Claude Code, Codex, Claude Desktop, chat exports and any file flow into ~/artikeep, a git repository; the gallery, the MCP server and a private remote read from it" src="docs/media/how-it-works.svg" width="100%">
+<img alt="Claude Code, Codex, Claude Desktop, chat exports and any file flow into ~/artikeep, a git repository; the gallery, the MCP server and a private remote read from it" src="https://raw.githubusercontent.com/aquahitt/artikeep/main/docs/media/how-it-works.svg" width="100%">
 
 Hooks only copy files and start a detached background pass, so an agent never waits on
 disk or network. The background pass renders viewers (Design canvases, Markdown
@@ -193,7 +199,7 @@ documents, React components with the libraries claude.ai artifacts may import: R
 Tailwind, recharts, lucide-react, lodash, d3, mathjs, PapaParse, SheetJS, three, Tone,
 Chart.js, and stand-ins for shadcn/ui), makes offline copies with CDN scripts and fonts
 vendored, updates the search index (SQLite FTS5) and the gallery, then commits and pushes.
-The on-disk layout is specified in [FORMAT.md](FORMAT.md); any tool can write into it.
+The on-disk layout is specified in [FORMAT.md](https://github.com/aquahitt/artikeep/blob/main/FORMAT.md); any tool can write into it.
 
 ## Limits, honestly
 
@@ -225,4 +231,4 @@ anyone's real one; rebuilding them needs Playwright with Chromium and Pillow.
 
 ## License
 
-MIT.
+MIT. Changes are listed in [CHANGELOG.md](https://github.com/aquahitt/artikeep/blob/main/CHANGELOG.md).
