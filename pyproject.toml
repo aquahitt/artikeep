@@ -4,14 +4,19 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "artikeep"
-version = "0.1.0"
-description = "A local, versioned archive of what AI agents make for you: Claude Code, Codex, chat exports; gallery and MCP server."
+version = "0.2.0"
+description = "Never lose what your AI agents make: a local, versioned archive of Claude Code, Codex and chat artifacts, with a gallery and an MCP server."
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.9"
 dependencies = []
+keywords = ["claude", "claude-code", "codex", "chatgpt", "mcp", "artifacts", "ai-agents", "archive", "versioning", "local-first"]
 classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
   "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
   "License :: OSI Approved :: MIT License",
   "Operating System :: MacOS",
   "Operating System :: POSIX :: Linux",
@@ -20,6 +25,8 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://github.com/aquahitt/artikeep"
+Changelog = "https://github.com/aquahitt/artikeep/blob/main/CHANGELOG.md"
+Issues = "https://github.com/aquahitt/artikeep/issues"
 
 [project.scripts]
 artikeep = "artikeep.cli:main"
