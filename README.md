@@ -17,6 +17,9 @@ keeps a copy of each one on your disk the moment it is made. Every change become
 version, a gallery lets you browse and compare versions, and an MCP server lets any
 agent search what you already have.
 
+**On Claude Code it is a plugin: two commands, no setup.**
+[Jump to the quick start](#claude-code-the-plugin-recommended).
+
 ![Search the archive, open an item, compare its first and current versions](https://raw.githubusercontent.com/aquahitt/artikeep/main/docs/media/demo.gif)
 
 - **Automatic where it can be.** Hooks in Claude Code and Codex capture without the
@@ -30,6 +33,33 @@ agent search what you already have.
 
 ## Quick start
 
+### Claude Code: the plugin (recommended)
+
+Two commands inside Claude Code, nothing to install first:
+
+```
+/plugin marketplace add aquahitt/artikeep
+/plugin install artikeep@artikeep
+```
+
+That's it. The plugin brings the hooks and the MCP server, updates through `/plugin`,
+and needs nothing but `python3` 3.9+, already there on most Macs and Linux machines.
+From the next session on, every page, canvas and document Claude Code makes lands in
+`~/artikeep`, each change as a version. Open `~/artikeep/index.html` to see the gallery.
+
+From a terminal instead:
+`claude plugin marketplace add aquahitt/artikeep && claude plugin install artikeep@artikeep`.
+
+Two optional extras, a command each (`uvx` comes with [uv](https://docs.astral.sh/uv/) and
+runs artikeep without installing it):
+
+- **Backup and sync:** `uvx artikeep init ~/artikeep` makes the archive a git repository;
+  add `--remote git@github.com:you/my-artifacts.git` (a **private** repo) to sync machines.
+- **Longer transcripts:** set `"cleanupPeriodDays": 3650` in `~/.claude/settings.json`, so
+  a lost artifact can still be recovered from its session.
+
+### Codex, Claude Desktop, or everything at once
+
 ```bash
 uv tool install artikeep        # or: pipx install artikeep
 artikeep init ~/artikeep        # the archive folder (a git repo)
@@ -38,15 +68,12 @@ artikeep doctor                 # check
 ```
 
 From now on, whatever Claude Code or Codex makes lands in `~/artikeep`. Open the
-gallery with `artikeep open`, or `artikeep serve --open` for the local app.
+gallery with `artikeep open`, or `artikeep serve --open` for the local app. Already have
+the plugin? Limit it to the rest: `artikeep install --agents codex,claude-desktop`.
 
 No package manager? A clone works as is, with no install step:
 `git clone https://github.com/aquahitt/artikeep ~/artikeep-src`, then
 `python3 ~/artikeep-src/bin/artikeep init ~/artikeep` and so on.
-
-Claude Code only? Use the plugin instead of `install`:
-`/plugin marketplace add aquahitt/artikeep`, then `/plugin install artikeep@artikeep`
-(details [below](#claude-code-plugin)).
 
 ## What gets captured
 
@@ -135,14 +162,12 @@ recovered from.
 
 ### Claude Code plugin
 
-Instead of `install`, Claude Code users can add the plugin:
-`/plugin marketplace add aquahitt/artikeep`, then `/plugin install artikeep@artikeep`.
-It brings the same hooks and MCP server; Codex still needs `artikeep install --agents codex`.
-Use one or the other for Claude Code, not both (`artikeep doctor` flags it). The plugin
-keeps copies in `~/artikeep` from the first artifact on; run `artikeep init` (with
-`--remote` if you want sync) to give that folder git history, and set
-`"cleanupPeriodDays": 3650` in `~/.claude/settings.json` yourself — a plugin cannot change
-it, and `doctor` reminds you.
+The plugin ([quick start](#claude-code-the-plugin-recommended)) brings the same hooks and
+MCP server as `install --agents claude-code`. Use one
+or the other for Claude Code, not both: every artifact would be saved twice (`artikeep
+doctor` flags it). What the plugin cannot do is the rest of `install`: wire Codex and
+Claude Desktop, add the rules block to `CLAUDE.md`, and raise `cleanupPeriodDays`
+(`doctor` reminds you).
 
 ## Use
 
@@ -158,7 +183,8 @@ artikeep rebuild                   # rebuild gallery and search index, commit an
 ```
 
 (`artikeep` here is the command `uv tool` or `pipx` installed, the one `install` linked into
-`~/.local/bin` for a clone, or `python3 <clone>/bin/artikeep`.)
+`~/.local/bin` for a clone, or `python3 <clone>/bin/artikeep`. With only the plugin, run
+any of them as `uvx artikeep …`.)
 
 **From any agent**, through MCP:
 

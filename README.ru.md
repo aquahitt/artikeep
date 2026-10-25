@@ -17,6 +17,9 @@
 создания. Каждое изменение становится версией, галерея позволяет листать и сравнивать
 версии, а MCP-сервер даёт любому агенту искать то, что у вас уже есть.
 
+**В Claude Code это плагин: две команды, никакой настройки.**
+[К быстрому старту](#claude-code-плагин-рекомендуется).
+
 ![Поиск по архиву, открытие карточки, сравнение первой и текущей версий](https://raw.githubusercontent.com/aquahitt/artikeep/main/docs/media/demo.gif)
 
 - **Автоматически, где это возможно.** Hook-и Claude Code и Codex сохраняют копии без
@@ -32,6 +35,34 @@
 
 ## Быстрый старт
 
+### Claude Code: плагин (рекомендуется)
+
+Две команды прямо в Claude Code, заранее ничего ставить не нужно:
+
+```
+/plugin marketplace add aquahitt/artikeep
+/plugin install artikeep@artikeep
+```
+
+Готово. Плагин приносит hook-и и MCP-сервер, обновляется через `/plugin` и требует только
+`python3` 3.9+, который уже есть на большинстве Mac и Linux. Со следующей сессии каждая
+страница, холст и документ из Claude Code попадает в `~/artikeep`, каждое изменение —
+отдельной версией. Галерея — `~/artikeep/index.html`.
+
+То же из терминала:
+`claude plugin marketplace add aquahitt/artikeep && claude plugin install artikeep@artikeep`.
+
+Два необязательных дополнения, по команде на каждое (`uvx` входит в
+[uv](https://docs.astral.sh/uv/) и запускает artikeep без установки):
+
+- **Резервная копия и синхронизация:** `uvx artikeep init ~/artikeep` делает архив
+  git-репозиторием; добавьте `--remote git@github.com:you/my-artifacts.git` (**приватный**
+  репозиторий), чтобы синхронизировать машины.
+- **Транскрипты дольше:** пропишите `"cleanupPeriodDays": 3650` в `~/.claude/settings.json`,
+  чтобы потерянный артефакт можно было восстановить из его сессии.
+
+### Codex, Claude Desktop или всё сразу
+
 ```bash
 uv tool install artikeep        # или: pipx install artikeep
 artikeep init ~/artikeep        # папка архива (git-репозиторий)
@@ -41,14 +72,11 @@ artikeep doctor                 # проверка
 
 С этого момента всё, что делают Claude Code и Codex, попадает в `~/artikeep`. Галерея
 открывается командой `artikeep open`, локальное приложение — `artikeep serve --open`.
+Плагин уже стоит? Ограничьте установку остальным: `artikeep install --agents codex,claude-desktop`.
 
 Нет менеджера пакетов? Клон работает как есть, без установки:
 `git clone https://github.com/aquahitt/artikeep ~/artikeep-src`, затем
 `python3 ~/artikeep-src/bin/artikeep init ~/artikeep` и дальше по списку.
-
-Только Claude Code? Вместо `install` можно поставить плагин:
-`/plugin marketplace add aquahitt/artikeep`, затем `/plugin install artikeep@artikeep`
-(подробности [ниже](#плагин-для-claude-code)).
 
 ## Что сохраняется
 
@@ -139,14 +167,11 @@ macOS или `notify-send` в Linux), не чаще раза в час для к
 
 ### Плагин для Claude Code
 
-Вместо `install` пользователи Claude Code могут поставить плагин:
-`/plugin marketplace add aquahitt/artikeep`, затем `/plugin install artikeep@artikeep`.
-Он приносит те же hook-и и MCP-сервер; для Codex по-прежнему нужен
-`artikeep install --agents codex`. Для Claude Code выберите что-то одно, не оба способа
-(`artikeep doctor` об этом предупредит). Плагин сохраняет копии в `~/artikeep` с первого
-артефакта; запустите `artikeep init` (с `--remote`, если нужна синхронизация), чтобы у папки
-появилась git-история, и сами пропишите `"cleanupPeriodDays": 3650` в `~/.claude/settings.json`
-— плагин этого сделать не может, `doctor` напомнит.
+Плагин ([быстрый старт](#claude-code-плагин-рекомендуется)) приносит те же hook-и и
+MCP-сервер, что и `install --agents claude-code`. Для Claude Code выберите что-то одно, не оба
+способа: иначе каждый артефакт сохранится дважды (`artikeep doctor` об этом предупредит).
+Остальное, что делает `install`, плагину недоступно: подключить Codex и Claude Desktop,
+добавить блок правил в `CLAUDE.md` и поднять `cleanupPeriodDays` (`doctor` напомнит).
 
 ## Использование
 
@@ -162,7 +187,8 @@ artikeep rebuild                   # пересобрать галерею и п
 ```
 
 (`artikeep` здесь — команда, установленная `uv tool` или `pipx`, ссылка, которую `install`
-поставил в `~/.local/bin` для клона, или `python3 <клон>/bin/artikeep`.)
+поставил в `~/.local/bin` для клона, или `python3 <клон>/bin/artikeep`. Если стоит только
+плагин, запускайте любую из них как `uvx artikeep …`.)
 
 **Из любого агента** через MCP:
 
