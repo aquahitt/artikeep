@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 380" width="880" height="380" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">
+  <title>How artikeep works: agents and exports flow into a local git archive, read back through a gallery and an MCP server</title>
+  <style>
+    .bg{fill:#F7F8F5}.box{fill:#FFFFFF;stroke:#C9D0C9}.hub{fill:#2E5E4E}.hubt{fill:#FFFFFF}
+    .t{fill:#1B2420;font-size:14px;font-weight:600}.s{fill:#4A5650;font-size:12px}.h{fill:#626D67;font-size:11px;font-weight:600;letter-spacing:.08em}
+    .ln{stroke:#7A817C;stroke-width:1.5;fill:none}.ah{fill:#7A817C}.tag{fill:#E2E7E1}.tagt{fill:#2E5E4E;font-size:11px;font-weight:600}
+    @media (prefers-color-scheme:dark){
+      .bg{fill:#151B18}.box{fill:#1E2622;stroke:#3A4540}.hub{fill:#3F7A66}
+      .t{fill:#E6ECE8}.s{fill:#A9B4AE}.h{fill:#8D9993}.ln{stroke:#7F8A84}.ah{fill:#7F8A84}.tag{fill:#2A3631}.tagt{fill:#9FD3BF}
+    }
+  </style>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker></defs>
+  <rect class="bg" width="880" height="380" rx="16"/>
+
+  <text class="h" x="28" y="36">AGENTS AND EXPORTS</text>
+  <g>
+    <rect class="box" x="28" y="50" width="236" height="56" rx="10"/>
+    <text class="t" x="44" y="73">Claude Code · Codex</text><text class="s" x="44" y="92">hooks, automatic</text>
+    <rect class="box" x="28" y="118" width="236" height="56" rx="10"/>
+    <text class="t" x="44" y="141">Claude Desktop chat</text><text class="s" x="44" y="160">MCP, when you ask to save</text>
+    <rect class="box" x="28" y="186" width="236" height="56" rx="10"/>
+    <text class="t" x="44" y="209">ChatGPT · claude.ai</text><text class="s" x="44" y="228">data export, every edit a version</text>
+    <rect class="box" x="28" y="254" width="236" height="56" rx="10"/>
+    <text class="t" x="44" y="277">Any file or folder</text><text class="s" x="44" y="296">artikeep add</text>
+  </g>
+  <path class="ln" d="M264 78 C300 78 300 180 336 180" marker-end="url(#a)"/>
+  <path class="ln" d="M264 146 C300 146 300 180 336 180" marker-end="url(#a)"/>
+  <path class="ln" d="M264 214 C300 214 300 180 336 180" marker-end="url(#a)"/>
+  <path class="ln" d="M264 282 C300 282 300 180 336 180" marker-end="url(#a)"/>
+
+  <text class="h" x="340" y="36">ON YOUR DISK</text>
+  <rect class="hub" x="340" y="80" width="200" height="200" rx="14"/>
+  <text class="hubt" x="360" y="114" font-size="18" font-weight="700">~/artikeep</text>
+  <text class="hubt" x="360" y="140" font-size="12" opacity=".85">a plain git repository</text>
+  <rect class="tag" x="360" y="158" width="58" height="22" rx="11"/><text class="tagt" x="372" y="173">HTML</text>
+  <rect class="tag" x="424" y="158" width="44" height="22" rx="11"/><text class="tagt" x="436" y="173">MD</text>
+  <rect class="tag" x="474" y="158" width="50" height="22" rx="11"/><text class="tagt" x="485" y="173">JSON</text>
+  <text class="hubt" x="360" y="208" font-size="12">every change = a version</text>
+  <text class="hubt" x="360" y="228" font-size="12">offline copies, CDN vendored</text>
+  <text class="hubt" x="360" y="248" font-size="12">full-text index (SQLite FTS5)</text>
+
+  <path class="ln" d="M540 180 C576 180 576 78 612 78" marker-end="url(#a)"/>
+  <path class="ln" d="M540 180 C576 180 576 180 612 180" marker-end="url(#a)"/>
+  <path class="ln" d="M540 180 C576 180 576 282 612 282" marker-end="url(#a)"/>
+
+  <text class="h" x="616" y="36">READ IT BACK</text>
+  <rect class="box" x="616" y="50" width="236" height="56" rx="10"/>
+  <text class="t" x="632" y="73">Gallery</text><text class="s" x="632" y="92">browse, search, compare versions</text>
+  <rect class="box" x="616" y="152" width="236" height="56" rx="10"/>
+  <text class="t" x="632" y="175">MCP server</text><text class="s" x="632" y="194">agents search before redoing work</text>
+  <rect class="box" x="616" y="254" width="236" height="56" rx="10"/>
+  <text class="t" x="632" y="277">Private git remote</text><text class="s" x="632" y="296">sync between your machines</text>
+
+  <text class="s" x="440" y="350" text-anchor="middle">Hooks only copy files; a detached background pass does the rest, so agents never wait.</text>
+</svg>
