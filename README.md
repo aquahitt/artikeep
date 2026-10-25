@@ -5,6 +5,7 @@
 English · [Русский](https://github.com/aquahitt/artikeep/blob/main/README.ru.md)
 
 [![test](https://github.com/aquahitt/artikeep/actions/workflows/test.yml/badge.svg)](https://github.com/aquahitt/artikeep/actions/workflows/test.yml)
+[![PyPI](https://img.shields.io/pypi/v/artikeep?color=2E5E4E)](https://pypi.org/project/artikeep/)
 ![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-2E5E4E)
 ![dependencies: none](https://img.shields.io/badge/dependencies-none-2E5E4E)
 ![macOS | Linux](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-2E5E4E)
@@ -30,7 +31,7 @@ agent search what you already have.
 ## Quick start
 
 ```bash
-uv tool install git+https://github.com/aquahitt/artikeep   # or: pipx install git+https://github.com/aquahitt/artikeep
+uv tool install artikeep        # or: pipx install artikeep
 artikeep init ~/artikeep        # the archive folder (a git repo)
 artikeep install                # hooks + MCP for the agents found
 artikeep doctor                 # check
