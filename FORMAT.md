@@ -10,6 +10,8 @@ write items into an archive as long as they follow this document.
   artikeep.json          settings (optional; see artikeep/config.py for keys)
   index.html             the gallery, regenerated
   items/<dir>/           one folder per item: its newest files
+    data/, assets/       files of a page made from an artifact type, and uploaded assets
+    doc-<tab>.md         Claude Docs tabs as exported; docs-ops.jsonl logs the edits
     versions/NNN-<time>/ a frozen copy of every distinct state, oldest first
     server/index.html    optional: the host's copy, saved when an agent read it back
     index.offline.html   optional: index.html with CDN files vendored into _vendor/
@@ -38,7 +40,7 @@ Entry fields (all optional except `dir`):
 |---|---|
 | `dir` | folder name under `items/`, `YYYY-MM-DD-<slug>` of the first save, unique |
 | `title`, `description` | for people |
-| `agent` | `claude-code`, `codex`, `chatgpt`, `claude-ai`, `import`, `mcp`; absent means `claude-code` |
+| `agent` | `claude-code`, `codex`, `chatgpt`, `claude-ai`, `claude-desktop`, `import`, `mcp`; absent means `claude-code` |
 | `project` | absolute path of the git repository the item was made in |
 | `url` | where the original lives on the web |
 | `origin` | the source path or URL, when not a web original |
@@ -52,6 +54,14 @@ Entry fields (all optional except `dir`):
 | `issues` | GitHub issue numbers that link to the item |
 | `service` | true for test items the gallery hides by default |
 | `sha256` | hash of the single source file (Codex), to skip unchanged saves |
+| `source_name` | the published file's own name (Claude Code), when it was not `index.html` |
+| `type_url` | the artifact type a Claude Code page was made from |
+| `foreign_files` | files the page takes from other artifacts, as published, not copied |
+| `url_unknown` | true when the publish did not say the page's URL |
+| `server_snapshot` | time `server/index.html` was last saved |
+| `exported` | time of the last Claude Docs export |
+| `aliases` | other keys or URLs the same item was known by |
+| `diff_first_last` | cached text diff of the first and newest versions (gallery) |
 
 ## Versions
 

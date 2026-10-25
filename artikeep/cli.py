@@ -1,14 +1,14 @@
 """artikeep command line.
 
   artikeep init [PATH]                  create an archive (git repo) and remember it
-  artikeep install [--agents …]         wire hooks + MCP into Claude Code and/or Codex
+  artikeep install [--agents …]         wire hooks + MCP into Claude Code, Codex, Claude Desktop
   artikeep doctor                       check that capture works on this machine
   artikeep open                         open the gallery in the browser (static file)
   artikeep serve [--port N] [--open]    the gallery as a local app: full-text search, live, actions
-  artikeep search WORDS [--all]         search the archive
+  artikeep search WORDS [--json]        search the archive (--agent, --type, --project)
   artikeep add PATH… [--title T]        keep any file or page folder by hand
   artikeep import chatgpt|claude-ai EXPORT   import canvases / artifacts from a data export
-  artikeep scan codex [--days N|--all]  archive Codex deliverables from past sessions
+  artikeep scan codex|claude-code [--days N|--all]  archive what past sessions made
   artikeep rebuild [--no-push]          rebuild gallery and index, commit (and push)
   artikeep mcp [--scope all] [--allow-save]  run the MCP server on stdio
   artikeep hook AGENT EVENT             entry point for agent hooks (reads JSON on stdin)
