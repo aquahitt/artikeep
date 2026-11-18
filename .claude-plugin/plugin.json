@@ -6,5 +6,11 @@
   "homepage": "https://github.com/aquahitt/artikeep",
   "repository": "https://github.com/aquahitt/artikeep",
   "license": "MIT",
-  "keywords": ["artifacts", "archive", "backup", "versions", "mcp"]
+  "keywords": ["artifacts", "archive", "backup", "versions", "mcp"],
+  "mcpServers": {
+    "artikeep": {
+      "command": "python3",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/bin/artikeep", "mcp"]
+    }
+  }
 }
