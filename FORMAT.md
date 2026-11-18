@@ -10,7 +10,8 @@ write items into an archive as long as they follow this document.
   artikeep.json          settings (optional; see artikeep/config.py for keys)
   index.html             the gallery, regenerated
   items/<dir>/           one folder per item: its newest files
-    data/, assets/       files of a page made from an artifact type, and uploaded assets
+    project/, …          files of a page made from an artifact type, at their published paths
+    assets/              uploaded assets
     doc-<tab>.md         Claude Docs tabs as exported; docs-ops.jsonl logs the edits
     versions/NNN-<time>/ a frozen copy of every distinct state, oldest first
     server/index.html    optional: the host's copy, saved when an agent read it back
@@ -56,6 +57,7 @@ Entry fields (all optional except `dir`):
 | `sha256` | hash of the single source file (Codex), to skip unchanged saves |
 | `source_name` | the published file's own name (Claude Code), when it was not `index.html` |
 | `type_url` | the artifact type a Claude Code page was made from |
+| `layout` | `2`: the files of a typed page sit at their published paths. Typed items archived by 0.2.0 or earlier lack it and may have `file_path` copies under `data/<path>`; the background pass moves those to `<path>` (the copy a later version changed wins), leaves files the `files` map put under `data/`, and sets it |
 | `foreign_files` | files the page takes from other artifacts, as published, not copied |
 | `url_unknown` | true when the publish did not say the page's URL |
 | `server_snapshot` | time `server/index.html` was last saved |
