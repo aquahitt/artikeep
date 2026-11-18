@@ -62,16 +62,18 @@ class ClaudeCodeTest(TempArchive):
             e = self.store.entry_for(m, key, "Widgets", "2026-11-17T22:00:00")
             e.update(type_url="https://claude.ai/artifact/type-design", url=key, agent="claude-code")
             d = self.store.item_dir(e)
-            states = [  # (files written in this publish, ...) replayed in order
-                {"data/project/canvas.json": old, "project/Main.dc.html": "<p>main</p>"},
-                {"data/project/A_Card.dc.html": "<p>card</p>"},
-                {"data/project/B.dc.html": "<p>b</p>", "project/canvas.json": old},
-                {"data/project/canvas.json": new},
+            states = [  # (file_path, files written by this publish), replayed in order
+                ("project/canvas.json", {"data/project/canvas.json": old, "project/Main.dc.html": "<p>main</p>",
+                                         "data/rows.json": "[]"}),  # the files map served rows.json under data/
+                ("project/A_Card.dc.html", {"data/project/A_Card.dc.html": "<p>card</p>"}),
+                ("project/B.dc.html", {"data/project/B.dc.html": "<p>b</p>", "project/canvas.json": old}),
+                ("project/canvas.json", {"data/project/canvas.json": new}),
             ]
-            for i, files in enumerate(states):
+            for i, (source, files) in enumerate(states):
                 for rel, text in files.items():
                     (d / rel).parent.mkdir(parents=True, exist_ok=True)
                     (d / rel).write_text(text)
+                e["publishes"].append({"at": "2026-11-17T22:%02d:00" % i, "source": "/tmp/tgw/" + source, "asset": False})
                 self.store.snapshot(d, e, "2026-11-17T22:%02d:00" % i)
             self.store.save(m)
         return key, d, new, claude_code
@@ -82,12 +84,15 @@ class ClaudeCodeTest(TempArchive):
         worker.one_pass(self.store, push=False)
         e = self.manifest()["items"][key]
         self.assertEqual(e["layout"], 2)
-        self.assertFalse((d / "data").exists())
+        self.assertFalse((d / "data" / "project").exists())
+        self.assertEqual((d / "data" / "rows.json").read_text(), "[]")  # not a file_path copy: stays
         self.assertEqual((d / "project/canvas.json").read_text(), new)
         self.assertEqual(sorted(p.name for p in (d / "project").glob("*.dc.html")), ["A_Card.dc.html", "B.dc.html", "Main.dc.html"])
         self.assertIn('"P2"', (d / "index.html").read_text())  # the viewer embeds the newest index: three pages
         v3 = d / e["versions"][2]["dir"]
-        self.assertFalse((v3 / "data").exists())
+        self.assertFalse((v3 / "data" / "project").exists())
+        self.assertEqual(e["versions"][1]["changed"], ["project/A_Card.dc.html"])
+        self.assertFalse(any(c.startswith("data/project") for v in e["versions"] for c in v["changed"]))
         self.assertIn('"A_Card.dc.html"', (d / e["versions"][3]["dir"] / "project/canvas.json").read_text())
         self.assertNotIn("A_Card", (v3 / "project/canvas.json").read_text())  # at version 3 the index was the old one
         self.assertTrue((v3 / "project/B.dc.html").exists())
@@ -98,11 +103,19 @@ class ClaudeCodeTest(TempArchive):
         m = self.store.load()
         self.assertTrue(claude_code.merge_typed_data(self.store, m))
         self.store.save(m)
-        (d / "data").mkdir()
-        (d / "data" / "rows.json").write_text("[]")  # a file the type really serves under data/
+        (d / "data" / "project").mkdir()
+        (d / "data" / "project" / "canvas.json").write_text("{}")  # served there by a later publish
         m = self.store.load()
         self.assertFalse(claude_code.merge_typed_data(self.store, m))
-        self.assertTrue((d / "data" / "rows.json").exists())
+        self.assertTrue((d / "data" / "project" / "canvas.json").exists())
+
+    def test_file_outside_root_is_reported_not_written_beside_the_item(self):
+        self.write("elsewhere/x.json", "{}")
+        self.write("tgw/project/canvas.json", "{}")
+        r = self.call(1, root=str(self.work / "tgw"), file_path=str(self.work / "elsewhere/x.json"),
+                      type_url="https://claude.ai/artifact/type-design")
+        self.assertTrue(r.startswith("partial"))
+        self.assertEqual(sorted(p.name for p in (self.home / "items").iterdir()), [self.manifest()["items"]["https://claude.ai/artifact/canvas1"]["dir"]])
 
     def test_missing_source_reports_partial(self):
         r = self.publish(self.work / "gone.html")

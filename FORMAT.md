@@ -57,7 +57,7 @@ Entry fields (all optional except `dir`):
 | `sha256` | hash of the single source file (Codex), to skip unchanged saves |
 | `source_name` | the published file's own name (Claude Code), when it was not `index.html` |
 | `type_url` | the artifact type a Claude Code page was made from |
-| `layout` | `2`: the files of a typed page sit at their published paths. Typed items archived before 0.2.1 lack it and may have copies under `data/<path>`; the background pass merges them into `<path>` (the copy a later version changed wins) and sets it |
+| `layout` | `2`: the files of a typed page sit at their published paths. Typed items archived by 0.2.0 or earlier lack it and may have `file_path` copies under `data/<path>`; the background pass moves those to `<path>` (the copy a later version changed wins), leaves files the `files` map put under `data/`, and sets it |
 | `foreign_files` | files the page takes from other artifacts, as published, not copied |
 | `url_unknown` | true when the publish did not say the page's URL |
 | `server_snapshot` | time `server/index.html` was last saved |
