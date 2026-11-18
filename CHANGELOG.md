@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- Claude Design canvases published in several calls no longer split between `project/` and
+  `data/project/` in the archive, which left most boards blank and the page tabs stale
+  (#6). Canvases already archived that way are merged on the next background pass, newest
+  copy first, in every version too.
+- The canvas viewer says when it is a static preview: the Design runtime stays on the host,
+  so computed text, theme colors and repeated parts may be missing.
+
 ## 0.2.0 — 2026-10-25
 
 ### Added

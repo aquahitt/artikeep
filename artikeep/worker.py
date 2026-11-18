@@ -12,6 +12,7 @@ import subprocess
 import time
 
 from artikeep import gallery, issues, search
+from artikeep.adapters import claude_code
 from artikeep.store import Store
 from artikeep.util import now_iso
 from artikeep.viewers import make_canvas_viewer, make_doc_viewer, make_offline, make_react_viewer
@@ -37,6 +38,13 @@ def run(store: Store, push: bool = True, wait: bool = False) -> None:
 
 
 def one_pass(store: Store, push: bool) -> None:
+    try:
+        with store.lock("manifest"):
+            m = store.load()
+            if claude_code.merge_typed_data(store, m):
+                store.save(m)
+    except Exception:
+        store.error("merge data/")
     try:
         m = store.load()
         by_dir = {e["dir"]: e for e in m["items"].values()}

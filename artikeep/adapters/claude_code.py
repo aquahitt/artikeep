@@ -92,6 +92,7 @@ def handle_artifact(store: Store, payload: dict):
         source = resolve(ti["file_path"], cwd) if ti.get("file_path") and not ti.get("asset") else None
         title_guess = ti.get("title") or (html_title(source) if source else None) or (source.stem if source else None)
         entry = store.entry_for(m, key, title_guess, when)
+        fresh = not entry["publishes"]
         entry["agent"] = "claude-code"
         if url:
             entry["url"] = url
@@ -101,6 +102,8 @@ def handle_artifact(store: Store, payload: dict):
         if ti.get("type_url"):
             entry["type_url"] = ti["type_url"]
         typed = bool(entry.get("type_url"))
+        if typed and fresh:
+            entry["layout"] = SERVED_LAYOUT  # nothing under data/ to merge, ever
 
         def take(src, rel):
             (copied if copy_file(src, d / rel) else missing).append(str(src))
@@ -112,7 +115,8 @@ def handle_artifact(store: Store, payload: dict):
             src = resolve(ti["file_path"], root if ti.get("root") else cwd)
             rel = os.path.relpath(src, root) if ti.get("root") else Path(src).name
             if typed:
-                take(src, Path("data") / rel)
+                # served at its path relative to root, like the files map: one tree per artifact
+                take(src, rel)
             elif Path(src).suffix.lower() in (".html", ".htm"):
                 take(src, "index.html")
                 entry["source_name"] = Path(src).name
@@ -154,6 +158,53 @@ def handle_artifact(store: Store, payload: dict):
     if missing or not url:
         return "partial: missing=%s url=%s" % (missing, url)
     return "ok"
+
+
+SERVED_LAYOUT = 2
+
+
+def merge_typed_data(store: Store, m: dict) -> bool:
+    """Heal typed artifacts archived before 0.2.1, whose file_path copies went to data/<path>
+    while the files map went to <path> (issue #6). Merge data/ into the served tree in the
+    item and in every version folder; where both copies exist, the one a later version
+    changed wins. Returns whether the manifest changed (each entry is marked once)."""
+    changed = False
+    for e in m["items"].values():
+        if not e.get("type_url") or e.get("layout") == SERVED_LAYOUT:
+            continue
+        item = store.item_dir(e)
+        versions = e.get("versions") or []
+        last = {}  # path -> last version number that changed it, up to the version at hand
+        for v in versions:
+            for c in v.get("changed", []):
+                if not c.startswith("-"):
+                    last[c] = v["n"]
+            _merge_data_dir(item / v["dir"], dict(last))
+        _merge_data_dir(item, last)
+        e["layout"] = SERVED_LAYOUT
+        changed = True
+    return changed
+
+
+def _merge_data_dir(root: Path, last: dict) -> None:
+    data = root / "data"
+    if not data.is_dir():
+        return
+    for f in sorted(p for p in data.rglob("*") if p.is_file()):
+        rel = f.relative_to(data)
+        dst = root / rel
+        # the files map wins a tie, as on the host
+        if not dst.exists() or last.get("data/%s" % rel, 0) > last.get(str(rel), 0):
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            f.replace(dst)
+        else:
+            f.unlink()
+    for d in sorted((p for p in data.rglob("*") if p.is_dir()), reverse=True):
+        d.rmdir()
+    data.rmdir()
+    for c in (root / "project" / "canvas.json", root / "canvas.json"):
+        if c.exists():
+            os.utime(c)  # newer than the viewer and thumbnail, so both are rebuilt
 
 
 def cmd_publish(store: Store, payload: dict) -> None:

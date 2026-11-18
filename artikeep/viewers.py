@@ -58,9 +58,10 @@ button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
 <div id="vp"><div id="stage"></div></div>
 <script>
 """ + LANG_JS + """
-const C = __CANVAS__, BASE = "__BASE__";
+const C = __CANVAS__, BASE = "__BASE__", STATIC = __STATIC__;
 document.documentElement.lang = RU ? "ru" : "en";
-document.getElementById("note").textContent = RU ? "Локальная копия холста: артборды — отдельные страницы, клик по названию открывает артборд целиком." : "Local copy of the canvas: each artboard is its own page; click a title to open it.";
+document.getElementById("note").textContent = (RU ? "Локальная копия холста: артборды — отдельные страницы, клик по названию открывает артборд целиком." : "Local copy of the canvas: each artboard is its own page; click a title to open it.")
+  + (STATIC ? (RU ? " Статичный предпросмотр: среда выполнения Design осталась на сервере, поэтому вычисляемый текст, цвета темы и повторяющиеся блоки могут не отображаться." : " Static preview: the Design runtime stays on the host, so computed text, theme colors and repeated parts may be missing.") : "");
 const pages = (C.pages && C.pages.length) ? C.pages : [{id: "", name: RU ? "Холст" : "Canvas"}];
 let page = (C.launch && C.launch.page) || pages[0].id, zoom = "fit";
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -122,10 +123,12 @@ def make_canvas_viewer(item: Path) -> None:
     support = c.parent / "support.js"
     if not support.exists():
         support.write_text(SUPPORT_STUB, encoding="utf-8")
+    static = support.read_text(encoding="utf-8", errors="ignore").startswith(SUPPORT_STUB.split("\n", 1)[0])
     base = "" if c.parent == item else c.parent.name + "/"
     page.write_text(
         CANVAS_VIEWER.replace("__TITLE__", html.escape(d.get("title") or item.name))
         .replace("__BASE__", base)
+        .replace("__STATIC__", "true" if static else "false")
         .replace("__CANVAS__", json.dumps(d, ensure_ascii=False).replace("</", "<\\/")),
         encoding="utf-8",
     )
