@@ -1,6 +1,11 @@
 # Changelog
 
-## Unreleased
+## 0.2.1 — 2026-11-18
+
+### Changed
+
+- The README recommends the Claude Code plugin: two `/plugin` commands, nothing to install
+  first. The `uv tool` / `pipx` route covers Codex and Claude Desktop.
 
 ### Fixed
 
@@ -10,6 +15,8 @@
   copy first, in every version too.
 - The canvas viewer says when it is a static preview: the Design runtime stays on the host,
   so computed text, theme colors and repeated parts may be missing.
+- A page file outside the publish `root` is reported as not saved instead of being copied
+  next to the item's folder.
 
 ## 0.2.0 — 2026-10-25
 
