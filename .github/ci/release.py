@@ -26,7 +26,7 @@ SEMVER = re.compile(r"^\d+\.\d+\.\d+$")
 PYPROJECT_RE = re.compile(r'(?m)^(version\s*=\s*")([^"]+)(")')
 INIT_RE = re.compile(r'(?m)^(__version__\s*=\s*")([^"]+)(")')
 PLUGIN_RE = re.compile(r'("version"\s*:\s*")([^"]+)(")')
-ENTRY_RE = re.compile(r"(?m)^## (\S+)(?: — (\d{4}-\d{2}-\d{2}))?\s*$")
+ENTRY_RE = re.compile(r"(?m)^## (\S+)(?: — (\d{4}-\d{2}-\d{2}))?[ \t]*$")
 
 
 def fail(msg: str) -> None:
@@ -71,7 +71,7 @@ def cmd_bump(new: str) -> None:
     text = CHANGELOG.read_text(encoding="utf-8")
     if "Unreleased" in heads:
         today = datetime.date.today().isoformat()
-        text = re.sub(r"(?m)^## Unreleased\s*$", "## %s — %s" % (new, today), text, count=1)
+        text = re.sub(r"(?m)^## Unreleased[ \t]*$", "## %s — %s" % (new, today), text, count=1)
     elif new not in heads:
         fail('CHANGELOG.md has neither "## Unreleased" nor "## %s — <date>": write the entry first' % new)
     for path, rx in ((PYPROJECT, PYPROJECT_RE), (INIT, INIT_RE), (PLUGIN, PLUGIN_RE)):
