@@ -25,6 +25,27 @@ from artikeep import __version__, config
 from artikeep.store import Store
 
 
+def _project_args(p) -> None:
+    g = p.add_mutually_exclusive_group()
+    g.add_argument("--project", metavar="PATH", help="the project these belong to (default: the git repository "
+                                                    "of the file, else of the current folder)")
+    g.add_argument("--no-project", action="store_true", help="keep them without a project")
+
+
+def _project_of(a):
+    """(project, error). project is the --project folder, "" for --no-project, else None: the caller
+    picks the default."""
+    from artikeep.util import project_arg
+    if a.no_project:
+        return "", None
+    if a.project:
+        try:
+            return project_arg(a.project), None
+        except ValueError as ex:
+            return None, str(ex)
+    return None, None
+
+
 def _hook(agent: str, event: str) -> int:
     """Never fail the host tool: a hook error must not block the agent's work."""
     store = Store()
@@ -94,6 +115,7 @@ def main(argv=None) -> int:
     p.add_argument("paths", nargs="+")
     p.add_argument("--title")
     p.add_argument("--label")
+    _project_args(p)
 
     p = sub.add_parser("restore", help="copy an item's files out so an agent can publish them again")
     p.add_argument("id", help="the item folder name (the id `search` and the gallery show)")
@@ -103,6 +125,7 @@ def main(argv=None) -> int:
     p = sub.add_parser("import", help="import a chat data export")
     p.add_argument("source", choices=["chatgpt", "claude-ai"])
     p.add_argument("export", help="the export .zip, its folder, or conversations.json")
+    _project_args(p)
 
     p = sub.add_parser("scan", help="archive deliverables from past agent sessions")
     p.add_argument("agent", choices=["codex", "claude-code"])
@@ -166,8 +189,13 @@ def main(argv=None) -> int:
     if a.cmd == "add":
         from artikeep.importers.files import add_path
         store.ensure()
+        from artikeep.util import git_root
+        project, err = _project_of(a)
+        if err:
+            print("add: " + err, file=sys.stderr)
+            return 1
         for path in a.paths:
-            entry, vdir = add_path(store, path, title=a.title, label=a.label)
+            entry, vdir = add_path(store, path, title=a.title, label=a.label, project=project, fallback=git_root("."))
             print("%s %s" % ("saved" if vdir else "unchanged", store.item_dir(entry)))
         store.kick()
         return 0
@@ -187,7 +215,12 @@ def main(argv=None) -> int:
             from artikeep.importers.chatgpt import import_export
         else:
             from artikeep.importers.claude_ai import import_export
-        stats = import_export(store, a.export)
+        project, err = _project_of(a)
+        if err:
+            print("import: " + err, file=sys.stderr)
+            return 1
+        from artikeep.util import git_root
+        stats = import_export(store, a.export, project=git_root(".") if project is None else project or None)
         print(json.dumps(stats, ensure_ascii=False))
         if stats.get("unparsed_calls"):
             print("note: %d tool calls had an unknown shape and were skipped" % stats["unparsed_calls"], file=sys.stderr)

@@ -154,7 +154,7 @@ def gallery_data(store: Store, m: dict) -> dict:
         items.append({
             "key": key, "title": e.get("title") or e["dir"], "dir": e["dir"], "url": e.get("url") or "",
             "origin": origin_of(e, key), "agent": agent_of(e), "main": main,
-            "project": project_label(e.get("project")), "repo": project_repo(e.get("project")), "type": typ,
+            "project": project_label(e.get("project")), "projectPath": e.get("project") or "", "repo": project_repo(e.get("project")), "type": typ,
             "status": item_status(e), "created": (e.get("created") or "")[:10],
             "updated": (e.get("updated") or e.get("created") or "")[:16].replace("T", " "),
             "desc": e.get("description") or "", "issues": e.get("issues") or [], "versions": versions,

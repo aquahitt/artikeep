@@ -23,7 +23,7 @@ import traceback
 from pathlib import Path
 
 from artikeep import config, provenance
-from artikeep.util import now_iso, slugify, title_of, write_bytes
+from artikeep.util import now_iso, project_arg, slugify, title_of, write_bytes
 from artikeep.viewers import CANVAS_MARKS, DOC_MARKS, REACT_MARKS
 
 AGENTS = ("claude-code", "codex", "claude-desktop", "chatgpt", "claude-ai", "import", "mcp")
@@ -224,7 +224,9 @@ class Store:
                 return key, e
         raise KeyError(folder)
 
-    def edit(self, folder: str, title: str | None = None, description: str | None = None) -> dict:
+    def edit(self, folder: str, title: str | None = None, description: str | None = None,
+             project: str | None = None) -> dict:
+        """Rename or describe an item; `project` moves it to another project folder ("" removes it)."""
         with self.lock("manifest"):
             m = self.load()
             _, e = self.find(m, folder)
@@ -235,6 +237,11 @@ class Store:
                     e["description"] = description.strip()
                 else:
                     e.pop("description", None)
+            if project is not None:
+                if project.strip():
+                    e["project"] = project_arg(project.strip())
+                else:
+                    e.pop("project", None)
             self.save(m)
         return e
 

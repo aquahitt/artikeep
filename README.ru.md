@@ -193,7 +193,7 @@ codex,claude-desktop`, `cleanupPeriodDays` пропишите сами (`doctor`
 artikeep open                      # галерея как файл: фильтры, версии, сравнение
 artikeep serve --open              # та же галерея как локальное приложение
 artikeep search планировка кухни   # полнотекстовый, любой язык; --agent, --type, --project, --json
-artikeep add ~/Downloads/report.pdf --title "Отчёт за Q3"
+artikeep add ~/Downloads/report.pdf --title "Отчёт за Q3"   # попадает в репозиторий, где запущена команда; --project PATH, --no-project
 artikeep restore <id> [--version N]  # достать копию, чтобы опубликовать заново (мёртвая ссылка, другой аккаунт)
 artikeep import chatgpt ~/Downloads/chatgpt-export.zip
 artikeep scan codex --all          # сохранить результаты прошлых сессий Codex

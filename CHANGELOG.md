@@ -4,6 +4,11 @@
 
 ### Added
 
+- `artikeep add` and `artikeep import` put what they keep into the project you run them in:
+  the repository of the file if it is in one, else the one of the current folder. `--project PATH`
+  names another, `--no-project` keeps none. Agents working in that repository now find these
+  items through MCP, and the gallery's project filter groups them. An item's project can also
+  be changed from its Rename dialog in `artikeep serve`.
 - Each version keeps the request that led to it (the user's message, up to 500 characters)
   and the session id, for Claude Code publishes and Docs exports and for Codex deliverables.
   The gallery shows it under the version and in the compare view, search finds a version by

@@ -10,7 +10,9 @@ MAX_BYTES = 50 * 1024 * 1024
 SKIP_PARTS = {"node_modules", ".git", "__pycache__"}
 
 
-def add_path(store: Store, path, title=None, agent="import", label=None, project=None) -> tuple:
+def add_path(store: Store, path, title=None, agent="import", label=None, project=None, fallback=None) -> tuple:
+    """Keep a file or folder. project: a folder, "" for none, or None to use the repository the
+    file is in, else `fallback` (the caller's current repository)."""
     p = Path(path).expanduser().resolve()
     if p.is_dir():
         files = {}
@@ -36,5 +38,5 @@ def add_path(store: Store, path, title=None, agent="import", label=None, project
         raise SystemExit("%s: no such file or folder" % p)
     return store.save_item(
         "file:" + str(p), files, agent=agent, title=title, main=main, origin=str(p),
-        project=project or git_root(p), when=now_iso(), label=label,
+        project=(project or None) if project is not None else (git_root(p) or fallback), when=now_iso(), label=label,
     )
