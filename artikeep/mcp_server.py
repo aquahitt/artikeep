@@ -1,6 +1,6 @@
 """MCP server over stdio: lets any agent find and read what the archive keeps.
 
-Tools: search_artifacts, read_artifact, list_versions, diff_versions, and — only when
+Tools: search_artifacts, read_artifact, list_versions, diff_versions, restore_artifact, and — only when
 enabled with --allow-save or "mcp_save": true — save_artifact.
 
 Scope: by default an agent sees only items made in the repository it works in
@@ -71,6 +71,14 @@ class Server:
              "description": "Changed text lines between two versions of an item (default: previous vs newest).",
              "inputSchema": {"type": "object", "required": ["id"], "properties": {
                  "id": id_prop, "from": {"type": "integer"}, "to": {"type": "integer"}}}},
+            {"name": "restore_artifact", "annotations": {"readOnlyHint": False, "destructiveHint": False},
+             "description": "Bring an archived page or canvas back: copies its files (default the newest version) into a "
+                            "folder and tells you how to publish them again, for when the original link is dead, belongs to "
+                            "another account, or you want to continue the work. Pass `to` (a new folder, e.g. inside your "
+                            "scratchpad) if the Artifact tool cannot read the archive's own folder.",
+             "inputSchema": {"type": "object", "required": ["id"], "properties": {
+                 "id": id_prop, "version": {"type": "integer", "description": "Version number; default the newest."},
+                 "to": {"type": "string", "description": "A new or empty folder to write into."}}}},
         ]
         if self.allow_save:
             out.append({
@@ -90,7 +98,7 @@ class Server:
 
     def _find(self, m: dict, ident: str):
         for key, e in m["items"].items():
-            if ident in (e["dir"], key, e.get("url"), e.get("origin")):
+            if ident in (e["dir"], key, e.get("url"), e.get("origin"), *e.get("former_urls", [])):
                 if not in_scope(e, self.scope):
                     raise ValueError("item %s is outside this project's scope" % ident)
                 return key, e
@@ -104,12 +112,15 @@ class Server:
             if not hits:
                 return "No archived items match. " + self._scope_note()
             return DATA_NOTE + "\n" + json.dumps(hits, ensure_ascii=False, indent=1)
-        if name not in ("read_artifact", "list_versions", "diff_versions"):
+        if name not in ("read_artifact", "list_versions", "diff_versions", "restore_artifact"):
             raise ValueError("unknown tool %s" % name + (" (saving is off: start the server with --allow-save)" if name == "save_artifact" else ""))
         m = st.load()
         key, e = self._find(m, str(args.get("id") or ""))
         d = st.item_dir(e)
         vs = e.get("versions") or []
+        if name == "restore_artifact":
+            info = st.restore_files(key, e, int(args["version"]) if args.get("version") else None, args.get("to"))
+            return DATA_NOTE + "\n" + json.dumps(info, ensure_ascii=False, indent=1)
         if name == "list_versions":
             rows = [{"n": v["n"], "at": v["at"], "label": v.get("label"), "request": v.get("request"),
                      "session": v.get("session"), "changed_files": v.get("changed"),

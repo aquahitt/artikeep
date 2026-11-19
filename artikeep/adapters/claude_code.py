@@ -18,7 +18,7 @@ import time
 from pathlib import Path
 
 from artikeep import config, provenance
-from artikeep.store import Store
+from artikeep.store import RESTORE_MARK, Store
 from artikeep.util import (
     copy_file, html_title, now_iso, project_root, resolve, text_blob, with_charset,
 )
@@ -62,6 +62,34 @@ def _provenance(store: Store, payload: dict) -> dict:
 # ---------------------------------------------------------------- Artifact tool
 
 
+def _continue_restored(store: Store, m: dict, url, sources) -> str | None:
+    """Files that `restore` copied out and an agent publishes again under a new link belong to
+    the same item: it takes the new url as its key (the old one is kept in former_urls) and the
+    next version is labelled "republished from vN". Returns that label."""
+    if not url or url in m["items"]:
+        return None
+    for src in sources:
+        if not src:
+            continue
+        for folder in list(Path(src).parents)[:4]:
+            mark = folder / RESTORE_MARK
+            if not mark.is_file():
+                continue
+            try:
+                info = json.loads(mark.read_text(encoding="utf-8"))
+                old = m["items"].get(info["key"])
+                if old is None or old.get("dir") != info["dir"]:
+                    return None
+            except Exception:
+                return None
+            m["items"][url] = m["items"].pop(info["key"])
+            if info["key"] != url:
+                old.setdefault("former_urls", []).append(info["key"])
+            old.pop("deleted", None)
+            return "republished from v%d" % info["version"]
+    return None
+
+
 def handle_artifact(store: Store, payload: dict):
     ti = payload.get("tool_input") or {}
     action = ti.get("action") or "publish"
@@ -99,6 +127,10 @@ def handle_artifact(store: Store, payload: dict):
         key = url or ("local:" + str(ti.get("file_path") or ti.get("type_url") or now_iso()))
         source = resolve(ti["file_path"], cwd) if ti.get("file_path") and not ti.get("asset") else None
         title_guess = ti.get("title") or (html_title(source) if source else None) or (source.stem if source else None)
+        relabel = _continue_restored(store, m, url, [source] + [
+            resolve(s["from"] if isinstance(s, dict) else s, root) for s in (
+                ti["files"].values() if isinstance(ti.get("files"), dict) else [])
+            if isinstance(s, str) or (isinstance(s, dict) and "from" in s)])
         entry = store.entry_for(m, key, title_guess, when)
         fresh = not entry["publishes"]
         entry["agent"] = "claude-code"
@@ -163,7 +195,7 @@ def handle_artifact(store: Store, payload: dict):
         if not url:
             entry["url_unknown"] = True
         if copied and not ti.get("asset"):
-            store.snapshot(d, entry, when, ti.get("label"), _provenance(store, payload))
+            store.snapshot(d, entry, when, ti.get("label") or relabel, _provenance(store, payload))
         store.save(m)
     if missing or not url:
         return "partial: missing=%s url=%s" % (missing, url)

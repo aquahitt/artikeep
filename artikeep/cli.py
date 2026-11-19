@@ -7,6 +7,7 @@
   artikeep serve [--port N] [--open]    the gallery as a local app: full-text search, live, actions
   artikeep search WORDS [--json]        search the archive (--agent, --type, --project)
   artikeep add PATH… [--title T]        keep any file or page folder by hand
+  artikeep restore ID [--version N] [--to DIR]  copy an item's files out to publish them again
   artikeep import chatgpt|claude-ai EXPORT   import canvases / artifacts from a data export
   artikeep scan codex|claude-code [--days N|--all]  archive what past sessions made
   artikeep rebuild [--no-push]          rebuild gallery and index, commit (and push)
@@ -94,6 +95,11 @@ def main(argv=None) -> int:
     p.add_argument("--title")
     p.add_argument("--label")
 
+    p = sub.add_parser("restore", help="copy an item's files out so an agent can publish them again")
+    p.add_argument("id", help="the item folder name (the id `search` and the gallery show)")
+    p.add_argument("--version", type=int, help="version number; default the newest")
+    p.add_argument("--to", help="a new or empty folder to write into")
+
     p = sub.add_parser("import", help="import a chat data export")
     p.add_argument("source", choices=["chatgpt", "claude-ai"])
     p.add_argument("export", help="the export .zip, its folder, or conversations.json")
@@ -164,6 +170,16 @@ def main(argv=None) -> int:
             entry, vdir = add_path(store, path, title=a.title, label=a.label)
             print("%s %s" % ("saved" if vdir else "unchanged", store.item_dir(entry)))
         store.kick()
+        return 0
+    if a.cmd == "restore":
+        try:
+            m = store.load()
+            key, e = store.find(m, a.id)
+            info = store.restore_files(key, e, a.version, a.to)
+        except (KeyError, ValueError) as ex:
+            print("restore: %s" % (ex.args[0] if isinstance(ex, ValueError) else "no item %s" % a.id), file=sys.stderr)
+            return 1
+        print("%s v%d -> %s\n  %s\n  %s" % (info["id"], info["version"], info["folder"], ", ".join(info["files"][:12]), info["publish"]))
         return 0
     if a.cmd == "import":
         store.ensure()
