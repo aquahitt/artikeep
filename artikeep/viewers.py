@@ -59,6 +59,7 @@ button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
 <script>
 """ + LANG_JS + """
 const C = __CANVAS__, BASE = "__BASE__", STATIC = __STATIC__;
+const INLINE = {};  // artikeep export puts the boards here, so the file stands alone
 document.documentElement.lang = RU ? "ru" : "en";
 document.getElementById("note").textContent = (RU ? "Локальная копия холста: артборды — отдельные страницы, клик по названию открывает артборд целиком." : "Local copy of the canvas: each artboard is its own page; click a title to open it.")
   + (STATIC ? (RU ? " Статичный предпросмотр: среда выполнения Design осталась на сервере, поэтому вычисляемый текст, цвета темы и повторяющиеся блоки могут не отображаться." : " Static preview: the Design runtime stays on the host, so computed text, theme colors and repeated parts may be missing.") : "");
@@ -78,7 +79,7 @@ function render(){
   st.style.width = W + "px"; st.style.height = H + "px";
   st.innerHTML = notes.map(n => `<div class="cn ${esc(n.kind)}" style="left:${n.x - x0}px;top:${n.y - y0}px;max-width:${n.maxW || 900}px">${esc(n.text)}</div>`).join("") +
     order.map(k => { const b = C.boards[k]; const src = BASE + encodeURI(k);
-      return `<div class="board" style="left:${b.x - x0}px;top:${b.y - y0}px;width:${b.w}px;height:${b.h}px"><div class="t"><a href="${src}" target="_blank">${esc(b.title || k)}</a></div><iframe loading="lazy" src="${src}" width="${b.w}" height="${b.h}" title="${esc(b.title || k)}"></iframe></div>`; }).join("");
+      return `<div class="board" style="left:${b.x - x0}px;top:${b.y - y0}px;width:${b.w}px;height:${b.h}px"><div class="t"><a href="${src}" target="_blank">${esc(b.title || k)}</a></div><iframe loading="lazy" ${INLINE[src] !== undefined ? `srcdoc="${esc(INLINE[src])}"` : `src="${src}"`} width="${b.w}" height="${b.h}" title="${esc(b.title || k)}"></iframe></div>`; }).join("");
   const vw = document.getElementById("vp").clientWidth;
   const s = zoom === "fit" ? Math.min(1, (vw - 24) / W) : zoom;
   st.style.transform = `scale(${s})`; st.style.marginBottom = `${-(1 - s) * H}px`; st.style.marginRight = `${-(1 - s) * W}px`;

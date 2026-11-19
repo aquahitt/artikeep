@@ -345,6 +345,7 @@ kbd.k{font:12px "Golos Text";border:1px solid var(--line);border-bottom-width:2p
   <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-4-4L4 16v4ZM13.5 6.5l4 4"/></symbol>
   <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></symbol>
   <symbol id="i-restore" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4h4"/><path d="m10 12 2 2 4-4"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
   <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 15V4M7 9l5-5 5 5M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/></symbol>
   <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></symbol>
 </svg>
@@ -425,6 +426,7 @@ const I18N = {
     theme: "Тема: %s. Переключить", themeTip: "Тема: %s", themes: {auto: "как в системе", light: "светлая", dark: "тёмная"},
     liveNow: "обновляется само", addFiles: "Добавить файлы или экспорт чатов", status: "Состояние архива", rename: "Переименовать",
     reveal: "Показать в Finder", del: "Удалить из архива", restoreV: "Сделать v%s текущей", cancel: "Отмена", save: "Сохранить",
+    export: "Экспорт файлом", exportTitle: "Экспорт одним файлом", exportBtn: "Скачать", exportFormat: "Формат", exportVersion: "Версия", exportHtml: "Страница (один HTML-файл)", exportZip: "Архив (zip)", exported: "Скачано: %s", exportedNote: "Скачано: %s (%s)",
     fTitle: "Название", fDesc: "Описание", fProjectPath: "Папка проекта (пусто: без проекта)", editTitle: "Название, описание и проект", delTitle: "Удалить из архива?",
     delText: "«%s» исчезнет из архива и галереи. Файлы останутся в истории git архива: вернуть можно оттуда.", delBtn: "Удалить",
     restoreTitle: "Сделать v%s текущей?", restoreText: "Текущая версия останется в истории, а восстановленная станет новой версией.", restoreBtn: "Сделать текущей",
@@ -477,6 +479,7 @@ const I18N = {
     theme: "Theme: %s. Switch", themeTip: "Theme: %s", themes: {auto: "system", light: "light", dark: "dark"},
     liveNow: "live", addFiles: "Add files or chat exports", status: "Archive status", rename: "Rename",
     reveal: "Show in Finder", del: "Delete from the archive", restoreV: "Make v%s current", cancel: "Cancel", save: "Save",
+    export: "Export as a file", exportTitle: "Export as one file", exportBtn: "Download", exportFormat: "Format", exportVersion: "Version", exportHtml: "Page (one HTML file)", exportZip: "Archive (zip)", exported: "Downloaded %s", exportedNote: "Downloaded %s (%s)",
     fTitle: "Title", fDesc: "Description", fProjectPath: "Project folder (empty: no project)", editTitle: "Title, description and project", delTitle: "Delete from the archive?",
     delText: "“%s” leaves the archive and the gallery. Its files stay in the archive's git history, where you can bring them back.", delBtn: "Delete",
     restoreTitle: "Make v%s current?", restoreText: "The current version stays in history; the restored one becomes a new version.", restoreBtn: "Make current",
@@ -699,7 +702,7 @@ function renderDrawer() {
     ${preview(it)}
     <div class="dacts">${it.local ? `<a class="btn solid" href="${pageUrl(it)}" target="_blank" rel="noopener">${ic("ext")}${t("open")}</a>` : ""}
       ${it.versions.length > 1 ? `<button class="btn" type="button" data-cmp="1|${cur.n}">${ic("compare")}${t("firstAndCurrent")}</button>` : ""}<span class="sp"></span>
-      ${it.offline ? ia("offline", t("offline"), dirUrl + "index.offline.html") : ""}${it.server ? ia("cloud", t("serverSnap"), dirUrl + "server/index.html") : ""}${it.local ? (LIVE ? ib("folder", t("reveal"), `data-act="reveal"`) : ia("folder", t("folder"), dirUrl)) : ""}${it.origin.href ? ia("archive", t("originalAt", it.origin.label), it.origin.href) : ""}${LIVE ? ib("trash", t("del"), `data-act="delete"`) : ""}</div>
+      ${LIVE ? ib("download", t("export"), `data-act="export"`) : ""}${it.offline ? ia("offline", t("offline"), dirUrl + "index.offline.html") : ""}${it.server ? ia("cloud", t("serverSnap"), dirUrl + "server/index.html") : ""}${it.local ? (LIVE ? ib("folder", t("reveal"), `data-act="reveal"`) : ia("folder", t("folder"), dirUrl)) : ""}${it.origin.href ? ia("archive", t("originalAt", it.origin.label), it.origin.href) : ""}${LIVE ? ib("trash", t("del"), `data-act="delete"`) : ""}</div>
     <dl class="facts"><dt>${t("fProject")}</dt><dd>${esc(projLabel(it.project))}</dd><dt>${t("fAgent")}</dt><dd>${esc(agentLabel(it.agent))}</dd><dt>${t("fType")}</dt><dd><span class="tag"><span class="sw ${it.type} t-${it.type}"></span>${L.type[it.type]}</span></dd>
       <dt>${t("fCopy")}</dt><dd class="s-${it.status}" style="color:var(--c)">${it.status === "live" && L.liveBy[it.agent] || L.copyFull[it.status]}</dd><dt>${t("created")}</dt><dd>${fmt(it.created)}</dd><dt>${t("changed")}</dt><dd>${fmt(it.updated)}${it.updated.length > 10 ? ", " + it.updated.slice(11) : ""}</dd>
       ${it.issues.length ? `<dt>${t("issues")}</dt><dd class="issues">${it.issues.map(n => issueUrl(it, n) ? `<a class="issue" href="${issueUrl(it, n)}" target="_blank" rel="noopener">${ic("issue")}#${n}</a>` : `<span class="issue">${ic("issue")}#${n}</span>`).join("")}</dd>` : ""}</dl>
@@ -883,6 +886,19 @@ function liveAction(el) {
     dialog({title: t("editTitle"), ok: t("save"),
       body: `<label class="f">${t("fTitle")}<input type="text" name="title" required value="${esc(it.title)}"></label><label class="f">${t("fDesc")}<textarea name="description">${esc(it.desc)}</textarea></label><label class="f">${t("fProjectPath")}<input type="text" name="project" placeholder="/path/to/repository" value="${esc(it.projectPath)}"></label>`,
       submit: async fd => { await post("edit", {title: fd.get("title"), description: fd.get("description"), project: fd.get("project")}); await refresh(true); toast(t("saved")); }});
+  } else if (el.dataset.act === "export") {
+    const cur = it.versions.length ? it.versions[it.versions.length - 1].n : 0;
+    dialog({title: t("exportTitle"), ok: t("exportBtn"),
+      body: `<label class="f">${t("exportFormat")}<select name="format"><option value="html">${t("exportHtml")}</option><option value="zip">${t("exportZip")}</option><option value="pdf">PDF</option></select></label>`
+        + (it.versions.length > 1 ? `<label class="f">${t("exportVersion")}<select name="version">${it.versions.slice().reverse().map(v => `<option value="${v.n}">v${v.n}, ${esc(v.at)}${v.n === cur ? " (" + t("current").toLowerCase() + ")" : ""}</option>`).join("")}</select></label>` : ""),
+      submit: async fd => {
+        const qs = new URLSearchParams({format: fd.get("format")}); if (fd.get("version")) qs.set("version", fd.get("version"));
+        const r = await fetch(LIVE.api + "export/" + encodeURIComponent(it.dir) + "?" + qs, {headers: {"X-Artikeep-Token": LIVE.token}});
+        if (!r.ok) { let j = {}; try { j = await r.json(); } catch (e) {} throw new Error(j.error || String(r.status)); }
+        const name = decodeURIComponent(r.headers.get("X-Artikeep-Export-Name") || it.dir + "." + fd.get("format")), notes = decodeURIComponent(r.headers.get("X-Artikeep-Notes") || "");
+        const a = document.createElement("a"); a.href = URL.createObjectURL(await r.blob()); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+        toast(notes ? t("exportedNote", name, notes) : t("exported", name));
+      }});
   } else if (el.dataset.act === "delete") {
     dialog({title: t("delTitle"), body: `<p>${esc(t("delText", it.title))}</p>`, ok: t("delBtn"), danger: true,
       submit: async () => { await post("delete"); S.open = null; await refresh(true); toast(t("deleted", it.title)); }});

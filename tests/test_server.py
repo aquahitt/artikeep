@@ -111,6 +111,20 @@ class ServerTest(TempArchive):
         agents = sorted(e["agent"] for e in self.manifest()["items"].values())
         self.assertEqual(agents, ["claude-ai", "codex", "import"])
 
+    def test_export_download(self):
+        d = self.e1["dir"]
+        code, _ = self.req("%s/api/export/%s" % (self.B, d))
+        self.assertEqual(code, 403)  # the token is required, like every /api/ call
+        code, body = self.req("%s/api/export/%s?format=html&version=1" % (self.B, d), headers=self.H)
+        self.assertEqual(code, 200)
+        self.assertIn("планировка кухни", body.decode())
+        self.assertNotIn("гостиной", body.decode())
+        code, body = self.req("%s/api/export/%s?format=zip" % (self.B, d), headers=self.H)
+        self.assertEqual((code, body[:2]), (200, b"PK"))
+        code, body = self.req("%s/api/export/%s?format=docx" % (self.B, d), headers=self.H)
+        self.assertEqual(code, 400)
+        self.assertEqual(self.req("%s/api/export/nope" % self.B, headers=self.H)[0], 400)
+
 
 class NotifyTest(TempArchive):
     def test_rate_limited_and_text_passed_as_argument(self):
