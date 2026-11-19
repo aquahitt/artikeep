@@ -9,7 +9,7 @@
   artikeep add PATH… [--title T]        keep any file or page folder by hand
   artikeep restore ID [--version N] [--to DIR]  copy an item's files out to publish them again
   artikeep import chatgpt|claude-ai EXPORT   import canvases / artifacts from a data export
-  artikeep scan codex|claude-code [--days N|--all]  archive what past sessions made
+  artikeep scan codex|claude-code|opencode [--days N|--all]  archive what past sessions made
   artikeep rebuild [--no-push]          rebuild gallery and index, commit (and push)
   artikeep mcp [--scope all] [--allow-save]  run the MCP server on stdio
   artikeep hook AGENT EVENT             entry point for agent hooks (reads JSON on stdin)
@@ -57,6 +57,8 @@ def _hook(agent: str, event: str) -> int:
             from artikeep.adapters import claude_code as mod
         elif agent == "codex":
             from artikeep.adapters import codex as mod
+        elif agent == "opencode":
+            from artikeep.adapters import opencode as mod
         else:
             return 0
         fn = mod.COMMANDS.get(event)
@@ -128,7 +130,7 @@ def main(argv=None) -> int:
     _project_args(p)
 
     p = sub.add_parser("scan", help="archive deliverables from past agent sessions")
-    p.add_argument("agent", choices=["codex", "claude-code"])
+    p.add_argument("agent", choices=["codex", "claude-code", "opencode"])
     g = p.add_mutually_exclusive_group()
     g.add_argument("--days", type=int, default=30)
     g.add_argument("--all", action="store_true")
@@ -233,6 +235,9 @@ def main(argv=None) -> int:
             from artikeep.adapters import codex
             n = codex.cmd_check(store, {}, days=days)
             print("codex: %d new item versions" % n)
+        elif a.agent == "opencode":
+            from artikeep.adapters import opencode
+            print("opencode: %d new item versions" % opencode.cmd_check(store, {}, days=days))
         else:
             from artikeep.adapters import claude_code
             claude_code.cmd_check(store, {}, days=days)

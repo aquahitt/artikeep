@@ -143,7 +143,12 @@ def candidates(r: Rollout, exts) -> dict:
 
 
 def archive_rollout(store: Store, path: Path) -> int:
-    r = Rollout(path)
+    return archive_session(store, Rollout(path))
+
+
+def archive_session(store: Store, r, agent: str = "codex") -> int:
+    """Archive the deliverables of one session. `r` has the attributes of Rollout: session, cwd,
+    changed, mentioned, vis_dirs and request_before(ts). Other agents build one from their own logs."""
     found = candidates(r, store.settings.get("codex_extensions") or [])
     if not found:
         return 0
@@ -153,7 +158,7 @@ def archive_rollout(store: Store, path: Path) -> int:
     for src, (ts, data) in sorted(found.items()):
         if str(store.root) in src:
             continue
-        key = "codex:" + src
+        key = "%s:%s" % (agent, src)
         p = Path(src)
         rel = "index.html" if p.suffix.lower() in (".html", ".htm") else p.name
         files = {rel: data}
@@ -167,7 +172,7 @@ def archive_rollout(store: Store, path: Path) -> int:
         if (m["items"].get(key) or {}).get("sha256") == digest:
             continue
         _, vdir = store.save_item(
-            key, files, agent="codex", title=title_of(p, data), main=rel, project=project,
+            key, files, agent=agent, title=title_of(p, data), main=rel, project=project,
             origin=src, when=ts or now_iso(), session=r.session, extra={"sha256": digest},
             request=r.request_before(ts),
         )

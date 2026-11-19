@@ -4,6 +4,11 @@
 
 ### Added
 
+- opencode is captured too. `artikeep install --agents opencode` (found automatically) adds a
+  small plugin to `~/.config/opencode/plugins/` and registers the MCP server in `opencode.json`.
+  When a session goes idle, the files it wrote that git does not keep are archived, with the
+  request behind each one, by the same rules as Codex. `artikeep scan opencode` recovers past
+  sessions from opencode's session database.
 - `artikeep add` and `artikeep import` put what they keep into the project you run them in:
   the repository of the file if it is in one, else the one of the current folder. `--project PATH`
   names another, `--no-project` keeps none. Agents working in that repository now find these
