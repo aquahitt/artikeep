@@ -9,6 +9,10 @@
   The gallery shows it under the version and in the compare view, search finds a version by
   the words of its request, and the MCP `list_versions` tool returns it. `"provenance": false`
   in `artikeep.json` turns it off. Versions saved earlier have none.
+- `artikeep restore <id> [--version N] [--to DIR]` and the MCP `restore_artifact` tool copy an
+  archived page or canvas out and say how to publish it again, for a dead link, another account,
+  or to continue old work. When the agent publishes those files, the new link joins the same
+  item as a new version ("republished from vN") instead of creating a duplicate.
 
 ## 0.2.1 — 2026-11-18
 

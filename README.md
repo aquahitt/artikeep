@@ -189,6 +189,7 @@ artikeep open                      # the gallery as a file: filters, versions, c
 artikeep serve --open              # the same gallery as a local app
 artikeep search kitchen layout     # full-text, any language; --agent, --type, --project, --json
 artikeep add ~/Downloads/report.pdf --title "Q3 report"
+artikeep restore <id> [--version N]  # copy an item out to publish it again (dead link, other account)
 artikeep import chatgpt ~/Downloads/chatgpt-export.zip
 artikeep scan codex --all          # archive deliverables from past Codex sessions
 artikeep scan claude-code          # recover publishes missed in the last 30 days (--days N, --all)
@@ -207,6 +208,7 @@ any of them as `uvx artikeep …`.)
 | `read_artifact` | metadata, file list and text of an item or one of its versions |
 | `list_versions` | versions with time, label and size of change |
 | `diff_versions` | changed text lines between two versions |
+| `restore_artifact` | copies an item's files out and says how to publish them again; the new artifact joins the same item as a new version |
 | `save_artifact` | keep a page or document (off unless `--mcp-save`) |
 
 By default an agent sees only items made in the repository it works in. See

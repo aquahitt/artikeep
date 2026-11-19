@@ -30,6 +30,7 @@ AGENTS = ("claude-code", "codex", "claude-desktop", "chatgpt", "claude-ai", "imp
 GITIGNORE = [".hooklog/", ".cache/", "*.tmp", ".DS_Store"]
 VERSION_SKIP_DIRS = {"versions", "_vendor", "server"}
 VERSION_SKIP_FILES = {"index.offline.html", "docs-ops.jsonl", "_thumb.jpg"}
+RESTORE_MARK = ".artikeep-restore.json"
 VIEWER_MARKS = CANVAS_MARKS + DOC_MARKS + REACT_MARKS
 
 
@@ -260,6 +261,50 @@ class Store:
             e["updated"] = when
             self.save(m)
         return vdir
+
+    def restore_files(self, key: str, e: dict, n: int | None = None, dest=None) -> dict:
+        """Copy the files of version n (default the newest) into a folder an agent can publish from.
+
+        The folder is `dest`, which must be new or empty, or .cache/restore/<item>-v<n>. A marker file
+        in it remembers the item, so publishing these files again continues the same item (the
+        publish hook reads it). Returns what the caller needs to publish them."""
+        versions = e.get("versions") or []
+        item = self.item_dir(e)
+        if versions:
+            v = next((v for v in versions if v["n"] == n), None) if n else versions[-1]
+            if not v:
+                raise ValueError("versions are numbered 1..%d" % len(versions))
+            n, src = v["n"], item / v["dir"]
+        else:
+            n, src = 0, item
+        files = self.version_files(src)
+        if not files:
+            raise ValueError("item %s has no files to restore" % e["dir"])
+        if dest:
+            dest = Path(dest).expanduser().resolve()
+            if dest.exists() and (not dest.is_dir() or any(dest.iterdir())):
+                raise ValueError("%s exists and is not empty: name a new folder" % dest)
+        else:
+            dest = self.cache / "restore" / ("%s-v%d" % (e["dir"], n))
+            shutil.rmtree(dest, ignore_errors=True)
+        for rel, data in files.items():
+            write_bytes(dest / rel, data)
+        (dest / RESTORE_MARK).write_text(json.dumps({"key": key, "dir": e["dir"], "version": n}), encoding="utf-8")
+        out = {"id": e["dir"], "title": e.get("title"), "version": n, "folder": str(dest),
+               "files": sorted(files), "main": e.get("main") or "index.html"}
+        names = sorted(files)
+        if e.get("type_url"):
+            entry = next((f for f in names if f.endswith("canvas.json")), names[0])
+            out["type_url"] = e["type_url"]
+            out["publish"] = ("Create a new artifact from type_url, then publish with the Artifact tool: root=%s, file_path=%s, "
+                              "files = every other file of `files`, each mapped to its own relative path." % (dest, dest / entry))
+        else:
+            page = "index.html" if "index.html" in files else (out["main"] if out["main"] in files else names[0])
+            out["publish"] = "Publish with the Artifact tool: file_path=%s (the page's own files sit beside it)." % (dest / page)
+        out["publish"] += " It becomes a new artifact under the current account, and artikeep adds it as a new version of this item."
+        if e.get("url"):
+            out["was_published_at"] = e["url"]
+        return out
 
     def delete(self, folder: str) -> str:
         """Drop an item from the archive. Its files stay in git history, so this can be undone."""
