@@ -7,6 +7,8 @@
   artikeep serve [--port N] [--open]    the gallery as a local app: full-text search, live, actions
   artikeep search WORDS [--json]        search the archive (--agent, --type, --project)
   artikeep add PATH… [--title T]        keep any file or page folder by hand
+  artikeep secrets                      what the secret check holds back from the push
+  artikeep allow ITEM [--rule R]        mark what it found in ITEM as fine
   artikeep export ID [--version N] [--format html|zip|pdf] [-o FILE]  one file to send
   artikeep restore ID [--version N] [--to DIR]  copy an item's files out to publish them again
   artikeep import chatgpt|claude-ai EXPORT   import canvases / artifacts from a data export
@@ -120,6 +122,11 @@ def main(argv=None) -> int:
     p.add_argument("--label")
     _project_args(p)
 
+    sub.add_parser("secrets", help="show what the secret check holds back from the push")
+    p = sub.add_parser("allow", help="mark possible secrets found in an item as false alarms")
+    p.add_argument("item", help="the item folder name (see `artikeep secrets`)")
+    p.add_argument("--rule", help="only findings of this kind, e.g. 'AWS access key'")
+
     p = sub.add_parser("export", help="one item as a file to send: html (self-contained), zip or pdf")
     p.add_argument("id", help="the item folder name (the id `search` and the gallery show)")
     p.add_argument("--version", type=int, help="version number; default the newest")
@@ -206,6 +213,32 @@ def main(argv=None) -> int:
         for path in a.paths:
             entry, vdir = add_path(store, path, title=a.title, label=a.label, project=project, fallback=git_root("."))
             print("%s %s" % ("saved" if vdir else "unchanged", store.item_dir(entry)))
+        store.kick()
+        return 0
+    if a.cmd == "secrets":
+        from artikeep import secretscan
+        if not (store.root / ".git").exists():
+            print("the archive is not a git repository: nothing is pushed")
+            return 0
+        history, net, base = secretscan.unpushed(store, set(store.settings.get("secret_allow") or []))
+        hits = net or history
+        if not hits:
+            print("no possible secrets in what is not pushed yet (secret_scan: %s)" % store.settings.get("secret_scan", "block"))
+            return 0
+        print("%d possible secret(s) in what is not pushed yet%s:" % (len(hits), "" if net else " (already removed again: the push will squash them)"))
+        for f in hits:
+            print("  %s%s" % (secretscan.describe(f), "   item: %s" % f["item"] if f["item"] else ""))
+        print("false alarm? artikeep allow ITEM    real? delete the item (its older versions keep the text), the push then goes ahead")
+        return 1
+    if a.cmd == "allow":
+        from artikeep import secretscan
+        hits = secretscan.allow(store, a.item, a.rule)
+        if not hits:
+            print("allow: nothing found for %s%s" % (a.item, " (%s)" % a.rule if a.rule else ""), file=sys.stderr)
+            return 1
+        print("marked %d finding(s) as fine:" % len(hits))
+        for f in hits:
+            print("  " + secretscan.describe(f))
         store.kick()
         return 0
     if a.cmd == "export":

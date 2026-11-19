@@ -225,6 +225,7 @@ The archive is `~/artikeep` unless `artikeep init <path>` chose another folder (
 | Key | Default | Does |
 |---|---|---|
 | `git_push` | `true` | push to the archive's remote after each commit |
+| `secret_scan` | `"block"` | before a push, look for secrets in what is about to leave: `"block"` holds it back and says why (`artikeep secrets`, `artikeep allow`), `"warn"` pushes and says so, `"off"` skips it |
 | `thumbnails` | `"auto"` | gallery thumbnails, if Playwright is importable by `python3`; `"off"` disables |
 | `issue_links` | `true` | link items to GitHub issues that mention them (needs `gh`), once a day |
 | `lang` | `"auto"` | gallery and hook messages: `"en"`, `"ru"`, or follow the browser / locale |
