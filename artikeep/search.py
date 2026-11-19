@@ -54,7 +54,9 @@ def item_text(store: Store, entry: dict) -> str:
     d = store.item_dir(entry)
     vs = entry.get("versions") or []
     src = d / vs[-1]["dir"] if vs and (d / vs[-1]["dir"]).exists() else d
-    return "\n".join("\n".join(lines) for lines in version_text(src).values())[:MAX_TEXT]
+    body = "\n".join("\n".join(lines) for lines in version_text(src).values())[:MAX_TEXT]
+    asked = "\n".join(v["request"] for v in vs if v.get("request"))
+    return (body + "\n" + asked) if asked else body
 
 
 def _connect(store: Store):

@@ -24,7 +24,8 @@ agent search what you already have.
 
 - **Automatic where it can be.** Hooks in Claude Code and Codex capture without the
   model having to remember anything.
-- **Every change is a version.** Compare any two side by side, with the changed text lines.
+- **Every change is a version, with the reason.** Compare any two side by side, with the changed
+  text lines. Each version keeps the request that led to it, and search finds it by those words.
 - **Plain files, in git.** The archive is a folder of HTML, Markdown and JSON. It opens
   without artikeep, and syncs between machines through a private git remote.
 - **Agents can look it up.** Before rebuilding a report from scratch, an agent searches
@@ -224,6 +225,7 @@ The archive is `~/artikeep` unless `artikeep init <path>` chose another folder (
 | `issue_links` | `true` | link items to GitHub issues that mention them (needs `gh`), once a day |
 | `lang` | `"auto"` | gallery and hook messages: `"en"`, `"ru"`, or follow the browser / locale |
 | `notify` | `true` | desktop notification when capturing fails |
+| `provenance` | `true` | keep the request (up to 500 characters) and session behind each version; `false` stops recording them |
 | `mcp_scope` | `"project"` | `"all"` lets agents see every project's items |
 | `mcp_save` | `false` | let agents save through MCP |
 | `codex_extensions` | `.html .htm .svg .md .pdf .docx .pptx .xlsx .csv` | which files a Codex session made count as deliverables |
