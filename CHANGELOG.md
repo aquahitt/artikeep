@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.3.0 — 2026-11-19
 
 ### Added
 
@@ -23,6 +23,12 @@
   archived page or canvas out and say how to publish it again, for a dead link, another account,
   or to continue old work. When the agent publishes those files, the new link joins the same
   item as a new version ("republished from vN") instead of creating a duplicate.
+
+### Fixed
+
+- The plugin's MCP server is declared in `plugin.json`, not in a `.mcp.json` at the repository
+  root. Opening a clone of the repository in Claude Code no longer starts a broken project
+  server that shadowed a working `artikeep` server of the same name.
 
 ## 0.2.1 — 2026-11-18
 
