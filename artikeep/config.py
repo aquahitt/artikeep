@@ -27,6 +27,11 @@ DEFAULTS = {
     # "all" shows everything. Writing through MCP is off unless enabled.
     "mcp_scope": "project",
     "mcp_save": False,
+    # Before each push, look for secrets in what is about to leave: "block" holds the push back
+    # and says why, "warn" pushes and says so, "off" skips the check.
+    "secret_scan": "block",
+    # Fingerprints of findings marked as fine with `artikeep allow`.
+    "secret_allow": [],
     # Record the user request and session behind each version (read from the agent's transcript).
     "provenance": True,
     # Codex: which files a session made count as deliverables worth keeping.

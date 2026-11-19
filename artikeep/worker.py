@@ -110,6 +110,16 @@ def sync(store: Store, push: bool) -> None:
             if r.returncode != 0:
                 git(store, "rebase", "--abort", check=False)
                 store.note("push.log", "pull --rebase failed, local commits kept: %s" % r.stderr.strip())
+            from artikeep import secretscan
+            ok, hits = secretscan.check_before_push(store)
+            if hits:
+                from artikeep.notify import notify
+                where = ", ".join(secretscan.describe(f) for f in hits[:3]) + (", …" if len(hits) > 3 else "")
+                notify(store, "secrets", "artikeep: %s — possible secret in %s. See `artikeep secrets`." % (
+                    "pushed anyway (secret_scan: warn)" if ok else "not pushed", where), every=86400)
+                store.note("push.log", "secret scan: %s%s" % ("" if ok else "push held back: ", where))
+            if not ok:
+                return
             r = git(store, "push", "-q", "origin", "HEAD", check=False)
             if r.returncode != 0:
                 store.note("push.log", r.stderr.strip())

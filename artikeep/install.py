@@ -508,6 +508,11 @@ def doctor(store: Store, quick: bool = False) -> int:
             line("artikeep" in (conf.get("mcp") or {}), "opencode: MCP server artikeep registered")
         else:
             print("info  opencode: not wired (artikeep install --agents opencode)")
+    from artikeep import secretscan
+    held = secretscan.load_findings(store)
+    if held:
+        line(False, "%d possible secret(s) hold back the push: %s (artikeep secrets)" % (
+            len(held), ", ".join(secretscan.describe(f) for f in held[:3])))
     errs = store.log / "errors.log"
     if errs.exists():
         recent = [ln for ln in errs.read_text(encoding="utf-8", errors="ignore").splitlines() if ln.startswith("--- ")][-3:]

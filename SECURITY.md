@@ -7,6 +7,16 @@ sometimes data pasted into a conversation. Treat it like your mail.
 points. It never creates a remote and never makes anything public. Hosting the archive
 as a public site (GitHub Pages and the like) publishes all of it.
 
+**Secrets in artifacts.** Agents sometimes put a real key or token into a page or a log. Before
+each push, artikeep checks the lines the unpushed commits add for well-known secret shapes
+(cloud and GitHub keys, Slack, Stripe, Anthropic/OpenAI and Telegram tokens, private keys, and
+`key = "..."` values that look random). On a hit the files stay on disk and the push is held
+back, with a desktop notification and the file and line in `artikeep secrets` and `artikeep
+doctor`. `artikeep allow ITEM` marks a false alarm; deleting the item makes the push squash the
+unpushed commits, so the text is never sent. `"secret_scan": "warn"` pushes and tells you,
+`"off"` skips the check. It is a short pattern list, not a guarantee: it catches the loud,
+common leaks, not every secret, and it does not look at what is already on the remote.
+
 **MCP scope.** An agent that reads web pages, issues or files can be steered by text
 hidden in them (prompt injection). If that agent can also read your whole archive and
 reach the network, the archive becomes something it can leak. So by default the MCP

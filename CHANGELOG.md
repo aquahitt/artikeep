@@ -4,6 +4,12 @@
 
 ### Added
 
+- Before each push the archive is checked for secrets: cloud and GitHub keys, Slack, Stripe,
+  Anthropic/OpenAI and Telegram tokens, private keys and random-looking `key = "..."` values
+  in what the unpushed commits add. On a hit the files stay on disk, the push is held back, you
+  get a notification, and `artikeep secrets` (also `doctor`) shows the file and line.
+  `artikeep allow ITEM` marks a false alarm; deleting the item lets the push go ahead without
+  the text. `"secret_scan": "warn"` or `"off"` relaxes it.
 - `artikeep export <id> [--version N] [--format html|zip|pdf] [-o FILE]`, and an Export button
   in `artikeep serve`, turn an archived page or canvas into one file to send. `html` inlines
   scripts, styles, images and fonts (a Design canvas carries its boards) and opens from disk
