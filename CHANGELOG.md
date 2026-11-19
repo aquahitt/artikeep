@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `artikeep export <id> [--version N] [--format html|zip|pdf] [-o FILE]`, and an Export button
+  in `artikeep serve`, turn an archived page or canvas into one file to send. `html` inlines
+  scripts, styles, images and fonts (a Design canvas carries its boards) and opens from disk
+  with no network; it lists what it could not inline. `zip` is the item's files with a README.
+  `pdf` prints the page with Playwright. The archive is not changed.
+
 ## 0.3.0 — 2026-11-20
 
 ### Added

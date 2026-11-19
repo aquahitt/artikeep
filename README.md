@@ -190,6 +190,7 @@ artikeep open                      # the gallery as a file: filters, versions, c
 artikeep serve --open              # the same gallery as a local app
 artikeep search kitchen layout     # full-text, any language; --agent, --type, --project, --json
 artikeep add ~/Downloads/report.pdf --title "Q3 report"   # joins the repository you run it in; --project PATH, --no-project
+artikeep export <id> [--version N] [--format html|zip|pdf] [-o FILE]  # one file to send; also in `serve`
 artikeep restore <id> [--version N]  # copy an item out to publish it again (dead link, other account)
 artikeep import chatgpt ~/Downloads/chatgpt-export.zip
 artikeep scan codex --all          # archive deliverables from past Codex sessions

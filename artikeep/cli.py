@@ -7,6 +7,7 @@
   artikeep serve [--port N] [--open]    the gallery as a local app: full-text search, live, actions
   artikeep search WORDS [--json]        search the archive (--agent, --type, --project)
   artikeep add PATH… [--title T]        keep any file or page folder by hand
+  artikeep export ID [--version N] [--format html|zip|pdf] [-o FILE]  one file to send
   artikeep restore ID [--version N] [--to DIR]  copy an item's files out to publish them again
   artikeep import chatgpt|claude-ai EXPORT   import canvases / artifacts from a data export
   artikeep scan codex|claude-code|opencode [--days N|--all]  archive what past sessions made
@@ -119,6 +120,12 @@ def main(argv=None) -> int:
     p.add_argument("--label")
     _project_args(p)
 
+    p = sub.add_parser("export", help="one item as a file to send: html (self-contained), zip or pdf")
+    p.add_argument("id", help="the item folder name (the id `search` and the gallery show)")
+    p.add_argument("--version", type=int, help="version number; default the newest")
+    p.add_argument("--format", choices=["html", "zip", "pdf"], default="html")
+    p.add_argument("-o", "--output", help="file to write (default: ./<id>.<format>)")
+
     p = sub.add_parser("restore", help="copy an item's files out so an agent can publish them again")
     p.add_argument("id", help="the item folder name (the id `search` and the gallery show)")
     p.add_argument("--version", type=int, help="version number; default the newest")
@@ -200,6 +207,25 @@ def main(argv=None) -> int:
             entry, vdir = add_path(store, path, title=a.title, label=a.label, project=project, fallback=git_root("."))
             print("%s %s" % ("saved" if vdir else "unchanged", store.item_dir(entry)))
         store.kick()
+        return 0
+    if a.cmd == "export":
+        from pathlib import Path
+        from artikeep import export
+        try:
+            name, data, notes = export.build(store, a.id, a.format, a.version)
+        except export.ExportError as ex:
+            print("export: %s" % ex, file=sys.stderr)
+            return 1
+        out = Path(a.output or name).expanduser()
+        if out.is_dir():
+            out = out / name
+        if out.exists() and not a.output:
+            print("export: %s exists; name the file with -o" % out, file=sys.stderr)
+            return 1
+        out.write_bytes(data)
+        print("%s (%d KB)" % (out.resolve(), max(1, len(data) // 1024)))
+        for n in notes:
+            print("note: " + n, file=sys.stderr)
         return 0
     if a.cmd == "restore":
         try:

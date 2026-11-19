@@ -190,11 +190,23 @@ def app_handler(app: App):
                 elif url.path == "/api/search":
                     hits = search.search(app.store, (q.get("q") or [""])[0], limit=int((q.get("limit") or ["200"])[0]))
                     self.json({"hits": [{"id": h["id"], "snippet": h["snippet"]} for h in hits]})
+                elif len(url.path.strip("/").split("/")) == 3 and url.path.startswith("/api/export/"):
+                    from artikeep import export
+                    folder = urllib.parse.unquote(url.path.strip("/").split("/")[2])
+                    name, data, notes = export.build(app.store, folder, (q.get("format") or ["html"])[0],
+                                                     int(q["version"][0]) if q.get("version") else None)
+                    ctype = {"html": "text/html; charset=utf-8", "zip": "application/zip", "pdf": "application/pdf"}[name.rsplit(".", 1)[1]]
+                    self.send(200, data, ctype, {"Content-Disposition": 'attachment; filename="%s"' % name.encode("ascii", "replace").decode().replace('"', ""),
+                                                 "X-Artikeep-Export-Name": urllib.parse.quote(name), "X-Artikeep-Notes": urllib.parse.quote("; ".join(notes))})
                 elif url.path == "/api/doctor":
                     self.json({"text": app.doctor()})
                 else:
                     self.json({"error": "not found"}, 404)
             except Exception as ex:
+                from artikeep.export import ExportError
+                if isinstance(ex, ExportError):
+                    self.json({"error": str(ex)}, 400)
+                    return
                 app.store.error("serve GET %s" % url.path)
                 self.json({"error": str(ex)}, 500)
 
