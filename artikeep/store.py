@@ -22,7 +22,7 @@ import time
 import traceback
 from pathlib import Path
 
-from artikeep import config
+from artikeep import config, provenance
 from artikeep.util import now_iso, slugify, title_of, write_bytes
 from artikeep.viewers import CANVAS_MARKS, DOC_MARKS, REACT_MARKS
 
@@ -148,8 +148,10 @@ class Store:
             out[str(rel)] = f.read_bytes()
         return out
 
-    def snapshot(self, item: Path, entry: dict, at: str, label: str | None = None) -> str | None:
-        """Freeze what the item holds now as the next version; skip if nothing changed."""
+    def snapshot(self, item: Path, entry: dict, at: str, label: str | None = None,
+                 prov: dict | None = None) -> str | None:
+        """Freeze what the item holds now as the next version; skip if nothing changed.
+        `prov` adds the request and session behind it (see provenance.py)."""
         files = self.version_files(item)
         if not files:
             return None
@@ -167,7 +169,7 @@ class Store:
             dst.parent.mkdir(parents=True, exist_ok=True)
             dst.write_bytes(data)
         changed = sorted(k for k in files if before.get(k) != files[k]) + sorted("-" + k for k in before if k not in files)
-        versions.append({"n": n, "at": at[:19], "label": label, "dir": vdir, "changed": changed})
+        versions.append({"n": n, "at": at[:19], "label": label, "dir": vdir, "changed": changed, **(prov or {})})
         return vdir
 
     # ------------------------------------------------------------ generic save
@@ -175,7 +177,8 @@ class Store:
     def save_item(self, key: str, files: dict, *, agent: str, title: str | None = None, main: str | None = None,
                   project: str | None = None, origin: str | None = None, url: str | None = None,
                   when: str | None = None, label: str | None = None, description: str | None = None,
-                  session: str | None = None, replace: bool = True, extra: dict | None = None):
+                  session: str | None = None, replace: bool = True, extra: dict | None = None,
+                  request: str | None = None):
         """Store files {relative path: bytes} as the newest state of item `key`.
 
         Used by every source except the Claude Code Artifact hook, which keeps its own
@@ -205,7 +208,7 @@ class Store:
             if when >= entry.get("updated", ""):
                 entry["updated"] = when
             entry.setdefault("publishes", []).append({"at": when, "session": session, "source": origin, "copied": len(files)})
-            vdir = self.snapshot(item, entry, when, label)
+            vdir = self.snapshot(item, entry, when, label, provenance.for_version(self.settings, request, session))
             if vdir is None:
                 entry["publishes"].pop()  # same content again: not a new publish
             self.save(m)

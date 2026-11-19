@@ -238,6 +238,8 @@ dialog.dlg::backdrop{background:var(--scrim)}
 .tl .vn{font-family:Unbounded,system-ui;font-size:12px}
 .tl .vl{font-weight:600}
 .tl small{grid-column:1;color:var(--ink-3)}
+.tl .rq{grid-column:1/-1;margin:3px 0 0;padding-left:9px;border-left:2px solid var(--line);color:var(--ink-2);font-size:12.5px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.tl .rq:hover{-webkit-line-clamp:unset}
 .tl .va{grid-row:1/3;grid-column:2;display:flex;gap:2px;align-items:center}
 .tl .va .cb{margin:0;padding:6px}
 
@@ -250,7 +252,8 @@ dialog.dlg::backdrop{background:var(--scrim)}
 .cmp.solo .panes{grid-template-columns:1fr}
 .cmp.solo .pane.b{display:none}
 .pane{display:grid;grid-template-rows:auto 1fr;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--sheet);min-height:0}
-.pane header{padding:6px 8px 6px 12px;font-size:13px;border-bottom:1px solid var(--line-2);display:flex;gap:10px;align-items:center}
+.pane header{padding:6px 8px 6px 12px;font-size:13px;border-bottom:1px solid var(--line-2);display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
+.pane header .rq{flex:1 0 100%;order:9;color:var(--ink-2);font-size:12px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .pane header .sum{color:var(--ink-3);margin-right:auto}
 .pane iframe{width:100%;height:100%;border:0;background:#fff}
 .diff{margin-top:12px;border:1px solid var(--line);border-radius:12px;background:var(--sheet);max-height:32vh;overflow:auto;padding:0 14px 12px}
@@ -538,7 +541,7 @@ async function copy(text, msg) {
   toast(msg);
 }
 
-const haystack = it => (it.title + " " + it.desc + " " + it.project + " " + L.type[it.type] + " " + agentLabel(it.agent) + " " + it.issues.map(n => "#" + n + " " + n).join(" ") + " " + it.versions.map(v => v.label).join(" ")).toLowerCase();
+const haystack = it => (it.title + " " + it.desc + " " + it.project + " " + L.type[it.type] + " " + agentLabel(it.agent) + " " + it.issues.map(n => "#" + n + " " + n).join(" ") + " " + it.versions.map(v => v.label + " " + v.request).join(" ")).toLowerCase();
 const filtersOn = () => S.q || S.projects.length || S.agents.length || S.types.length || S.copies.length || S.issuesOnly;
 const facetVal = {projects: it => it.project, agents: it => it.agent, types: it => it.type, copies: it => it.status};
 function pass(it, ignore) {
@@ -705,6 +708,7 @@ function renderDrawer() {
       ${it.versions.length > 2 ? `<button class="btn" type="button" data-cmp-picked ${picked ? "" : "disabled"}>${ic("compare")}${picked ? t("comparePicked", Math.min(...S.pick), Math.max(...S.pick)) : t("pickTwo")}</button>` : ""}</div>
       <ol class="tl t-${it.type}">${vs.map(v => `<li class="${S.pick.includes(v.n) ? "picked" : ""}"><div class="vh"><span class="vn">v${v.n}</span><span class="vl">${esc(v.label || (v.n === cur.n ? t("current") : t("noLabel")))}</span></div>
         <small>${esc(v.at)}${sumText(it, v) ? ", " + esc(sumText(it, v)) : ""}</small>
+        ${v.request ? `<p class="rq"${v.session ? ` title="${esc(v.session)}"` : ""}>${esc(v.request)}</p>` : ""}
         <span class="va">${ia("ext", t("openV", v.n), verUrl(it, v), "sm ghost")}${v.n > 1 ? ib("compare", t("compareWith", v.n - 1), `data-cmp="${v.n - 1}|${v.n}"`, "sm ghost") : ""}${LIVE && v.n !== cur.n ? ib("restore", t("restoreV", v.n), `data-restore="${v.n}"`, "sm ghost") : ""}${it.versions.length > 2 ? `<label class="cb" data-tip="${t("pickTip")}"><input type="checkbox" data-pickv="${v.n}" ${S.pick.includes(v.n) ? "checked" : ""} aria-label="${t("pickV", v.n)}"><span class="box">${ic("check")}</span></label>` : ""}</span></li>`).join("")}</ol></div>` : ""}
   </div>`;
   dr.hidden = false; scrim.hidden = false;
@@ -732,7 +736,7 @@ function renderCompare() {
   if (!S.cmp) { box.hidden = true; return; }
   const it = items.find(i => i.dir === S.cmp.dir), a = S.cmp.a, b = S.cmp.b, last = it.versions[it.versions.length - 1].n;
   const opts = Object.fromEntries(it.versions.slice().reverse().map(v => [v.n, `v${v.n}, ${v.at}${v.label ? ", " + v.label.slice(0, 40) : ""}`]));
-  const pane = (n, side) => { const v = it.versions.find(x => x.n === n); return `<section class="pane ${side}"><header><b>v${v.n}</b><span>${esc(v.at)}</span><span class="sum">${esc(sumText(it, v))}</span>${ia("ext", t("openSep"), verUrl(it, v), "sm ghost")}</header><iframe src="${verUrl(it, v)}" title="${side === "a" ? t("left") : t("right")}: v${v.n}"></iframe></section>`; };
+  const pane = (n, side) => { const v = it.versions.find(x => x.n === n); return `<section class="pane ${side}"><header><b>v${v.n}</b><span>${esc(v.at)}</span><span class="sum">${esc(sumText(it, v))}</span>${ia("ext", t("openSep"), verUrl(it, v), "sm ghost")}${v.request ? `<span class="rq" title="${esc(v.request)}">${esc(v.request)}</span>` : ""}</header><iframe src="${verUrl(it, v)}" title="${side === "a" ? t("left") : t("right")}: v${v.n}"></iframe></section>`; };
   box.className = "cmp" + (S.solo ? " solo" : "");
   box.innerHTML = `<div class="cmp-bar"><h2>${esc(it.title)}</h2>${ib("x", t("closeCmp"), "data-cmp-close")}
     <span class="grp">${ib("left", t("prevPair"), `data-pair="-1" ${Math.min(a, b) <= 1 ? "disabled" : ""}`)}${dropdown("cmp-a", t("left"), opts, a)}${ib("swap", t("swap"), "data-swap")}${dropdown("cmp-b", t("right"), opts, b, "right")}${ib("right", t("nextPair"), `data-pair="1" ${Math.max(a, b) >= last ? "disabled" : ""}`)}</span>

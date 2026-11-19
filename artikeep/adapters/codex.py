@@ -22,6 +22,7 @@ import re
 import time
 from pathlib import Path
 
+from artikeep import provenance
 from artikeep.store import Store
 from artikeep.util import git_tracked, local_refs, now_iso, project_root, title_of
 
@@ -30,7 +31,7 @@ SESSIONS = CODEX_HOME / "sessions"
 MAX_BYTES = 20 * 1024 * 1024
 PATH_RE = re.compile(r"(?:file://)?(/(?:Users|home|private|tmp|var)/[^\s`'\"()<>\[\]]+)")
 SKIP_PARTS = {"node_modules", ".git", "__pycache__", ".venv", "site-packages"}
-INTERESTING = ('"FileChange"', '"final_answer"', '"task_complete"', '"session_meta"', '"turn_context"')
+INTERESTING = ('"FileChange"', '"final_answer"', '"task_complete"', '"session_meta"', '"turn_context"', '"UserMessage"')
 
 
 class Rollout:
@@ -43,6 +44,7 @@ class Rollout:
         self.changed = {}  # abs path -> {"at": ts, "content": str|None}
         self.mentioned = {}  # abs path -> ts
         self.vis_dirs = set()
+        self.prompts = []  # (timestamp, what the user asked), in file order
         self._parse()
 
     def _parse(self):
@@ -72,7 +74,12 @@ class Rollout:
                 item = p.get("item") if isinstance(p.get("item"), dict) else None
                 if not item:
                     continue
-                if item.get("type") == "FileChange":
+                if item.get("type") == "UserMessage":
+                    text = "\n".join(c.get("text", "") for c in item.get("content") or []
+                                      if isinstance(c, dict) and c.get("type") == "text")
+                    if text.strip() and not provenance.is_internal(text):
+                        self.prompts.append((ts, provenance.clean(text)))
+                elif item.get("type") == "FileChange":
                     for path, ch in (item.get("changes") or {}).items():
                         if not isinstance(ch, dict) or ch.get("type") == "delete":
                             continue
@@ -83,6 +90,15 @@ class Rollout:
                     for c in item.get("content") or []:
                         if isinstance(c, dict):
                             self._mentions(c.get("text") or "", ts)
+
+    def request_before(self, ts: str):
+        """What the user last asked for at or before `ts` (the newest ask when ts has no match)."""
+        best = None
+        for at, text in self.prompts:
+            if ts and at and at[:19] > ts[:19]:
+                break
+            best = text
+        return best or (self.prompts[0][1] if self.prompts else None)
 
     def _mentions(self, text: str, ts: str):
         for m in PATH_RE.findall(text):
@@ -153,6 +169,7 @@ def archive_rollout(store: Store, path: Path) -> int:
         _, vdir = store.save_item(
             key, files, agent="codex", title=title_of(p, data), main=rel, project=project,
             origin=src, when=ts or now_iso(), session=r.session, extra={"sha256": digest},
+            request=r.request_before(ts),
         )
         saved += 1 if vdir else 0
     return saved

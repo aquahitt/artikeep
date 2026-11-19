@@ -146,6 +146,7 @@ def gallery_data(store: Store, m: dict) -> dict:
         vs = e.get("versions") or []
         versions = [{
             "n": v["n"], "at": v["at"][:16].replace("T", " "), "label": v.get("label") or "", "dir": v["dir"],
+            "request": v.get("request") or "", "session": v.get("session") or "",
             "sum": version_summary(d, v, typ, vs[i - 1] if i else None), "diff": v.get("diff"),
             "main": main_file(d / v["dir"], e),
         } for i, v in enumerate(vs)]

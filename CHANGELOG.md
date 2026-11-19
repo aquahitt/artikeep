@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Each version keeps the request that led to it (the user's message, up to 500 characters)
+  and the session id, for Claude Code publishes and Docs exports and for Codex deliverables.
+  The gallery shows it under the version and in the compare view, search finds a version by
+  the words of its request, and the MCP `list_versions` tool returns it. `"provenance": false`
+  in `artikeep.json` turns it off. Versions saved earlier have none.
+
 ## 0.2.1 — 2026-11-18
 
 ### Changed

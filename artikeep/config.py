@@ -27,6 +27,8 @@ DEFAULTS = {
     # "all" shows everything. Writing through MCP is off unless enabled.
     "mcp_scope": "project",
     "mcp_save": False,
+    # Record the user request and session behind each version (read from the agent's transcript).
+    "provenance": True,
     # Codex: which files a session made count as deliverables worth keeping.
     "codex_extensions": [".html", ".htm", ".svg", ".md", ".pdf", ".docx", ".pptx", ".xlsx", ".csv"],
 }

@@ -17,7 +17,7 @@ import re
 import time
 from pathlib import Path
 
-from artikeep import config
+from artikeep import config, provenance
 from artikeep.store import Store
 from artikeep.util import (
     copy_file, html_title, now_iso, project_root, resolve, text_blob, with_charset,
@@ -49,6 +49,14 @@ def _alarm(store: Store, kind: str, msg: str) -> None:
     from artikeep.notify import notify
     _say(msg)
     notify(store, kind, msg)
+
+
+def _provenance(store: Store, payload: dict) -> dict:
+    """The request and session behind a version made by this tool call."""
+    if not provenance.enabled(store.settings):
+        return {}
+    request = provenance.claude_code_request(payload.get("transcript_path"), payload.get("tool_use_id"))
+    return provenance.for_version(store.settings, request, payload.get("session_id"))
 
 
 # ---------------------------------------------------------------- Artifact tool
@@ -155,7 +163,7 @@ def handle_artifact(store: Store, payload: dict):
         if not url:
             entry["url_unknown"] = True
         if copied and not ti.get("asset"):
-            store.snapshot(d, entry, when, ti.get("label"))
+            store.snapshot(d, entry, when, ti.get("label"), _provenance(store, payload))
         store.save(m)
     if missing or not url:
         return "partial: missing=%s url=%s" % (missing, url)
@@ -354,7 +362,7 @@ def cmd_docs(store: Store, payload: dict) -> None:
                 saved = "doc-%s.%s" % (re.sub(r"[^\w-]", "_", ti.get("file") or "tab"), EXPORT_EXT.get(fmt, fmt))
                 (d / saved).write_bytes(with_charset(data) if fmt == "html" else data)
                 entry["exported"] = now
-                store.snapshot(d, entry, now)
+                store.snapshot(d, entry, now, None, _provenance(store, payload))
             else:
                 store.log_payload("docs-export-undecoded", payload)
         entry["updated"] = now
@@ -514,7 +522,7 @@ def recent_publishes(store: Store, days: int) -> list:
                 found.append({
                     "tool_use_id": c["id"], "tool_name": "Artifact", "tool_input": inp,
                     "tool_response": r.get("content"), "session_id": rec.get("sessionId") or f.stem,
-                    "cwd": rec.get("cwd"), "timestamp": rec.get("timestamp"),
+                    "cwd": rec.get("cwd"), "timestamp": rec.get("timestamp"), "transcript_path": str(f),
                 })
         except Exception:
             store.error("recent_publishes %s" % f)

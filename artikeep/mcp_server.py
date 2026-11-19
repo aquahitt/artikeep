@@ -65,7 +65,7 @@ class Server:
                  "raw": {"type": "boolean", "default": False, "description": "Return source instead of visible text."},
                  "max_chars": {"type": "integer", "minimum": 500, "maximum": 200000, "default": 20000}}}},
             {"name": "list_versions", "annotations": ro,
-             "description": "Versions of an archived item with time, label and size of each change.",
+             "description": "Versions of an archived item with time, label, size of each change and the user request that led to it.",
              "inputSchema": {"type": "object", "required": ["id"], "properties": {"id": id_prop}}},
             {"name": "diff_versions", "annotations": ro,
              "description": "Changed text lines between two versions of an item (default: previous vs newest).",
@@ -111,10 +111,14 @@ class Server:
         d = st.item_dir(e)
         vs = e.get("versions") or []
         if name == "list_versions":
-            rows = [{"n": v["n"], "at": v["at"], "label": v.get("label"), "changed_files": v.get("changed"),
+            rows = [{"n": v["n"], "at": v["at"], "label": v.get("label"), "request": v.get("request"),
+                     "session": v.get("session"), "changed_files": v.get("changed"),
                      "lines_added": (v.get("diff") or {}).get("add"), "lines_removed": (v.get("diff") or {}).get("rem")}
                     for v in vs]
-            return json.dumps({"id": e["dir"], "title": e.get("title"), "versions": rows}, ensure_ascii=False, indent=1)
+            out = {"id": e["dir"], "title": e.get("title"), "versions": rows}
+            if any(r["request"] for r in rows):
+                out["note"] = DATA_NOTE + " (request: what the user asked, quoted from the session)"
+            return json.dumps(out, ensure_ascii=False, indent=1)
         if name == "diff_versions":
             if len(vs) < 2:
                 return "Item %s has %d version(s): nothing to compare." % (e["dir"], len(vs))

@@ -14,6 +14,12 @@ server shows an agent only the items made in the repository it is working in, an
 every result is labelled as archived data, not instructions. Widen it deliberately:
 `artikeep install --mcp-scope all`, or `"mcp_scope": "all"` in `artikeep.json`.
 
+**Prompts in the archive.** Each version records the user request behind it (up to 500
+characters, pasted material replaced by a marker) so the history can say why it exists.
+If you paste secrets into prompts, they land in `manifest.json`, and with a git remote
+they are pushed with it. `"provenance": false` in `artikeep.json` stops recording them;
+requests already saved stay in the manifest until you edit it. Through MCP they are labelled as archived data like everything else.
+
 **Claude Desktop is the exception.** Its chat runs outside any repository and has no hooks,
 so its server sees all projects and may save: asking Claude to save is the only way a chat
 artifact gets in. If you use connectors or web search in Desktop chats and want less exposure,
