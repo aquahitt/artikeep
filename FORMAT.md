@@ -32,7 +32,7 @@ write items into an archive as long as they follow this document.
 
 The **key** identifies an item by its origin, so the same artifact always lands in the
 same entry: a URL (`https://claude.ai/artifact/…`), or a prefixed id:
-`codex:<absolute path>`, `chatgpt:<conversation>:<n>`, `claude-ai:<conversation>:<artifact id>`,
+`codex:<absolute path>`, `opencode:<absolute path>`, `chatgpt:<conversation>:<n>`, `claude-ai:<conversation>:<artifact id>`,
 `file:<absolute path>`, `mcp:<project>:<slug>:<file name>`, `local:<path>`.
 
 Entry fields (all optional except `dir`):
@@ -41,7 +41,7 @@ Entry fields (all optional except `dir`):
 |---|---|
 | `dir` | folder name under `items/`, `YYYY-MM-DD-<slug>` of the first save, unique |
 | `title`, `description` | for people |
-| `agent` | `claude-code`, `codex`, `chatgpt`, `claude-ai`, `claude-desktop`, `import`, `mcp`; absent means `claude-code` |
+| `agent` | `claude-code`, `codex`, `opencode`, `chatgpt`, `claude-ai`, `claude-desktop`, `import`, `mcp`; absent means `claude-code` |
 | `project` | absolute path of the git repository the item was made in |
 | `url` | where the original lives on the web |
 | `origin` | the source path or URL, when not a web original |

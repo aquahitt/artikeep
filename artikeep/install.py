@@ -30,6 +30,9 @@ CLAUDE_MD = HOME / ".claude" / "CLAUDE.md"
 CODEX_HOOKS = HOME / ".codex" / "hooks.json"
 CODEX_CONFIG = HOME / ".codex" / "config.toml"
 CODEX_AGENTS_MD = HOME / ".codex" / "AGENTS.md"
+OPENCODE_DIR = Path(os.environ.get("XDG_CONFIG_HOME") or HOME / ".config") / "opencode"
+OPENCODE_PLUGIN = OPENCODE_DIR / "plugins" / "artikeep.js"
+OPENCODE_CONFIG = OPENCODE_DIR / "opencode.json"
 DESKTOP_CONFIG = (HOME / "Library" / "Application Support" / "Claude" if sys.platform == "darwin"
                   else HOME / ".config" / "Claude") / "claude_desktop_config.json"
 ENTRY = Path(__file__).resolve().parent.parent / "bin" / "artikeep"
@@ -144,6 +147,78 @@ def install_codex_hooks(plan: Plan, uninstall: bool) -> None:
     plan.say("Codex: hooks %s in %s" % ("removed" if uninstall else "set", CODEX_HOOKS))
     if CODEX_CONFIG.exists() and re.search(r"^\s*hooks\s*=\s*false", CODEX_CONFIG.read_text(encoding="utf-8"), re.M):
         plan.say("Codex: WARNING features.hooks = false in %s — hooks will not run until it is true" % CODEX_CONFIG)
+
+
+# ---------------------------------------------------------------- opencode
+
+OPENCODE_PLUGIN_JS = """// artikeep: archive what opencode sessions made. Written by `artikeep install`; remove with
+// `artikeep install --uninstall --agents opencode`. It only starts the artikeep command.
+import { spawn } from "child_process";
+
+const STOP = %(stop)s;
+const CHECK = %(check)s;
+
+function run(command, payload) {
+  try {
+    const child = spawn("/bin/sh", ["-c", command], { stdio: ["pipe", "ignore", "ignore"], detached: true });
+    child.on("error", () => {});
+    child.stdin.on("error", () => {});
+    child.stdin.end(JSON.stringify(payload));
+    child.unref();
+  } catch {}
+}
+
+export default {
+  id: "artikeep",
+  server: async ({ directory }) => {
+    run(CHECK, { cwd: directory });
+    return {
+      event: async ({ event }) => {
+        const p = event.properties || {};
+        const idle = event.type === "session.idle" || (event.type === "session.status" && p.status && p.status.type === "idle");
+        if (idle && p.sessionID) run(STOP, { session_id: p.sessionID, cwd: directory });
+      },
+    };
+  },
+};
+"""
+
+
+def install_opencode(plan: Plan, uninstall: bool, mcp: bool = True) -> None:
+    js = OPENCODE_PLUGIN_JS % {"stop": json.dumps(hook_command("opencode", "stop")),
+                               "check": json.dumps(hook_command("opencode", "check"))}
+    url = "file://" + str(OPENCODE_PLUGIN)
+    try:
+        conf = json.loads(OPENCODE_CONFIG.read_text(encoding="utf-8")) if OPENCODE_CONFIG.exists() else {}
+    except Exception:
+        plan.say("opencode: %s is not plain JSON; left alone. Add \"%s\" to its \"plugin\" list by hand" % (OPENCODE_CONFIG, url))
+        conf = None
+    if conf is not None:
+        plugins = [p for p in conf.get("plugin") or [] if p != url]
+        if not uninstall:
+            plugins.append(url)
+        if plugins:
+            conf["plugin"] = plugins
+        else:
+            conf.pop("plugin", None)
+        servers = conf.get("mcp") or {}
+        if uninstall or not mcp:
+            if (servers.get("artikeep") or {}).get("command", [None])[-1:] == ["mcp"]:
+                del servers["artikeep"]  # ours; an entry somebody wrote differently stays
+        else:
+            servers["artikeep"] = {"type": "local", "command": launcher() + ["mcp"], "enabled": True}
+        if servers:
+            conf["mcp"] = servers
+        else:
+            conf.pop("mcp", None)
+        conf.setdefault("$schema", "https://opencode.ai/config.json")
+        plan.write(OPENCODE_CONFIG, json.dumps(conf, ensure_ascii=False, indent=2) + "\n")
+    if uninstall:
+        if OPENCODE_PLUGIN.exists() and not plan.dry:
+            OPENCODE_PLUGIN.unlink()
+    else:
+        plan.write(OPENCODE_PLUGIN, js)
+    plan.say("opencode: plugin %s in %s" % ("removed" if uninstall else "set", OPENCODE_PLUGIN))
 
 
 # ---------------------------------------------------------------- MCP
@@ -301,13 +376,15 @@ def detect() -> list:
         found.append("codex")
     if DESKTOP_CONFIG.parent.exists() or Path("/Applications/Claude.app").exists():
         found.append("claude-desktop")
+    if OPENCODE_DIR.exists() or shutil.which("opencode"):
+        found.append("opencode")
     return found
 
 
 def run(store: Store, a) -> int:
     agents = detect() if a.agents == "auto" else [x.strip() for x in a.agents.split(",") if x.strip()]
     if not agents:
-        print("No Claude Code or Codex found on this machine (~/.claude, ~/.codex).")
+        print("No Claude Code, Codex or opencode found on this machine (~/.claude, ~/.codex, ~/.config/opencode).")
         return 1
     plan = Plan(a.dry_run)
     if not a.uninstall:
@@ -336,8 +413,11 @@ def run(store: Store, a) -> int:
             if not a.no_mcp:
                 install_desktop(plan, a.uninstall)
             continue  # no hooks, no rules file: the server's own instructions guide the chat
+        elif agent == "opencode":
+            install_opencode(plan, a.uninstall, mcp=not a.no_mcp)
+            continue  # the plugin and the MCP entry share one config file
         else:
-            plan.say("unknown agent %s (known: claude-code, codex, claude-desktop)" % agent)
+            plan.say("unknown agent %s (known: claude-code, codex, claude-desktop, opencode)" % agent)
             continue
         if not a.no_mcp:
             install_mcp(plan, agent, a.uninstall)
@@ -417,6 +497,17 @@ def doctor(store: Store, quick: bool = False) -> int:
                  "Claude Desktop: MCP server artikeep configured (%s)" % " ".join([srv.get("command", "")] + srv.get("args", [])))
         else:
             print("info  Claude Desktop: not wired (artikeep install --agents claude-desktop)")
+    if OPENCODE_CONFIG.exists() or OPENCODE_PLUGIN.exists():
+        try:
+            conf = json.loads(OPENCODE_CONFIG.read_text(encoding="utf-8"))
+        except Exception:
+            conf = {}
+        wired = ("file://" + str(OPENCODE_PLUGIN)) in (conf.get("plugin") or []) and OPENCODE_PLUGIN.exists()
+        if wired:
+            line(" hook opencode " in OPENCODE_PLUGIN.read_text(encoding="utf-8"), "opencode: plugin artikeep is registered")
+            line("artikeep" in (conf.get("mcp") or {}), "opencode: MCP server artikeep registered")
+        else:
+            print("info  opencode: not wired (artikeep install --agents opencode)")
     errs = store.log / "errors.log"
     if errs.exists():
         recent = [ln for ln in errs.read_text(encoding="utf-8", errors="ignore").splitlines() if ln.startswith("--- ")][-3:]

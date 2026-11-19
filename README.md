@@ -81,6 +81,7 @@ No package manager? A clone works as is, with no install step:
 | Source | How | What |
 |---|---|---|
 | Claude Code | hooks, automatic | pages published with the `Artifact` tool (with all their files), Claude Design canvases, Claude Docs documents (exported tab by tab), unpublished pages in the session scratchpad |
+| opencode | plugin, automatic | the same for opencode sessions, read from its session database; `artikeep install --agents opencode` adds the plugin and the MCP server |
 | Codex | hooks, automatic | documents a session writes that git does not keep — reports, pages, tables in temp folders, untracked or ignored files — plus the session's visualizations |
 | Claude Desktop chat | MCP, on request | ask Claude to save what it made; the chat has no hooks, so this is the only live way in (the Code tab of Desktop is Claude Code and is captured automatically) |
 | ChatGPT | `artikeep import chatgpt <export.zip>` | canvas documents, with every edit replayed as a version |
@@ -150,7 +151,7 @@ hooks next to yours (nothing else is touched; every edited file is backed up fir
 registers the MCP server with each agent's own `mcp add` (for Desktop, in
 `claude_desktop_config.json`; reopen Desktop after), and puts a short rules block into
 `~/.claude/CLAUDE.md` and `~/.codex/AGENTS.md`. If `~/.local/bin` is on your `PATH`, it also
-links the `artikeep` command there. `--agents claude-code,codex,claude-desktop` limits it,
+links the `artikeep` command there. `--agents claude-code,codex,claude-desktop,opencode` limits it,
 `--dry-run` shows the changes, `--uninstall` removes them.
 
 To sync across machines, give the archive a **private** remote:
