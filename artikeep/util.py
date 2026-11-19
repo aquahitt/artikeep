@@ -171,6 +171,15 @@ def git_root(path) -> str | None:
     return project_root(p) if r.returncode == 0 else None
 
 
+def project_arg(value) -> str:
+    """A --project value as the folder the archive keys on: the repository's main checkout when
+    the folder is inside one, else the folder itself. Raises ValueError for a path that is not a folder."""
+    p = Path(value).expanduser().resolve()
+    if not p.is_dir():
+        raise ValueError("%s is not a folder" % value)
+    return git_root(p) or str(p)
+
+
 def git_tracked(path) -> bool:
     """True when git already keeps this file: no need to archive a second copy."""
     p = Path(path)

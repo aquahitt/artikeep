@@ -51,7 +51,7 @@ def _apply(content: str, updates: list) -> str:
     return content
 
 
-def import_export(store: Store, src) -> dict:
+def import_export(store: Store, src, project=None) -> dict:
     data = read_export_json(src)
     stats = {"conversations": len(data), "docs": 0, "versions": 0, "unparsed_calls": 0}
     for conv in data:
@@ -83,7 +83,7 @@ def import_export(store: Store, src) -> dict:
             rel = "index.html" if ext == ".html" else re.sub(r"[^\w.-]+", "-", d["name"]).strip("-") + ext
             _, vdir = store.save_item(
                 "chatgpt:" + last, {rel: d["content"].encode("utf-8")}, agent="chatgpt",
-                title=d["name"], main=rel, origin="https://chatgpt.com/c/%s" % cid,
+                title=d["name"], main=rel, origin="https://chatgpt.com/c/%s" % cid, project=project,
                 url="https://chatgpt.com/c/%s" % cid, when=when,
                 description=conv.get("title") or None,
             )

@@ -425,7 +425,7 @@ const I18N = {
     theme: "Тема: %s. Переключить", themeTip: "Тема: %s", themes: {auto: "как в системе", light: "светлая", dark: "тёмная"},
     liveNow: "обновляется само", addFiles: "Добавить файлы или экспорт чатов", status: "Состояние архива", rename: "Переименовать",
     reveal: "Показать в Finder", del: "Удалить из архива", restoreV: "Сделать v%s текущей", cancel: "Отмена", save: "Сохранить",
-    fTitle: "Название", fDesc: "Описание", editTitle: "Название и описание", delTitle: "Удалить из архива?",
+    fTitle: "Название", fDesc: "Описание", fProjectPath: "Папка проекта (пусто: без проекта)", editTitle: "Название, описание и проект", delTitle: "Удалить из архива?",
     delText: "«%s» исчезнет из архива и галереи. Файлы останутся в истории git архива: вернуть можно оттуда.", delBtn: "Удалить",
     restoreTitle: "Сделать v%s текущей?", restoreText: "Текущая версия останется в истории, а восстановленная станет новой версией.", restoreBtn: "Сделать текущей",
     saved: "Сохранено", deleted: "«%s» удалена из архива", restored: "v%s снова текущая", dropHere: "Отпустите, чтобы добавить в архив",
@@ -477,7 +477,7 @@ const I18N = {
     theme: "Theme: %s. Switch", themeTip: "Theme: %s", themes: {auto: "system", light: "light", dark: "dark"},
     liveNow: "live", addFiles: "Add files or chat exports", status: "Archive status", rename: "Rename",
     reveal: "Show in Finder", del: "Delete from the archive", restoreV: "Make v%s current", cancel: "Cancel", save: "Save",
-    fTitle: "Title", fDesc: "Description", editTitle: "Title and description", delTitle: "Delete from the archive?",
+    fTitle: "Title", fDesc: "Description", fProjectPath: "Project folder (empty: no project)", editTitle: "Title, description and project", delTitle: "Delete from the archive?",
     delText: "“%s” leaves the archive and the gallery. Its files stay in the archive's git history, where you can bring them back.", delBtn: "Delete",
     restoreTitle: "Make v%s current?", restoreText: "The current version stays in history; the restored one becomes a new version.", restoreBtn: "Make current",
     saved: "Saved", deleted: "“%s” deleted from the archive", restored: "v%s is current again", dropHere: "Drop to add to the archive",
@@ -881,8 +881,8 @@ function liveAction(el) {
       submit: async () => { const r = await post("restore", {n}); await refresh(true); toast(r.note === "unchanged" ? t("unchanged") : t("restored", n)); }});
   } else if (el.dataset.act === "edit") {
     dialog({title: t("editTitle"), ok: t("save"),
-      body: `<label class="f">${t("fTitle")}<input type="text" name="title" required value="${esc(it.title)}"></label><label class="f">${t("fDesc")}<textarea name="description">${esc(it.desc)}</textarea></label>`,
-      submit: async fd => { await post("edit", {title: fd.get("title"), description: fd.get("description")}); await refresh(true); toast(t("saved")); }});
+      body: `<label class="f">${t("fTitle")}<input type="text" name="title" required value="${esc(it.title)}"></label><label class="f">${t("fDesc")}<textarea name="description">${esc(it.desc)}</textarea></label><label class="f">${t("fProjectPath")}<input type="text" name="project" placeholder="/path/to/repository" value="${esc(it.projectPath)}"></label>`,
+      submit: async fd => { await post("edit", {title: fd.get("title"), description: fd.get("description"), project: fd.get("project")}); await refresh(true); toast(t("saved")); }});
   } else if (el.dataset.act === "delete") {
     dialog({title: t("delTitle"), body: `<p>${esc(t("delText", it.title))}</p>`, ok: t("delBtn"), danger: true,
       submit: async () => { await post("delete"); S.open = null; await refresh(true); toast(t("deleted", it.title)); }});

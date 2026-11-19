@@ -47,7 +47,7 @@ def _calls(msg: dict):
                    "language": a.get("language"), "command": "create", "content": body.strip("\n")}
 
 
-def import_export(store: Store, src) -> dict:
+def import_export(store: Store, src, project=None) -> dict:
     data = read_export_json(src)
     stats = {"conversations": len(data), "docs": 0, "versions": 0, "unparsed_calls": 0}
     for conv in data:
@@ -75,7 +75,7 @@ def import_export(store: Store, src) -> dict:
                 rel = "index.html" if ext == ".html" else re.sub(r"[^\w.-]+", "-", aid).strip("-") + ext
                 _, vdir = store.save_item(
                     "claude-ai:%s:%s" % (cid, aid), {rel: a["content"].encode("utf-8")}, agent="claude-ai",
-                    title=a["title"], main=rel, origin="https://claude.ai/chat/%s" % cid,
+                    title=a["title"], main=rel, origin="https://claude.ai/chat/%s" % cid, project=project,
                     url="https://claude.ai/chat/%s" % cid, when=msg.get("created_at") or conv.get("updated_at"),
                     description=conv.get("name") or None,
                 )

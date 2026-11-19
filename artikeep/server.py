@@ -85,7 +85,7 @@ class App:
     def act(self, folder: str, action: str, body: dict) -> dict:
         st = self.store
         if action == "edit":
-            st.edit(folder, body.get("title"), body.get("description"))
+            st.edit(folder, body.get("title"), body.get("description"), body.get("project"))
         elif action == "restore":
             if not st.restore(folder, int(body["n"])):
                 return {"ok": True, "note": "unchanged"}
