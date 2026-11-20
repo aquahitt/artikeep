@@ -223,6 +223,7 @@ artikeep serve --open              # та же галерея как локал�
 artikeep search планировка кухни   # полнотекстовый, любой язык; --agent, --type, --project, --json
 artikeep add ~/Downloads/report.pdf --title "Отчёт за Q3"   # попадает в репозиторий, где запущена команда; --project PATH, --no-project
 artikeep digest --days 7                     # что агенты сделали за неделю, по проектам (--format md — чтобы вставить в отчёт)
+artikeep merge --find                       # копии одной работы (например, после смены аккаунта); затем `artikeep merge ITEM ITEM`
 artikeep collection add "Заставка" <id> <id>  # собрать связанные записи; фильтр в галерее, `search --collection`
 artikeep attach <id> --pr N [--from vA --to vB]  # «было/стало» страницы комментарием в PR (--dry-run покажет заранее)
 artikeep export <id> [--version N] [--format html|zip|pdf] [-o FILE]  # один файл, чтобы отправить; есть и в `serve`

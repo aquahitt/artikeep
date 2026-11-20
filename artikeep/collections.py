@@ -104,3 +104,20 @@ def forget_item(store: Store, folder: str) -> None:
         colls = load(store)
         if any(folder in v for v in colls.values()):
             _save(store, {n: [f for f in v if f != folder] for n, v in colls.items() if any(f != folder for f in v)})
+
+
+def replace_item(store: Store, old: str, new: str) -> None:
+    """An item was folded into another: its collections point at the survivor."""
+    with store.lock("collections"):
+        colls = load(store)
+        if not any(old in v for v in colls.values()):
+            return
+        out = {}
+        for n, items in colls.items():
+            mapped = []
+            for f in items:
+                f = new if f == old else f
+                if f not in mapped:
+                    mapped.append(f)
+            out[n] = mapped
+        _save(store, out)

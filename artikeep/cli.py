@@ -9,6 +9,7 @@
   artikeep add PATH… [--title T]        keep any file or page folder by hand
   artikeep attach ITEM --pr N           before/after of an item as a pull request comment
   artikeep digest [--days N] [--project P] [--format html|md]  what the agents made lately
+  artikeep merge ITEM ITEM... | --find   fold copies of the same work into the first item
   artikeep collection list|show|add|remove|delete|rename   group related items
   artikeep secrets                      what the secret check holds back from the push
   artikeep allow ITEM [--rule R]        mark what it found in ITEM as fine
@@ -117,6 +118,11 @@ def main(argv=None) -> int:
     p.add_argument("--format", choices=["html", "md"], default="html")
     p.add_argument("-o", "--output", help="file to write (html default: digest.html in the archive; md: printed)")
     p.add_argument("--open", action="store_true", help="open the html in the browser")
+
+    p = sub.add_parser("merge", help="fold copies of the same work into one item (the first named)")
+    p.add_argument("items", nargs="*", help="item folders; the first one stays, the rest are folded into it")
+    p.add_argument("--find", action="store_true", help="list items that look like copies of one work")
+    p.add_argument("--dry-run", action="store_true", help="show what would happen, change nothing")
 
     p = sub.add_parser("collection", help="group related items: list, show, add, remove, delete, rename")
     p.add_argument("action", choices=["list", "show", "add", "remove", "delete", "rename"])
@@ -250,6 +256,31 @@ def main(argv=None) -> int:
                 print("add: %s" % ex, file=sys.stderr)
                 return 1
             print("in collection %s" % a.collection)
+        store.kick()
+        return 0
+    if a.cmd == "merge":
+        from artikeep import merge
+        try:
+            if a.find or not a.items:
+                titles = {e["dir"]: e.get("title") or e["dir"] for e in store.load()["items"].values()}
+                groups = merge.find(store)
+                for g in groups:
+                    print("%s  (%d items)" % (titles[g[0]], len(g)))
+                    print("  artikeep merge %s" % " ".join(g))
+                if not groups:
+                    print("no copies found")
+                return 0
+            pl = merge.plan(store, a.items)
+            print("%s <- %s: %d versions in one history" % (pl["target"], ", ".join(pl["sources"]), pl["versions"]))
+            if a.dry_run:
+                for at, order, n, d, v in pl["rows"]:
+                    print("  %s  %s v%d  %s" % (at[:16].replace("T", " "), d[-28:], n, (v.get("label") or v.get("request") or "")[:50]))
+                return 0
+            r = merge.run(store, a.items)
+        except merge.MergeError as ex:
+            print("merge: %s" % ex, file=sys.stderr)
+            return 1
+        print("merged into %s (%d versions); the folded folders stay in the archive's git history" % (r["target"], r["versions"]))
         store.kick()
         return 0
     if a.cmd == "digest":
