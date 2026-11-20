@@ -88,6 +88,12 @@ class App:
             st.edit(folder, body.get("title"), body.get("description"), body.get("project"))
         elif action == "mark":
             st.mark(folder, int(body["n"]), body.get("mark") or "")
+        elif action == "collect":
+            from artikeep import collections
+            if body.get("on"):
+                collections.add(st, body.get("name") or "", [folder])
+            else:
+                collections.remove(st, body.get("name") or "", [folder])
         elif action == "star":
             st.star(folder, bool(body.get("on")))
         elif action == "restore":

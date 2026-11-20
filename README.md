@@ -192,6 +192,7 @@ artikeep open                      # the gallery as a file: filters, versions, c
 artikeep serve --open              # the same gallery as a local app
 artikeep search kitchen layout     # full-text, any language; --agent, --type, --project, --json
 artikeep add ~/Downloads/report.pdf --title "Q3 report"   # joins the repository you run it in; --project PATH, --no-project
+artikeep collection add "Portal splash" <id> <id>  # group related items; filter by it in the gallery, `search --collection`
 artikeep attach <id> --pr N [--from vA --to vB]  # before/after of a page as a PR comment (--dry-run shows it first)
 artikeep export <id> [--version N] [--format html|zip|pdf] [-o FILE]  # one file to send; also in `serve`
 artikeep restore <id> [--version N]  # copy an item out to publish it again (dead link, other account)
@@ -209,7 +210,7 @@ any of them as `uvx artikeep …`.)
 
 | Tool | Does |
 |---|---|
-| `search_artifacts` | find items by words, source, type |
+| `search_artifacts` | find items by words, source, type, collection |
 | `read_artifact` | metadata, file list and text of an item or one of its versions |
 | `list_versions` | versions with time, label and size of change |
 | `diff_versions` | changed text lines between two versions |

@@ -7,6 +7,7 @@ write items into an archive as long as they follow this document.
 ```
 <archive>/
   manifest.json          the item list (below)
+  collections.json       named groups of items: {"version": 1, "collections": {name: [item folder, ...]}}
   artikeep.json          settings (optional; see artikeep/config.py for keys)
   index.html             the gallery, regenerated
   items/<dir>/           one folder per item: its newest files

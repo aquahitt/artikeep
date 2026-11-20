@@ -349,6 +349,8 @@ class Store:
             shutil.rmtree(self.item_dir(e), ignore_errors=True)
             del m["items"][key]
             self.save(m)
+        from artikeep import collections
+        collections.forget_item(self, folder)
         return key
 
     # ------------------------------------------------------------ background work

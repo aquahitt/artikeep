@@ -145,6 +145,16 @@ class ServerTest(TempArchive):
         self.assertEqual(post("mark", {"n": 1, "mark": "great"})[0], 500)  # only chosen / rejected
         self.assertEqual(post("mark", {"n": 9, "mark": "chosen"})[0], 404)
 
+    def test_collect(self):
+        d = self.e1["dir"]
+        post = lambda body: self.req("%s/api/item/%s/collect" % (self.B, d), "POST", json.dumps(body).encode(), self.H)
+        self.assertEqual(post({"name": "Portal", "on": True})[0], 200)
+        from artikeep import gallery
+        self.assertEqual(gallery.gallery_data(self.store, self.store.load())["items"][0]["collections"], ["Portal"])
+        self.assertEqual(post({"name": "Portal", "on": False})[0], 200)
+        self.assertEqual(post({"name": "Portal", "on": False})[0], 404)
+        self.assertEqual(post({"name": "  ", "on": True})[0], 500)
+
 
 class NotifyTest(TempArchive):
     def test_rate_limited_and_text_passed_as_argument(self):
