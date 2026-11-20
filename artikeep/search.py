@@ -109,16 +109,23 @@ def in_scope(entry: dict, scope: str | None) -> bool:
 
 
 def search(store: Store, q: str, *, scope: str | None = None, agent: str | None = None,
-           kind: str | None = None, limit: int = 20) -> list:
+           kind: str | None = None, limit: int = 20, collection: str | None = None) -> list:
     """Items matching q (all items when q is empty), newest first among equals."""
     from artikeep.gallery import item_type  # avoid an import cycle at module load
 
     m = store.load()
     update_index(store, m)
 
+    members = None
+    if collection:
+        from artikeep import collections
+        members = set(collections.load(store).get(collection, []))
+
     def keep(key):
         e = m["items"].get(key)
         if not e or not in_scope(e, scope):
+            return False
+        if members is not None and e["dir"] not in members:
             return False
         if agent and agent_of(e) != agent:
             return False

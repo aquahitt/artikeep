@@ -4,6 +4,13 @@
 
 ### Added
 
+- Collections: named groups of related items (a page, its device screenshots, the icon set).
+  `artikeep collection list|show|add|remove|rename|delete`, `artikeep add FILES --collection NAME`
+  and `artikeep search --collection NAME` on the command line; in `artikeep serve`, an
+  "Add to a collection…" button in the item panel and a Collections filter in the gallery. An
+  item can be in several; the MCP `search_artifacts` tool takes `collection`, and `read_artifact`
+  names the other items kept with the one you read. The groups live in `collections.json`
+  at the archive root.
 - Design review in the gallery. The compare view has a **Slider** (drag across two versions
   of a page) and a **Difference** mode (black where nothing changed) next to side by side. The
   item panel shows a **filmstrip** with a thumbnail of every version (made a few per background

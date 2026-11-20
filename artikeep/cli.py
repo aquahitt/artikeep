@@ -8,6 +8,7 @@
   artikeep search WORDS [--json]        search the archive (--agent, --type, --project)
   artikeep add PATH… [--title T]        keep any file or page folder by hand
   artikeep attach ITEM --pr N           before/after of an item as a pull request comment
+  artikeep collection list|show|add|remove|delete|rename   group related items
   artikeep secrets                      what the secret check holds back from the push
   artikeep allow ITEM [--rule R]        mark what it found in ITEM as fine
   artikeep export ID [--version N] [--format html|zip|pdf] [-o FILE]  one file to send
@@ -109,7 +110,13 @@ def main(argv=None) -> int:
     p.add_argument("--port", type=int, default=8765, help="app port; archived files are served on port + 1")
     p.add_argument("--open", action="store_true", help="open it in the browser")
 
+    p = sub.add_parser("collection", help="group related items: list, show, add, remove, delete, rename")
+    p.add_argument("action", choices=["list", "show", "add", "remove", "delete", "rename"])
+    p.add_argument("name", nargs="?", help="collection name")
+    p.add_argument("items", nargs="*", help="item folder names (add, remove) or the new name (rename)")
+
     p = sub.add_parser("search", help="search the archive")
+    p.add_argument("--collection", help="only items in this collection")
     p.add_argument("words", nargs="*")
     p.add_argument("--agent")
     p.add_argument("--type", choices=["page", "canvas", "doc", "file"])
@@ -121,6 +128,7 @@ def main(argv=None) -> int:
     p.add_argument("paths", nargs="+")
     p.add_argument("--title")
     p.add_argument("--label")
+    p.add_argument("--collection", metavar="NAME", help="also put what is kept into this collection")
     _project_args(p)
 
     p = sub.add_parser("attach", help="post a before/after of an item as a pull request comment")
@@ -204,7 +212,7 @@ def main(argv=None) -> int:
         return serve(store, a.port, a.open)
     if a.cmd == "search":
         from artikeep.search import search
-        hits = search(store, " ".join(a.words), scope=a.project, agent=a.agent, kind=a.type, limit=a.limit)
+        hits = search(store, " ".join(a.words), scope=a.project, agent=a.agent, kind=a.type, limit=a.limit, collection=a.collection)
         if a.json:
             print(json.dumps(hits, ensure_ascii=False, indent=1))
         for h in [] if a.json else hits:
@@ -221,9 +229,60 @@ def main(argv=None) -> int:
         if err:
             print("add: " + err, file=sys.stderr)
             return 1
+        made = []
         for path in a.paths:
             entry, vdir = add_path(store, path, title=a.title, label=a.label, project=project, fallback=git_root("."))
+            made.append(entry["dir"])
             print("%s %s" % ("saved" if vdir else "unchanged", store.item_dir(entry)))
+        if a.collection:
+            from artikeep import collections
+            try:
+                collections.add(store, a.collection, made)
+            except ValueError as ex:
+                print("add: %s" % ex, file=sys.stderr)
+                return 1
+            print("in collection %s" % a.collection)
+        store.kick()
+        return 0
+    if a.cmd == "collection":
+        from artikeep import collections
+        colls = collections.load(store)
+        titles = {e["dir"]: e.get("title") or e["dir"] for e in store.load()["items"].values()}
+        try:
+            if a.action == "list":
+                for n, items in sorted(colls.items()):
+                    print("%-30s %d item(s)" % (n, len(items)))
+                if not colls:
+                    print("no collections yet: artikeep collection add NAME ITEM...")
+            elif not a.name:
+                print("collection: %s needs a name" % a.action, file=sys.stderr)
+                return 1
+            elif a.action == "show":
+                if a.name not in colls:
+                    raise KeyError(a.name)
+                for f in colls[a.name]:
+                    print("%s   %s" % (f, titles.get(f, "?")))
+            elif a.action in ("add", "remove"):
+                if not a.items:
+                    print("collection: name the items (folders as `search` shows them)", file=sys.stderr)
+                    return 1
+                done = (collections.add if a.action == "add" else collections.remove)(store, a.name, a.items)
+                print("%s %d item(s) %s %s" % ("added" if a.action == "add" else "removed", len(done), "to" if a.action == "add" else "from", a.name))
+            elif a.action == "delete":
+                collections.delete(store, a.name)
+                print("deleted collection %s (its items stay)" % a.name)
+            else:
+                if len(a.items) != 1:
+                    print("collection: rename NAME NEWNAME", file=sys.stderr)
+                    return 1
+                collections.rename(store, a.name, a.items[0])
+                print("renamed %s to %s" % (a.name, a.items[0]))
+        except KeyError as ex:
+            print("collection: no such item or collection: %s" % ex.args[0], file=sys.stderr)
+            return 1
+        except ValueError as ex:
+            print("collection: %s" % ex, file=sys.stderr)
+            return 1
         store.kick()
         return 0
     if a.cmd == "attach":

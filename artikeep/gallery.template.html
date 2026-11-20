@@ -262,6 +262,7 @@ dialog.dlg::backdrop{background:var(--scrim)}
 .ovl{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:var(--accent,#b4501c);z-index:2;pointer-events:none}
 .ovr{position:absolute;left:5%;right:5%;bottom:10px;width:90%;z-index:3;accent-color:var(--accent,#b4501c)}
 .ovnote{position:absolute;left:10px;top:8px;z-index:3;font-size:12px;color:var(--ink-2);background:var(--sheet);padding:2px 8px;border-radius:6px;border:1px solid var(--line)}
+.colls{margin:0 0 10px}.colls h2{font-size:13px;color:var(--ink-3);font-weight:500;margin:0 0 6px}.colls>div{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .film{flex:0 0 auto;min-height:88px;display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;margin:0 0 6px;scroll-snap-type:x proximity}
 .film a{flex:0 0 96px;scroll-snap-align:start;text-decoration:none;color:var(--ink-2);font-size:11px;display:grid;gap:3px}
 .film .fi{height:64px;border:1px solid var(--line);border-radius:8px;background:var(--sheet) center top/cover no-repeat;position:relative}
@@ -439,6 +440,7 @@ const I18N = {
     openSep: "Открыть отдельно", left: "Слева", right: "Справа", closeCmp: "Закрыть сравнение (Esc)", prevPair: "Предыдущая пара (←)", swap: "Поменять местами",
     nextPair: "Следующая пара (→)", layout: "Раскладка", both: "Обе версии", leftOnly: "Только левая",
     modeSide: "Рядом", modeSlider: "Ползунок", modeDiff: "Разница", modeDiffNote: "Разница: чёрное — без изменений, цветное — что поменялось.", filmstrip: "Версии",
+    fCollection: "Подборки", collections: "Подборки", addToCollection: "Добавить в подборку…", collectTitle: "Добавить в подборку", collectName: "Название подборки (новая или из списка)", removeFrom: "Убрать из подборки «%s»", inCollections: "Подборки: %s",
     markChosen: "Выбрана", markRejected: "Отклонена", markSet: "Отметить «выбрана»", markRejectSet: "Отметить «отклонена»", markClear: "Снять отметку", starItem: "В избранное", unstarItem: "Убрать из избранного", starredOnly: "Избранное", chosenOnly: "Есть выбранная версия",
     counts: "<b>%s</b> в %s", withCopy: "копии есть у %s, утеряно %s", inHistory: "%s в истории", updated: "обновлено %s",
     tabItems: "Артефакты", tabDrafts: "Черновики", copied: "Ссылка на «%s» скопирована",
@@ -494,6 +496,7 @@ const I18N = {
     openSep: "Open separately", left: "Left", right: "Right", closeCmp: "Close comparison (Esc)", prevPair: "Previous pair (←)", swap: "Swap sides",
     nextPair: "Next pair (→)", layout: "Layout", both: "Both versions", leftOnly: "Left only",
     modeSide: "Side by side", modeSlider: "Slider", modeDiff: "Difference", modeDiffNote: "Difference: black is unchanged, colour is what changed.", filmstrip: "Versions",
+    fCollection: "Collections", collections: "Collections", addToCollection: "Add to a collection…", collectTitle: "Add to a collection", collectName: "Collection name (new, or pick one)", removeFrom: "Remove from \u201c%s\u201d", inCollections: "Collections: %s",
     markChosen: "Chosen", markRejected: "Rejected", markSet: "Mark as chosen", markRejectSet: "Mark as rejected", markClear: "Clear the mark", starItem: "Star", unstarItem: "Remove the star", starredOnly: "Starred", chosenOnly: "Has a chosen version",
     counts: "<b>%s</b> in %s", withCopy: "%s with a copy, %s lost", inHistory: "%s in history", updated: "updated %s",
     tabItems: "Items", tabDrafts: "Drafts", copied: "Link to “%s” copied",
@@ -546,7 +549,7 @@ const ftsHit = it => S.q && FTS.q === S.q && FTS.hits.has(it.dir);
 const snipHtml = s => esc(s).replace(/\[(.+?)\]/g, "<mark>$1</mark>");
 const S = loadState();
 function loadState() {
-  const st = {facetsOpen: false, tab: "items", q: "", projects: [], agents: [], types: [], copies: [], issuesOnly: false, starredOnly: false, chosenOnly: false, mode: "side", service: false, view: "grid", size: "m", group: "none", sort: "updated", open: null, pick: [], cmp: null, solo: false, diffClosed: false};
+  const st = {facetsOpen: false, tab: "items", q: "", projects: [], agents: [], types: [], copies: [], issuesOnly: false, starredOnly: false, chosenOnly: false, colls: [], mode: "side", service: false, view: "grid", size: "m", group: "none", sort: "updated", open: null, pick: [], cmp: null, solo: false, diffClosed: false};
   let saved = {};
   try { saved = JSON.parse(localStorage.getItem("archive-ui") || "{}"); } catch (e) {}
   ["view", "size", "group", "sort"].forEach(k => { if (saved[k]) st[k] = saved[k]; });
@@ -567,7 +570,7 @@ async function copy(text, msg) {
 
 const haystack = it => (it.title + " " + it.desc + " " + it.project + " " + L.type[it.type] + " " + agentLabel(it.agent) + " " + it.issues.map(n => "#" + n + " " + n).join(" ") + " " + it.versions.map(v => v.label + " " + v.request).join(" ")).toLowerCase();
 const hasChosen = it => it.versions.some(v => v.mark === "chosen");
-const filtersOn = () => S.q || S.projects.length || S.agents.length || S.types.length || S.copies.length || S.issuesOnly || S.starredOnly || S.chosenOnly;
+const filtersOn = () => S.q || S.projects.length || S.agents.length || S.types.length || S.copies.length || S.issuesOnly || S.starredOnly || S.chosenOnly || S.colls.length;
 const facetVal = {projects: it => it.project, agents: it => it.agent, types: it => it.type, copies: it => it.status};
 function pass(it, ignore) {
   if (!S.service && it.service) return false;
@@ -575,6 +578,7 @@ function pass(it, ignore) {
   for (const k of ["projects", "agents", "types", "copies"]) if (ignore !== k && S[k].length && !S[k].includes(facetVal[k](it))) return false;
   if (S.issuesOnly && !it.issues.length) return false;
   if (S.starredOnly && !it.star) return false;
+  if (ignore !== "colls" && S.colls.length && !S.colls.some(c => it.collections.includes(c))) return false;
   if (S.chosenOnly && !hasChosen(it)) return false;
   return true;
 }
@@ -608,7 +612,7 @@ function card(it) {
     <button class="main-btn" type="button" data-open="${esc(it.dir)}" aria-label="${esc(t("details", it.title))}"></button>
     ${thumb(it)}${stamp(it)}<div class="qa">${quick(it)}</div>
     <div class="bd"><h3>${esc(it.title)}</h3>
-      <div class="meta"><span>${L.type[it.type]}</span>${MULTI_AGENT ? `<span>${esc(agentLabel(it.agent))}</span>` : ""}<span>${fmt(it.updated)}</span>${it.versions.length > 1 ? `<span class="mi">${ic("history", "sm")}${it.versions.length}</span>` : ""}${it.star ? `<span class="mi mk-chosen" data-tip="${t("starredOnly")}">${ic("star", "sm")}</span>` : ""}${hasChosen(it) ? `<span class="mi mk-chosen" data-tip="${t("markChosen")}">${ic("check", "sm")}</span>` : ""}${iss}${it.status === "exact" ? `<span class="copy s-exact">${t("restoredChip")}</span>` : ""}</div>
+      <div class="meta"><span>${L.type[it.type]}</span>${MULTI_AGENT ? `<span>${esc(agentLabel(it.agent))}</span>` : ""}<span>${fmt(it.updated)}</span>${it.versions.length > 1 ? `<span class="mi">${ic("history", "sm")}${it.versions.length}</span>` : ""}${it.star ? `<span class="mi mk-chosen" data-tip="${t("starredOnly")}">${ic("star", "sm")}</span>` : ""}${it.collections.length ? `<span class="mi" data-tip="${esc(t("inCollections", it.collections.join(", ")))}">${ic("folder", "sm")}${it.collections.length}</span>` : ""}${hasChosen(it) ? `<span class="mi mk-chosen" data-tip="${t("markChosen")}">${ic("check", "sm")}</span>` : ""}${iss}${it.status === "exact" ? `<span class="copy s-exact">${t("restoredChip")}</span>` : ""}</div>
       ${ftsHit(it) && FTS.hits.get(it.dir) ? `<p class="snip">${snipHtml(FTS.hits.get(it.dir))}</p>` : ""}${vstrip(it)}</div></article>`;
 }
 function row(it) {
@@ -631,9 +635,9 @@ function cbox(attr, checked, lab, n) {
   return `<label class="cb${n === 0 && !checked ? " zero" : ""}"><input type="checkbox" ${attr} ${checked ? "checked" : ""}><span class="box">${ic("check")}</span><span class="lab">${lab}</span><span class="n">${n}</span></label>`;
 }
 function facet(title, key, values, labelOf, swOf) {
-  if (values.length < 2 && !S[key].length) return "";
+  if (values.length < 2 && !S[key].length && key !== "colls") return "";  // one collection is still worth filtering by
   const pool = items.filter(it => pass(it, key));
-  return `<div role="group" aria-label="${title}"><h4>${title}</h4>${values.map(v => cbox(`data-f="${key}" value="${esc(v)}"`, S[key].includes(v), (swOf ? swOf(v) : "") + `<span>${esc(labelOf(v))}</span>`, pool.filter(it => facetVal[key](it) === v).length)).join("")}</div>`;
+  return `<div role="group" aria-label="${title}"><h4>${title}</h4>${values.map(v => cbox(`data-f="${key}" value="${esc(v)}"`, S[key].includes(v), (swOf ? swOf(v) : "") + `<span>${esc(labelOf(v))}</span>`, pool.filter(it => key === "colls" ? it.collections.includes(v) : facetVal[key](it) === v).length)).join("")}</div>`;
 }
 function renderFacets() {
   const projects = [...new Set(items.map(i => i.project))].sort();
@@ -647,6 +651,7 @@ function renderFacets() {
     ${facet(t("fProject"), "projects", projects, projLabel)}
     ${facet(t("fAgent"), "agents", agents, agentLabel)}
     ${facet(t("fType"), "types", types, v => L.type[v], v => `<span class="sw ${v} t-${v}"></span>`)}
+    ${D.collections && D.collections.length ? facet(t("fCollection"), "colls", D.collections, v => v) : ""}
     ${facet(t("fCopy"), "copies", copies, v => L.copy[v], v => `<span class="sw st ${v === "missing" ? "missing" : ""} s-${v}"></span>`)}
     <div role="group" aria-label="${t("fMore")}"><h4>${t("fMore")}</h4>${cbox('data-flag="issuesOnly"', S.issuesOnly, `<span>${t("linked")}</span>`, items.filter(i => i.issues.length).length)}
       ${cbox('data-flag="starredOnly"', S.starredOnly, `<span>${t("starredOnly")}</span>`, items.filter(i => i.star).length)}
@@ -663,6 +668,7 @@ function activeChips() {
   S.agents.forEach(v => chips.push([agentLabel(v), "agents", v]));
   S.types.forEach(v => chips.push([L.type[v], "types", v]));
   S.copies.forEach(v => chips.push([L.copy[v], "copies", v]));
+  S.colls.forEach(v => chips.push([v, "colls", v]));
   if (S.issuesOnly) chips.push([t("linked"), "issuesOnly", ""]);
   if (S.starredOnly) chips.push([t("starredOnly"), "starredOnly", ""]);
   if (S.chosenOnly) chips.push([t("chosenOnly"), "chosenOnly", ""]);
@@ -735,6 +741,7 @@ function renderDrawer() {
       <dt>${t("fCopy")}</dt><dd class="s-${it.status}" style="color:var(--c)">${it.status === "live" && L.liveBy[it.agent] || L.copyFull[it.status]}</dd><dt>${t("created")}</dt><dd>${fmt(it.created)}</dd><dt>${t("changed")}</dt><dd>${fmt(it.updated)}${it.updated.length > 10 ? ", " + it.updated.slice(11) : ""}</dd>
       ${it.issues.length ? `<dt>${t("issues")}</dt><dd class="issues">${it.issues.map(n => issueUrl(it, n) ? `<a class="issue" href="${issueUrl(it, n)}" target="_blank" rel="noopener">${ic("issue")}#${n}</a>` : `<span class="issue">${ic("issue")}#${n}</span>`).join("")}</dd>` : ""}</dl>
     ${it.desc ? `<p class="desc">${esc(it.desc)}</p>` : ""}
+    ${it.collections.length || LIVE ? `<div class="colls"><h2>${t("collections")}</h2><div>${it.collections.map(n => `<span class="chip">${esc(n)}${LIVE ? ib("x", t("removeFrom", n), `data-act="uncollect" data-name="${esc(n)}"`) : ""}</span>`).join("")}${LIVE ? `<button class="btn" type="button" data-act="collect">${t("addToCollection")}</button>` : ""}</div></div>` : ""}
     ${it.versions.length > 1 ? `<div class="film" role="list" aria-label="${t("filmstrip")}">${vs.map(v => `<a role="listitem" class="${v.n === cur.n ? "cur" : ""}" href="${verUrl(it, v)}" target="_blank" rel="noopener"><div class="fi${v.thumb ? "" : " none"}"${v.thumb ? ` style="background-image:url('${itemBase(it)}${v.dir}/_thumb.jpg')"` : ""}>${v.mark ? `<span class="mk mk-${v.mark}">${ic(v.mark === "chosen" ? "check" : "x")}</span>` : ""}</div><span>v${v.n} ${esc(v.at.slice(5, 10))}</span></a>`).join("")}</div>` : ""}
     ${it.versions.length ? `<div class="vsec"><div class="sec-h"><h2>${pl(it.versions.length, "version")}</h2>
       ${it.versions.length > 2 ? `<button class="btn" type="button" data-cmp-picked ${picked ? "" : "disabled"}>${ic("compare")}${picked ? t("comparePicked", Math.min(...S.pick), Math.max(...S.pick)) : t("pickTwo")}</button>` : ""}</div>
@@ -836,7 +843,7 @@ document.addEventListener("click", e => {
   else if (d.tab) { S.tab = d.tab; render(); }
   else if (d.view) { S.view = d.view; saveUi(); render(); }
   else if (d.size) { S.size = d.size; saveUi(); render(); }
-  else if (el.hasAttribute("data-reset")) { Object.assign(S, {q: "", projects: [], agents: [], types: [], copies: [], issuesOnly: false, starredOnly: false, chosenOnly: false}); q.value = ""; render(); }
+  else if (el.hasAttribute("data-reset")) { Object.assign(S, {q: "", projects: [], agents: [], types: [], copies: [], issuesOnly: false, starredOnly: false, chosenOnly: false, colls: []}); q.value = ""; render(); }
   else if (d.cmp) { const [a, b] = d.cmp.split("|"); openCompare(S.open, a, b); }
   else if (el.hasAttribute("data-cmp-picked")) { if (S.pick.length === 2) openCompare(S.open, Math.min(...S.pick), Math.max(...S.pick)); }
   else if (el.hasAttribute("data-cmp-close")) { S.cmp = null; renderCompare(); }
@@ -941,6 +948,13 @@ function liveAction(el) {
         const a = document.createElement("a"); a.href = URL.createObjectURL(await r.blob()); a.download = name; document.body.appendChild(a); a.click(); a.remove();
         toast(notes ? t("exportedNote", name, notes) : t("exported", name));
       }});
+  } else if (el.dataset.act === "collect") {
+    const names = [...new Set(items.flatMap(i => i.collections))].filter(n => !it.collections.includes(n)).sort();
+    dialog({title: t("collectTitle"), ok: t("save"),
+      body: `<label class="f">${t("collectName")}<input type="text" name="name" list="collopts" required maxlength="80" autocomplete="off"><datalist id="collopts">${names.map(n => `<option value="${esc(n)}">`).join("")}</datalist></label>`,
+      submit: async fd => { await post("collect", {name: fd.get("name"), on: true}); await refresh(true); toast(t("saved")); }});
+  } else if (el.dataset.act === "uncollect") {
+    post("collect", {name: el.dataset.name, on: false}).then(() => refresh(true)).catch(ex => toastErr(t("failed", ex.message)));
   } else if (el.dataset.act === "mark") {
     post("mark", {n: +el.dataset.n, mark: el.dataset.mark}).then(() => refresh(true)).catch(ex => toastErr(t("failed", ex.message)));
   } else if (el.dataset.act === "star") {
@@ -956,7 +970,7 @@ async function refresh(force) {
   const dlgOpen = document.getElementById("dlg").open, menuOpen = document.querySelector(".dd-menu:not([hidden])");
   if (!force && (dlgOpen || menuOpen)) return;
   const d = await api("data");
-  D.items = d.items; D.drafts = d.drafts; D.built = d.built; SIG = d.sig;
+  D.items = d.items; D.collections = d.collections; S.colls = S.colls.filter(c => (d.collections || []).includes(c)); D.drafts = d.drafts; D.built = d.built; SIG = d.sig;
   items = D.items; MULTI_AGENT = new Set(items.map(i => i.agent)).size > 1;
   if (S.open && !items.some(i => i.dir === S.open)) S.open = null;
   if (S.cmp && !items.some(i => i.dir === S.cmp.dir)) S.cmp = null;

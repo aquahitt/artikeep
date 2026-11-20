@@ -53,6 +53,7 @@ class Server:
              "inputSchema": {"type": "object", "properties": {
                  "query": {"type": "string", "description": "Words to look for; any language."},
                  "agent": {"type": "string", "enum": list(AGENTS), "description": "Only items from this source."},
+                 "collection": {"type": "string", "description": "Only items in this collection (see read_artifact)."},
                  "type": {"type": "string", "enum": ["page", "canvas", "doc", "file"]},
                  "limit": {"type": "integer", "minimum": 1, "maximum": 50, "default": 10}}}},
             {"name": "read_artifact", "annotations": ro,
@@ -108,7 +109,7 @@ class Server:
         st = self.store
         if name == "search_artifacts":
             hits = search(st, args.get("query") or "", scope=self.scope, agent=args.get("agent"),
-                          kind=args.get("type"), limit=int(args.get("limit") or 10))
+                          kind=args.get("type"), limit=int(args.get("limit") or 10), collection=args.get("collection"))
             if not hits:
                 return "No archived items match. " + self._scope_note()
             return DATA_NOTE + "\n" + json.dumps(hits, ensure_ascii=False, indent=1)
@@ -155,6 +156,12 @@ class Server:
                     "origin": e.get("url") or e.get("origin") or key, "created": e.get("created"),
                     "updated": e.get("updated"), "versions": len(vs), "files": files[:200],
                     "local_path": str(base)}
+            from artikeep import collections
+            by_dir = {x["dir"]: x for x in m["items"].values()}
+            related = {n: [i for i in items if i != e["dir"] and i in by_dir and in_scope(by_dir[i], self.scope)][:20]
+                       for n, items in collections.load(st).items() if e["dir"] in items}
+            if related:
+                meta["collections"] = related  # other items kept together with this one
             body = ""
             if rel:
                 target = (base / rel).resolve()

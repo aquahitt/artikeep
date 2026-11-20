@@ -139,6 +139,8 @@ def project_label(path) -> str:
 
 
 def gallery_data(store: Store, m: dict) -> dict:
+    from artikeep import collections
+    colls = collections.load(store)
     items = []
     for key, e in m["items"].items():
         d = store.item_dir(e)
@@ -155,7 +157,8 @@ def gallery_data(store: Store, m: dict) -> dict:
         items.append({
             "key": key, "title": e.get("title") or e["dir"], "dir": e["dir"], "url": e.get("url") or "",
             "origin": origin_of(e, key), "agent": agent_of(e), "main": main,
-            "project": project_label(e.get("project")), "projectPath": e.get("project") or "", "star": bool(e.get("star")), "repo": project_repo(e.get("project")), "type": typ,
+            "project": project_label(e.get("project")), "projectPath": e.get("project") or "", "star": bool(e.get("star")),
+            "collections": collections.of_item(colls, e["dir"]), "repo": project_repo(e.get("project")), "type": typ,
             "status": item_status(e), "created": (e.get("created") or "")[:10],
             "updated": (e.get("updated") or e.get("created") or "")[:16].replace("T", " "),
             "desc": e.get("description") or "", "issues": e.get("issues") or [], "versions": versions,
@@ -182,7 +185,7 @@ def gallery_data(store: Store, m: dict) -> dict:
                     "project": project_label(meta.get("project")), "agent": meta.get("agent") or "claude-code",
                     "origin": "brainstorm" if "brainstorm" in folder.name else "scratchpad",
                 })
-    return {"items": items, "drafts": drafts, "built": dt.datetime.now().strftime("%Y-%m-%d %H:%M"),
+    return {"items": items, "drafts": drafts, "collections": sorted(colls), "built": dt.datetime.now().strftime("%Y-%m-%d %H:%M"),
             "lang": store.settings.get("lang") or "auto"}
 
 
