@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- When the Claude account changes in the middle of a session (clauth, a re-login), the agent
+  cannot update the artifact the other account made and publishes the same work again under a
+  new link. That no longer makes a second copy: the item continues under the new link when the
+  same session published the same file (or, for a Design canvas, the same type and title), and
+  publishing to the earlier link finds it again. The versions are labelled "continued on a new
+  link". `"continue_republished": false` turns it off. Copies made before this stay as they are.
+
 ## 0.5.0 — 2026-11-20
 
 ### Changed
