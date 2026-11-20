@@ -7,6 +7,7 @@
   artikeep serve [--port N] [--open]    the gallery as a local app: full-text search, live, actions
   artikeep search WORDS [--json]        search the archive (--agent, --type, --project)
   artikeep add PATH… [--title T]        keep any file or page folder by hand
+  artikeep attach ITEM --pr N           before/after of an item as a pull request comment
   artikeep secrets                      what the secret check holds back from the push
   artikeep allow ITEM [--rule R]        mark what it found in ITEM as fine
   artikeep export ID [--version N] [--format html|zip|pdf] [-o FILE]  one file to send
@@ -122,6 +123,16 @@ def main(argv=None) -> int:
     p.add_argument("--label")
     _project_args(p)
 
+    p = sub.add_parser("attach", help="post a before/after of an item as a pull request comment")
+    p.add_argument("item", help="the item folder name (the id `search` and the gallery show)")
+    p.add_argument("--pr", type=int, required=True, help="pull request number")
+    p.add_argument("--repo", help="owner/name (default: the origin of the item's project)")
+    p.add_argument("--from", dest="frm", type=int, help="the 'before' version (default: the one before the newest)")
+    p.add_argument("--to", type=int, help="the 'after' version (default: the newest)")
+    p.add_argument("--no-images", action="store_true", help="the text part only")
+    p.add_argument("--public", action="store_true", help="allow a public repository (publishes the page there)")
+    p.add_argument("--with-request", action="store_true", help="quote the request behind the 'after' version")
+    p.add_argument("--dry-run", action="store_true", help="print the comment, change nothing")
     sub.add_parser("secrets", help="show what the secret check holds back from the push")
     p = sub.add_parser("allow", help="mark possible secrets found in an item as false alarms")
     p.add_argument("item", help="the item folder name (see `artikeep secrets`)")
@@ -214,6 +225,18 @@ def main(argv=None) -> int:
             entry, vdir = add_path(store, path, title=a.title, label=a.label, project=project, fallback=git_root("."))
             print("%s %s" % ("saved" if vdir else "unchanged", store.item_dir(entry)))
         store.kick()
+        return 0
+    if a.cmd == "attach":
+        from artikeep import attach
+        try:
+            r = attach.run(store, a.item, a.pr, repo=a.repo, frm=a.frm, to=a.to, images=not a.no_images, public=a.public,
+                           with_request=a.with_request, dry_run=a.dry_run)
+        except attach.AttachError as ex:
+            print("attach: %s" % ex, file=sys.stderr)
+            return 1
+        if r.get("note"):
+            print("note: " + r["note"], file=sys.stderr)
+        print(r["body"] if a.dry_run else "%s the comment: %s" % ("updated" if r["updated"] else "posted", r["url"]))
         return 0
     if a.cmd == "secrets":
         from artikeep import secretscan

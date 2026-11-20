@@ -195,6 +195,7 @@ artikeep open                      # галерея как файл: фильт�
 artikeep serve --open              # та же галерея как локальное приложение
 artikeep search планировка кухни   # полнотекстовый, любой язык; --agent, --type, --project, --json
 artikeep add ~/Downloads/report.pdf --title "Отчёт за Q3"   # попадает в репозиторий, где запущена команда; --project PATH, --no-project
+artikeep attach <id> --pr N [--from vA --to vB]  # «было/стало» страницы комментарием в PR (--dry-run покажет заранее)
 artikeep export <id> [--version N] [--format html|zip|pdf] [-o FILE]  # один файл, чтобы отправить; есть и в `serve`
 artikeep restore <id> [--version N]  # достать копию, чтобы опубликовать заново (мёртвая ссылка, другой аккаунт)
 artikeep import chatgpt ~/Downloads/chatgpt-export.zip

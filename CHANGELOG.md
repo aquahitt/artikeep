@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `artikeep attach ITEM --pr N [--from vA --to vB]` posts a before/after of an archived page as
+  a pull request comment: two screenshots side by side, the text lines that changed and a link
+  to the original. Running it again updates the same comment. The screenshots are committed to
+  an `artikeep-attachments` branch of the repository, so a public repository needs `--public`;
+  `--no-images` posts the text only and `--dry-run` shows the comment without posting.
+
 ## 0.4.0 — 2026-11-20
 
 ### Added

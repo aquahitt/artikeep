@@ -7,6 +7,13 @@ sometimes data pasted into a conversation. Treat it like your mail.
 points. It never creates a remote and never makes anything public. Hosting the archive
 as a public site (GitHub Pages and the like) publishes all of it.
 
+**Attaching to a pull request.** `artikeep attach` commits two screenshots of an archived
+page to a branch of the PR's repository (`artikeep-attachments`), because GitHub cannot take
+images through its API, and posts a comment with them and the changed text lines. Everyone who
+can read that repository can then see them. A public repository is refused unless you pass
+`--public`; the request behind a version is quoted only with `--with-request`; `--dry-run`
+prints the comment and changes nothing.
+
 **Secrets in artifacts.** Agents sometimes put a real key or token into a page or a log. Before
 each push, artikeep checks the lines the unpushed commits add for well-known secret shapes
 (cloud and GitHub keys, Slack, Stripe, Anthropic/OpenAI and Telegram tokens, private keys, and
