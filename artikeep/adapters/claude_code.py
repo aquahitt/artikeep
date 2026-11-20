@@ -90,6 +90,59 @@ def _continue_restored(store: Store, m: dict, url, sources) -> str | None:
     return None
 
 
+def _same_file(a, b) -> bool:
+    return bool(a and b) and os.path.normpath(str(a)) == os.path.normpath(str(b))
+
+
+def _continue_known(store: Store, m: dict, url, ti: dict, source, session) -> str | None:
+    """A hosted artifact belongs to one account. After the account changes (clauth, a re-login)
+    the agent cannot update the old one and publishes the same work again as a new artifact, with a
+    new link. Left alone that makes a second item. Instead the item continues under the new link
+    when one of the same session published the same source file (or, for a canvas made from a type,
+    the same type and title). The old link goes to former_urls, and publishing to it again later
+    finds the item too. Off with "continue_republished": false."""
+    if not url or not store.settings.get("continue_republished", True):
+        return None
+    fresh = m["items"].get(url)
+    if fresh is not None and (fresh.get("versions") or fresh.get("former_urls")):
+        return None  # a link that already has history is its own item
+    for key, e in m["items"].items():
+        if fresh is None and url in e.get("former_urls", []):  # an earlier link of an item: back to it
+            m["items"][url] = m["items"].pop(key)
+            e.setdefault("former_urls", []).append(key)
+            e["former_urls"] = [u for u in e["former_urls"] if u != url]
+            return "continued on another link"
+    if not session:
+        return None
+    best = None
+    for key, e in m["items"].items():
+        if key == url or e.get("deleted") or e.get("agent", "claude-code") != "claude-code" or not key.startswith("http"):
+            continue
+        mine = [p for p in e.get("publishes", []) if p.get("session") == session]
+        if not mine:
+            continue
+        if ti.get("file_path") and not ti.get("asset"):
+            hit = any(_same_file(p.get("source"), ti["file_path"]) for p in mine)
+        elif ti.get("type_url") and ti.get("title"):
+            hit = e.get("type_url") == ti["type_url"] and (e.get("title") or "").strip() == ti["title"].strip()
+        else:
+            hit = False
+        if hit and (best is None or (e.get("updated") or "") > (m["items"][best].get("updated") or "")):
+            best = key
+    if best is None:
+        return None
+    e = m["items"].pop(best)
+    e.setdefault("former_urls", []).append(best)
+    if fresh is not None:
+        # the new link was only created so far (an empty canvas from its type): fold it in
+        e["publishes"] = e.get("publishes", []) + fresh.get("publishes", [])
+        folder = store.items / fresh["dir"]
+        if fresh["dir"] != e["dir"] and folder.is_dir() and not any(folder.iterdir()):
+            folder.rmdir()
+    m["items"][url] = e
+    return "continued on a new link"
+
+
 def handle_artifact(store: Store, payload: dict):
     ti = payload.get("tool_input") or {}
     action = ti.get("action") or "publish"
@@ -131,6 +184,7 @@ def handle_artifact(store: Store, payload: dict):
             resolve(s["from"] if isinstance(s, dict) else s, root) for s in (
                 ti["files"].values() if isinstance(ti.get("files"), dict) else [])
             if isinstance(s, str) or (isinstance(s, dict) and "from" in s)])
+        relabel = relabel or _continue_known(store, m, url, ti, source, payload.get("session_id"))
         entry = store.entry_for(m, key, title_guess, when)
         fresh = not entry["publishes"]
         entry["agent"] = "claude-code"

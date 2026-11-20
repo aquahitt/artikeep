@@ -32,6 +32,9 @@ DEFAULTS = {
     "secret_scan": "block",
     # Fingerprints of findings marked as fine with `artikeep allow`.
     "secret_allow": [],
+    # A republish of the same work under a new link (after the Claude account changed) continues
+    # the existing item instead of making a copy.
+    "continue_republished": True,
     # Record the user request and session behind each version (read from the agent's transcript).
     "provenance": True,
     # Codex: which files a session made count as deliverables worth keeping.

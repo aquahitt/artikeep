@@ -258,6 +258,7 @@ The archive is `~/artikeep` unless `artikeep init <path>` chose another folder (
 | `issue_links` | `true` | link items to GitHub issues that mention them (needs `gh`), once a day |
 | `lang` | `"auto"` | gallery and hook messages: `"en"`, `"ru"`, or follow the browser / locale |
 | `notify` | `true` | desktop notification when capturing fails |
+| `continue_republished` | `true` | when the same file is published again in a session under a new artifact link (after the Claude account changed), continue the existing item instead of making a copy; `false` keeps them apart |
 | `provenance` | `true` | keep the request (up to 500 characters) and session behind each version; `false` stops recording them |
 | `mcp_scope` | `"project"` | `"all"` lets agents see every project's items |
 | `mcp_save` | `false` | let agents save through MCP |
