@@ -42,6 +42,14 @@ each result to your disk the moment it exists, and then it is more than a backup
 Saving by hand, a claude.ai project or a git commit each cover a piece of this; none of them
 follows an agent that works in another tool, and none of them knows what you asked for.
 
+### When a link dies
+
+![A hosted link stopped working: search the archive, restore the page, publish it again](https://raw.githubusercontent.com/aquahitt/artikeep/main/docs/media/restore.gif)
+
+`artikeep restore` (or the MCP `restore_artifact` tool) copies an item's files out and says how
+to publish them; when the agent does, the page is kept as a new version of the same item, not a
+duplicate. The output above is real, from the demo archive.
+
 **In real use.** One archive after a few months: about 190 items from three sources across two
 projects, 330 versions, one canvas with 22. About a hundred of the items were captured by hooks
 with nobody asking; the rest were added by hand with `add` and `import`.
