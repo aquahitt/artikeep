@@ -58,11 +58,11 @@ button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
 <div id="vp"><div id="stage"></div></div>
 <script>
 """ + LANG_JS + """
-const C = __CANVAS__, BASE = "__BASE__", STATIC = __STATIC__;
+const C = __CANVAS__, BASE = "__BASE__", STATIC = __STATIC__, OWN = __OWN__;
 const INLINE = {};  // artikeep export puts the boards here, so the file stands alone
 document.documentElement.lang = RU ? "ru" : "en";
 document.getElementById("note").textContent = (RU ? "Локальная копия холста: артборды — отдельные страницы, клик по названию открывает артборд целиком." : "Local copy of the canvas: each artboard is its own page; click a title to open it.")
-  + (STATIC ? (RU ? " Статичный предпросмотр: среда выполнения Design осталась на сервере, поэтому вычисляемый текст, цвета темы и повторяющиеся блоки могут не отображаться." : " Static preview: the Design runtime stays on the host, so computed text, theme colors and repeated parts may be missing.") : "");
+  + (OWN ? (RU ? " Доски нарисованы собственной средой выполнения artikeep: она близка к оригиналу, но подключаемые компоненты и часть интерактива могут отличаться." : " Boards are drawn by artikeep's own Design runtime: close to the original, but imported components and some interactions may differ.") : STATIC ? (RU ? " Статичный предпросмотр: среда выполнения Design осталась на сервере, поэтому вычисляемый текст, цвета темы и повторяющиеся блоки могут не отображаться." : " Static preview: the Design runtime stays on the host, so computed text, theme colors and repeated parts may be missing.") : "");
 const pages = (C.pages && C.pages.length) ? C.pages : [{id: "", name: RU ? "Холст" : "Canvas"}];
 let page = (C.launch && C.launch.page) || pages[0].id, zoom = "fit";
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -94,6 +94,22 @@ render();
 </script></body></html>
 """
 
+RUNTIME = (Path(__file__).with_name("dcruntime.js")).read_text(encoding="utf-8")
+RUNTIME_MARK = "// artikeep: a small Design component runtime"
+
+
+def ensure_support(folder: Path) -> str:
+    """Make folder/support.js artikeep's runtime when it is missing or only a stub. A support.js
+    somebody published for real is left alone. Returns "own", "stub" or "other"."""
+    support = folder / "support.js"
+    current = support.read_text(encoding="utf-8", errors="ignore") if support.exists() else ""
+    if current.startswith(("// stub:", RUNTIME_MARK)) or not current:
+        if current != RUNTIME:
+            support.write_text(RUNTIME, encoding="utf-8")
+        return "own"
+    return "stub" if current.startswith(SUPPORT_STUB.split("\n", 1)[0]) else "other"
+
+
 SUPPORT_STUB = (
     "// stub: the Design runtime lives on the host; static artboards render without it.\n"
     "window.DCLogic = window.DCLogic || class DCLogic {};\n"
@@ -119,17 +135,20 @@ def make_canvas_viewer(item: Path) -> None:
     page = item / "index.html"
     if page.exists() and not _generated(page, CANVAS_MARKS):
         return  # a real page was published; keep it
-    if page.exists() and page.stat().st_mtime >= c.stat().st_mtime:
-        return
     support = c.parent / "support.js"
-    if not support.exists():
-        support.write_text(SUPPORT_STUB, encoding="utf-8")
-    static = support.read_text(encoding="utf-8", errors="ignore").startswith(SUPPORT_STUB.split("\n", 1)[0])
+    before = support.read_text(encoding="utf-8", errors="ignore") if support.exists() else None
+    kind = ensure_support(c.parent)
+    upgraded = before != (RUNTIME if kind == "own" else before)
+    if page.exists() and page.stat().st_mtime >= c.stat().st_mtime and not upgraded \
+            and ("OWN = %s" % ("true" if kind == "own" else "false")) in page.read_text(encoding="utf-8", errors="ignore"):
+        return
+    static = kind in ("own", "stub")
     base = "" if c.parent == item else c.parent.name + "/"
     page.write_text(
         CANVAS_VIEWER.replace("__TITLE__", html.escape(d.get("title") or item.name))
         .replace("__BASE__", base)
         .replace("__STATIC__", "true" if static else "false")
+        .replace("__OWN__", "true" if kind == "own" else "false")
         .replace("__CANVAS__", json.dumps(d, ensure_ascii=False).replace("</", "<\\/")),
         encoding="utf-8",
     )

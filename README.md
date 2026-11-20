@@ -103,7 +103,7 @@ No package manager? A clone works as is, with no install step:
 
 | Source | How | What |
 |---|---|---|
-| Claude Code | hooks, automatic | pages published with the `Artifact` tool (with all their files), Claude Design canvases, Claude Docs documents (exported tab by tab), unpublished pages in the session scratchpad |
+| Claude Code | hooks, automatic | pages published with the `Artifact` tool (with all their files), Claude Design canvases (drawn offline by artikeep's own small runtime), Claude Docs documents (exported tab by tab), unpublished pages in the session scratchpad |
 | opencode | plugin, automatic | the same for opencode sessions, read from its session database; `artikeep install --agents opencode` adds the plugin and the MCP server |
 | Codex | hooks, automatic | documents a session writes that git does not keep — reports, pages, tables in temp folders, untracked or ignored files — plus the session's visualizations |
 | Claude Desktop chat | MCP, on request | ask Claude to save what it made; the chat has no hooks, so this is the only live way in (the Code tab of Desktop is Claude Code and is captured automatically) |

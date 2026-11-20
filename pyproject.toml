@@ -35,4 +35,4 @@ artikeep = "artikeep.cli:main"
 packages = ["artikeep", "artikeep.adapters", "artikeep.importers"]
 
 [tool.setuptools.package-data]
-artikeep = ["gallery.template.html"]
+artikeep = ["gallery.template.html", "dcruntime.js"]
