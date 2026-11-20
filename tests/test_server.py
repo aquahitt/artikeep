@@ -125,6 +125,26 @@ class ServerTest(TempArchive):
         self.assertEqual(code, 400)
         self.assertEqual(self.req("%s/api/export/nope" % self.B, headers=self.H)[0], 400)
 
+    def test_marks_and_star(self):
+        d = self.e1["dir"]
+        post = lambda action, body: self.req("%s/api/item/%s/%s" % (self.B, d, action), "POST", json.dumps(body).encode(), self.H)
+        self.assertEqual(post("mark", {"n": 2, "mark": "chosen"})[0], 200)
+        self.assertEqual(post("mark", {"n": 1, "mark": "rejected"})[0], 200)
+        self.assertEqual(post("star", {"on": True})[0], 200)
+        e = self.manifest()["items"]["a"]
+        self.assertEqual([v.get("mark") for v in e["versions"]], ["rejected", "chosen"])
+        self.assertTrue(e["star"])
+        from artikeep import gallery
+        data = gallery.gallery_data(self.store, self.store.load())["items"][0]
+        self.assertEqual(([v["mark"] for v in data["versions"]], data["star"]), (["rejected", "chosen"], True))
+        post("mark", {"n": 2, "mark": ""})
+        post("star", {"on": False})
+        e = self.manifest()["items"]["a"]
+        self.assertNotIn("mark", e["versions"][1])
+        self.assertNotIn("star", e)
+        self.assertEqual(post("mark", {"n": 1, "mark": "great"})[0], 500)  # only chosen / rejected
+        self.assertEqual(post("mark", {"n": 9, "mark": "chosen"})[0], 404)
+
 
 class NotifyTest(TempArchive):
     def test_rate_limited_and_text_passed_as_argument(self):

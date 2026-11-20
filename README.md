@@ -127,6 +127,8 @@ with the changed text lines. Light and dark, English and Russian, usable on a ph
   </tr>
 </table>
 
+Compare has a slider and a difference mode; the item panel shows a thumbnail of every version; in `serve` you can mark a version chosen or rejected and star an item, and filter by both.
+
 Keyboard: `/` search, `G` / `L` grid or list, `←` `→` previous and next item, `C` compare
 first and current versions, `Esc` close, `?` all shortcuts.
 

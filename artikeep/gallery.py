@@ -147,6 +147,7 @@ def gallery_data(store: Store, m: dict) -> dict:
         versions = [{
             "n": v["n"], "at": v["at"][:16].replace("T", " "), "label": v.get("label") or "", "dir": v["dir"],
             "request": v.get("request") or "", "session": v.get("session") or "",
+            "mark": v.get("mark") or "", "thumb": (d / v["dir"] / "_thumb.jpg").exists(),
             "sum": version_summary(d, v, typ, vs[i - 1] if i else None), "diff": v.get("diff"),
             "main": main_file(d / v["dir"], e),
         } for i, v in enumerate(vs)]
@@ -154,7 +155,7 @@ def gallery_data(store: Store, m: dict) -> dict:
         items.append({
             "key": key, "title": e.get("title") or e["dir"], "dir": e["dir"], "url": e.get("url") or "",
             "origin": origin_of(e, key), "agent": agent_of(e), "main": main,
-            "project": project_label(e.get("project")), "projectPath": e.get("project") or "", "repo": project_repo(e.get("project")), "type": typ,
+            "project": project_label(e.get("project")), "projectPath": e.get("project") or "", "star": bool(e.get("star")), "repo": project_repo(e.get("project")), "type": typ,
             "status": item_status(e), "created": (e.get("created") or "")[:10],
             "updated": (e.get("updated") or e.get("created") or "")[:16].replace("T", " "),
             "desc": e.get("description") or "", "issues": e.get("issues") or [], "versions": versions,
@@ -215,6 +216,9 @@ asyncio.run(main())
 '''
 
 
+VERSION_THUMBS_PER_PASS = 24
+
+
 def refresh_thumbs(store: Store, m: dict) -> int:
     if store.settings.get("thumbnails") in (False, "off"):
         return 0
@@ -227,6 +231,18 @@ def refresh_thumbs(store: Store, m: dict) -> int:
         page, out = d / main, d / "_thumb.jpg"
         if not out.exists() or out.stat().st_mtime < page.stat().st_mtime:
             jobs.append([str(page), str(out)])
+    # a thumbnail per version for the filmstrip: the newest items first, a few per pass
+    budget = VERSION_THUMBS_PER_PASS
+    for e in sorted(m["items"].values(), key=lambda x: x.get("updated") or "", reverse=True):
+        d = store.item_dir(e)
+        for v in reversed(e.get("versions") or []):
+            if budget <= 0:
+                break
+            vd = d / v["dir"]
+            main = main_file(vd, e)
+            if main and main.lower().endswith((".html", ".htm", ".svg", ".png", ".jpg", ".jpeg", ".pdf")) and not (vd / "_thumb.jpg").exists():
+                jobs.append([str(vd / main), str(vd / "_thumb.jpg")])
+                budget -= 1
     if not jobs:
         return 0
     probe = subprocess.run(["python3", "-c", "import playwright"], capture_output=True)
