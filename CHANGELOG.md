@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- Archived Design canvases now draw their boards the way the host does. The archive used to keep
+  a stub where the Design runtime belongs, so `{{holes}}` stayed empty and repeated or conditional
+  blocks were missing: boards showed no theme colours, computed text or tabs. artikeep now ships
+  its own small runtime, written from the documented `.dc.html` format (`{{holes}}`, `<sc-if>`,
+  `<sc-for>`, events, state, `data-props`), and puts it where the stub was, in every canvas and in
+  all of their versions, on the next background pass. A `support.js` that was published for real is
+  left alone. `artikeep export` carries it too, so an exported canvas looks the same offline. It is
+  not the original runtime: imported components (`<dc-import>`) show as empty boxes of their
+  declared size, and the viewer says so. Closes #6 and #14.
+
 ## 0.6.0 — 2026-11-20
 
 ### Added
