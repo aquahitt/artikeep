@@ -5,4 +5,4 @@ moment it is made; importers take official chat exports; a stdio MCP server lets
 any agent search and read the archive. Standard library only, Python >= 3.9.
 """
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
