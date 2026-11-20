@@ -1,6 +1,6 @@
 # artikeep
 
-**Never lose what your AI agents make.**
+**One place for everything your AI agents make, with every version and the reason behind it.**
 
 English · [Русский](https://github.com/aquahitt/artikeep/blob/main/README.ru.md)
 
@@ -11,26 +11,49 @@ English · [Русский](https://github.com/aquahitt/artikeep/blob/main/READM
 ![macOS | Linux](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-2E5E4E)
 [![MIT](https://img.shields.io/badge/license-MIT-2E5E4E)](https://github.com/aquahitt/artikeep/blob/main/LICENSE)
 
-Agents publish pages, canvases and documents to places you don't control: a hosted
-artifact link, a chat you can lose access to, a temp folder that gets cleaned. artikeep
-keeps a copy of each one on your disk the moment it is made. Every change becomes a
-version, a gallery lets you browse and compare versions, and an MCP server lets any
-agent search what you already have.
+You ask agents for pages, mock-ups and reports, in Claude Code, Codex, opencode, in chats, from several
+accounts. What they make lands on someone else's server, in a chat, in a temp folder. artikeep copies
+each result to your disk the moment it exists, and then it is more than a backup:
+
+- **One place for all of it.** Pages, Design canvases, documents and files from every agent, account
+  and chat export, in one gallery and one search. A link that died, an account you lost, a chat you can
+  no longer open: the copy is still here.
+- **Agents reuse their own work.** Through MCP an agent searches the archive before it rebuilds a
+  report, and `restore` hands it the old page to continue or publish again under the new account.
+- **Every version, with the reason.** Each change is a version that keeps the request that caused it.
+  Compare any two side by side, with a slider, or as a difference, and mark the one you chose.
 
 **On Claude Code it is a plugin: two commands, no setup.**
 [Jump to the quick start](#claude-code-the-plugin-recommended).
 
 ![Search the archive, open an item, compare its first and current versions](https://raw.githubusercontent.com/aquahitt/artikeep/main/docs/media/demo.gif)
 
-- **Automatic where it can be.** Hooks in Claude Code and Codex capture without the
+### Without it, and with it
+
+| | By hand | With artikeep |
+|---|---|---|
+| A hosted artifact link dies or changes owner | the page is gone | the copy is in the archive; `restore` brings it back |
+| You want yesterday's version | you hope you kept a file | every change is a version, one click to compare |
+| "Why did we do it this way?" | scroll an old chat, if it is still there | each version carries the request behind it |
+| You start a report an agent already wrote | it is written again | the agent finds the old one by MCP search |
+| Work from several agents and accounts | scattered across tabs and folders | one gallery, filter by project, source or collection |
+| Send a page to someone | screenshots, or share your account | `artikeep export`: one file, opens offline |
+
+Saving by hand, a claude.ai project or a git commit each cover a piece of this; none of them
+follows an agent that works in another tool, and none of them knows what you asked for.
+
+**In real use.** One archive after a few months: about 190 items from three sources across two
+projects, 330 versions, one canvas with 22. About a hundred of the items were captured by hooks
+with nobody asking; the rest were added by hand with `add` and `import`.
+
+It stays out of your way:
+
+- **Automatic where it can be.** Hooks in Claude Code and Codex, a plugin in opencode, capture without the
   model having to remember anything.
-- **Every change is a version, with the reason.** Compare any two side by side, with the changed
-  text lines. Each version keeps the request that led to it, and search finds it by those words.
 - **Plain files, in git.** The archive is a folder of HTML, Markdown and JSON. It opens
-  without artikeep, and syncs between machines through a private git remote.
-- **Agents can look it up.** Before rebuilding a report from scratch, an agent searches
-  the archive through MCP.
-- **No dependencies.** Python 3.9+ standard library. Nothing to `pip install` for capture.
+  without artikeep, and syncs between machines through a private git remote, checked for secrets
+  before every push.
+- **No dependencies.** Python 3.9+ standard library. Nothing to `pip` install for capture.
 
 ## Quick start
 

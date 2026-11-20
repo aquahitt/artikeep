@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Changed
+
+- The README leads with what you gain instead of what you might lose: one place for everything
+  agents make, agents that reuse their own work, every version with its reason. It adds a
+  by-hand versus artikeep comparison and real numbers from a long-running archive. The package
+  description follows.
+
 ### Added
 
 - `artikeep digest [--days N] [--project P] [--format html|md] [-o FILE]` shows what the agents
