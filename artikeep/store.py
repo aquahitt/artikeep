@@ -245,6 +245,34 @@ class Store:
             self.save(m)
         return e
 
+    MARKS = ("chosen", "rejected")
+
+    def mark(self, folder: str, n: int, mark: str) -> None:
+        """Mark version n as chosen or rejected ("" clears it). Several versions can be chosen."""
+        if mark and mark not in self.MARKS:
+            raise ValueError("mark is one of %s" % ", ".join(self.MARKS))
+        with self.lock("manifest"):
+            m = self.load()
+            _, e = self.find(m, folder)
+            v = next((v for v in e.get("versions") or [] if v["n"] == n), None)
+            if not v:
+                raise KeyError("version %s" % n)
+            if mark:
+                v["mark"] = mark
+            else:
+                v.pop("mark", None)
+            self.save(m)
+
+    def star(self, folder: str, on: bool) -> None:
+        with self.lock("manifest"):
+            m = self.load()
+            _, e = self.find(m, folder)
+            if on:
+                e["star"] = True
+            else:
+                e.pop("star", None)
+            self.save(m)
+
     def restore(self, folder: str, n: int) -> str | None:
         """Make version n the current state again, as a new version: history is never rewritten."""
         with self.lock("manifest"):

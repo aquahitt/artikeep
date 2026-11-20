@@ -47,8 +47,9 @@ Entry fields (all optional except `dir`):
 | `origin` | the source path or URL, when not a web original |
 | `main` | file to open, relative to the item folder; default `index.html` |
 | `created`, `updated` | ISO 8601 with offset |
-| `versions` | `[{"n", "at", "label", "dir", "changed", "diff"?, "request"?, "session"?}]`, `dir` relative to the item folder; `changed` lists files that differ from the previous version (`-name` for removed); `request` is the user message that led to the version, one line of at most 500 characters with pasted material replaced by `[pasted text]`; `session` is the agent session id (resume it from the item's `project` folder) |
+| `versions` | `[{"n", "at", "label", "dir", "changed", "diff"?, "request"?, "session"?, "mark"?}]`, `dir` relative to the item folder; `changed` lists files that differ from the previous version (`-name` for removed); `request` is the user message that led to the version, one line of at most 500 characters with pasted material replaced by `[pasted text]`; `mark` is `chosen` or `rejected`, set in the gallery; `session` is the agent session id (resume it from the item's `project` folder) |
 | `former_urls` | earlier keys of the item, when files restored with `artikeep restore` were published again under a new link (the item takes the new url as its key) |
+| `star` | `true` when the item is starred in the gallery |
 | `publishes` | one record per save: `{"at", "session", "source", "copied", ...}` |
 | `kind` | `claude-doc` for Claude Docs documents |
 | `deleted` | time the original was deleted at the source; the copy stays |

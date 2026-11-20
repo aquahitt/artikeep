@@ -4,6 +4,12 @@
 
 ### Added
 
+- Design review in the gallery. The compare view has a **Slider** (drag across two versions
+  of a page) and a **Difference** mode (black where nothing changed) next to side by side. The
+  item panel shows a **filmstrip** with a thumbnail of every version (made a few per background
+  pass, newest first). In `artikeep serve` a version can be marked **chosen** or **rejected**
+  and an item **starred**; marks show on the version, on the card, and two filters find
+  starred items and items with a chosen version.
 - `artikeep attach ITEM --pr N [--from vA --to vB]` posts a before/after of an archived page as
   a pull request comment: two screenshots side by side, the text lines that changed and a link
   to the original. Running it again updates the same comment. The screenshots are committed to

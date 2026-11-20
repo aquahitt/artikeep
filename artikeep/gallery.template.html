@@ -256,6 +256,22 @@ dialog.dlg::backdrop{background:var(--scrim)}
 .pane header .rq{flex:1 0 100%;order:9;color:var(--ink-2);font-size:12px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .pane header .sum{color:var(--ink-3);margin-right:auto}
 .pane iframe{width:100%;height:100%;border:0;background:#fff}
+.ov{position:relative;align-self:stretch;height:100%;min-height:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+.ov iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff}
+.ov.diff .ovb{mix-blend-mode:difference}
+.ovl{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:var(--accent,#b4501c);z-index:2;pointer-events:none}
+.ovr{position:absolute;left:5%;right:5%;bottom:10px;width:90%;z-index:3;accent-color:var(--accent,#b4501c)}
+.ovnote{position:absolute;left:10px;top:8px;z-index:3;font-size:12px;color:var(--ink-2);background:var(--sheet);padding:2px 8px;border-radius:6px;border:1px solid var(--line)}
+.film{flex:0 0 auto;min-height:88px;display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;margin:0 0 6px;scroll-snap-type:x proximity}
+.film a{flex:0 0 96px;scroll-snap-align:start;text-decoration:none;color:var(--ink-2);font-size:11px;display:grid;gap:3px}
+.film .fi{height:64px;border:1px solid var(--line);border-radius:8px;background:var(--sheet) center top/cover no-repeat;position:relative}
+.film .none{display:grid;place-items:center;color:var(--ink-3)}
+.film a.cur .fi{border-color:var(--c,var(--ink-2));border-width:2px}
+.film .mk{position:absolute;right:3px;top:3px;width:16px;height:16px;border-radius:50%;display:grid;place-items:center;background:var(--sheet);border:1px solid var(--line)}
+.film .mk .ic,.mk-chip .ic{width:11px;height:11px}
+.mk-chosen{color:#2e7d4f}.mk-rejected{color:#a33a2f}
+.tl .va .on{background:color-mix(in srgb,currentColor 14%,transparent)}
+.mk-chip{display:inline-flex;align-items:center;gap:3px;font-size:11px;border:1px solid currentColor;border-radius:999px;padding:0 6px}
 .diff{margin-top:12px;border:1px solid var(--line);border-radius:12px;background:var(--sheet);max-height:32vh;overflow:auto;padding:0 14px 12px}
 .diff.closed{padding-bottom:0}
 .diff.closed .dl,.diff.closed .more,.diff.closed p{display:none}
@@ -346,6 +362,7 @@ kbd.k{font:12px "Golos Text";border:1px solid var(--line);border-bottom-width:2p
   <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></symbol>
   <symbol id="i-restore" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4h4"/><path d="m10 12 2 2 4-4"/></symbol>
   <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 4 2.4 5 5.4.7-4 3.8 1 5.4L12 16.3 7.2 18.9l1-5.4-4-3.8 5.4-.7z"/></symbol>
   <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 15V4M7 9l5-5 5 5M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/></symbol>
   <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></symbol>
 </svg>
@@ -421,6 +438,8 @@ const I18N = {
     showDiff: "Показать изменения", hideDiff: "Свернуть изменения", styleOnly: "Правки только в оформлении или картинках.", moreLines: "и ещё %s строк",
     openSep: "Открыть отдельно", left: "Слева", right: "Справа", closeCmp: "Закрыть сравнение (Esc)", prevPair: "Предыдущая пара (←)", swap: "Поменять местами",
     nextPair: "Следующая пара (→)", layout: "Раскладка", both: "Обе версии", leftOnly: "Только левая",
+    modeSide: "Рядом", modeSlider: "Ползунок", modeDiff: "Разница", modeDiffNote: "Разница: чёрное — без изменений, цветное — что поменялось.", filmstrip: "Версии",
+    markChosen: "Выбрана", markRejected: "Отклонена", markSet: "Отметить «выбрана»", markRejectSet: "Отметить «отклонена»", markClear: "Снять отметку", starItem: "В избранное", unstarItem: "Убрать из избранного", starredOnly: "Избранное", chosenOnly: "Есть выбранная версия",
     counts: "<b>%s</b> в %s", withCopy: "копии есть у %s, утеряно %s", inHistory: "%s в истории", updated: "обновлено %s",
     tabItems: "Артефакты", tabDrafts: "Черновики", copied: "Ссылка на «%s» скопирована",
     theme: "Тема: %s. Переключить", themeTip: "Тема: %s", themes: {auto: "как в системе", light: "светлая", dark: "тёмная"},
@@ -474,6 +493,8 @@ const I18N = {
     showDiff: "Show changes", hideDiff: "Collapse changes", styleOnly: "Only styling or images changed.", moreLines: "and %s more lines",
     openSep: "Open separately", left: "Left", right: "Right", closeCmp: "Close comparison (Esc)", prevPair: "Previous pair (←)", swap: "Swap sides",
     nextPair: "Next pair (→)", layout: "Layout", both: "Both versions", leftOnly: "Left only",
+    modeSide: "Side by side", modeSlider: "Slider", modeDiff: "Difference", modeDiffNote: "Difference: black is unchanged, colour is what changed.", filmstrip: "Versions",
+    markChosen: "Chosen", markRejected: "Rejected", markSet: "Mark as chosen", markRejectSet: "Mark as rejected", markClear: "Clear the mark", starItem: "Star", unstarItem: "Remove the star", starredOnly: "Starred", chosenOnly: "Has a chosen version",
     counts: "<b>%s</b> in %s", withCopy: "%s with a copy, %s lost", inHistory: "%s in history", updated: "updated %s",
     tabItems: "Items", tabDrafts: "Drafts", copied: "Link to “%s” copied",
     theme: "Theme: %s. Switch", themeTip: "Theme: %s", themes: {auto: "system", light: "light", dark: "dark"},
@@ -525,7 +546,7 @@ const ftsHit = it => S.q && FTS.q === S.q && FTS.hits.has(it.dir);
 const snipHtml = s => esc(s).replace(/\[(.+?)\]/g, "<mark>$1</mark>");
 const S = loadState();
 function loadState() {
-  const st = {facetsOpen: false, tab: "items", q: "", projects: [], agents: [], types: [], copies: [], issuesOnly: false, service: false, view: "grid", size: "m", group: "none", sort: "updated", open: null, pick: [], cmp: null, solo: false, diffClosed: false};
+  const st = {facetsOpen: false, tab: "items", q: "", projects: [], agents: [], types: [], copies: [], issuesOnly: false, starredOnly: false, chosenOnly: false, mode: "side", service: false, view: "grid", size: "m", group: "none", sort: "updated", open: null, pick: [], cmp: null, solo: false, diffClosed: false};
   let saved = {};
   try { saved = JSON.parse(localStorage.getItem("archive-ui") || "{}"); } catch (e) {}
   ["view", "size", "group", "sort"].forEach(k => { if (saved[k]) st[k] = saved[k]; });
@@ -545,13 +566,16 @@ async function copy(text, msg) {
 }
 
 const haystack = it => (it.title + " " + it.desc + " " + it.project + " " + L.type[it.type] + " " + agentLabel(it.agent) + " " + it.issues.map(n => "#" + n + " " + n).join(" ") + " " + it.versions.map(v => v.label + " " + v.request).join(" ")).toLowerCase();
-const filtersOn = () => S.q || S.projects.length || S.agents.length || S.types.length || S.copies.length || S.issuesOnly;
+const hasChosen = it => it.versions.some(v => v.mark === "chosen");
+const filtersOn = () => S.q || S.projects.length || S.agents.length || S.types.length || S.copies.length || S.issuesOnly || S.starredOnly || S.chosenOnly;
 const facetVal = {projects: it => it.project, agents: it => it.agent, types: it => it.type, copies: it => it.status};
 function pass(it, ignore) {
   if (!S.service && it.service) return false;
   if (S.q && !haystack(it).includes(S.q.toLowerCase()) && !ftsHit(it)) return false;
   for (const k of ["projects", "agents", "types", "copies"]) if (ignore !== k && S[k].length && !S[k].includes(facetVal[k](it))) return false;
   if (S.issuesOnly && !it.issues.length) return false;
+  if (S.starredOnly && !it.star) return false;
+  if (S.chosenOnly && !hasChosen(it)) return false;
   return true;
 }
 const sorters = {updated: (a, b) => b.updated.localeCompare(a.updated), created: (a, b) => b.created.localeCompare(a.created),
@@ -584,7 +608,7 @@ function card(it) {
     <button class="main-btn" type="button" data-open="${esc(it.dir)}" aria-label="${esc(t("details", it.title))}"></button>
     ${thumb(it)}${stamp(it)}<div class="qa">${quick(it)}</div>
     <div class="bd"><h3>${esc(it.title)}</h3>
-      <div class="meta"><span>${L.type[it.type]}</span>${MULTI_AGENT ? `<span>${esc(agentLabel(it.agent))}</span>` : ""}<span>${fmt(it.updated)}</span>${it.versions.length > 1 ? `<span class="mi">${ic("history", "sm")}${it.versions.length}</span>` : ""}${iss}${it.status === "exact" ? `<span class="copy s-exact">${t("restoredChip")}</span>` : ""}</div>
+      <div class="meta"><span>${L.type[it.type]}</span>${MULTI_AGENT ? `<span>${esc(agentLabel(it.agent))}</span>` : ""}<span>${fmt(it.updated)}</span>${it.versions.length > 1 ? `<span class="mi">${ic("history", "sm")}${it.versions.length}</span>` : ""}${it.star ? `<span class="mi mk-chosen" data-tip="${t("starredOnly")}">${ic("star", "sm")}</span>` : ""}${hasChosen(it) ? `<span class="mi mk-chosen" data-tip="${t("markChosen")}">${ic("check", "sm")}</span>` : ""}${iss}${it.status === "exact" ? `<span class="copy s-exact">${t("restoredChip")}</span>` : ""}</div>
       ${ftsHit(it) && FTS.hits.get(it.dir) ? `<p class="snip">${snipHtml(FTS.hits.get(it.dir))}</p>` : ""}${vstrip(it)}</div></article>`;
 }
 function row(it) {
@@ -625,6 +649,8 @@ function renderFacets() {
     ${facet(t("fType"), "types", types, v => L.type[v], v => `<span class="sw ${v} t-${v}"></span>`)}
     ${facet(t("fCopy"), "copies", copies, v => L.copy[v], v => `<span class="sw st ${v === "missing" ? "missing" : ""} s-${v}"></span>`)}
     <div role="group" aria-label="${t("fMore")}"><h4>${t("fMore")}</h4>${cbox('data-flag="issuesOnly"', S.issuesOnly, `<span>${t("linked")}</span>`, items.filter(i => i.issues.length).length)}
+      ${cbox('data-flag="starredOnly"', S.starredOnly, `<span>${t("starredOnly")}</span>`, items.filter(i => i.star).length)}
+      ${cbox('data-flag="chosenOnly"', S.chosenOnly, `<span>${t("chosenOnly")}</span>`, items.filter(hasChosen).length)}
       ${svc ? cbox('data-flag="service"', S.service, `<span>${t("service")}</span>`, svc) : ""}</div>
     ${filtersOn() ? `<button class="reset" type="button" data-reset>${ic("x", "sm")}${t("resetAll")}</button>` : ""}
     <div class="ffoot only-mobile-flex"><button class="btn solid" type="button" data-toggle-facets>${t("show", pl(shown, "item"))}</button></div>
@@ -638,6 +664,8 @@ function activeChips() {
   S.types.forEach(v => chips.push([L.type[v], "types", v]));
   S.copies.forEach(v => chips.push([L.copy[v], "copies", v]));
   if (S.issuesOnly) chips.push([t("linked"), "issuesOnly", ""]);
+  if (S.starredOnly) chips.push([t("starredOnly"), "starredOnly", ""]);
+  if (S.chosenOnly) chips.push([t("chosenOnly"), "chosenOnly", ""]);
   return `<div class="active">${chips.map(([l, k, v]) => `<span class="chip">${esc(l)}${ib("x", t("remove", l), `data-unchip="${k}" data-val="${esc(v)}"`)}</span>`).join("")}</div>`;
 }
 
@@ -697,7 +725,7 @@ function renderDrawer() {
   const picked = S.pick.length === 2;
   const dirUrl = itemBase(it);
   dr.innerHTML = `<div class="dh"><span class="nav">${ib("left", t("prev"), `data-step="-1" ${idx <= 0 ? "disabled" : ""}`, "ghost")}${ib("right", t("next"), `data-step="1" ${idx < 0 || idx >= visibleOrder.length - 1 ? "disabled" : ""}`, "ghost")}</span>
-    <h2 id="dtitle">${esc(it.title)}</h2>${LIVE ? ib("edit", t("rename"), `data-act="edit"`, "ghost") : ""}${ib("link", t("copyLink"), `data-copy-link="${esc(it.dir)}"`, "ghost")}${ib("x", t("closeEsc"), "data-close", "ghost")}</div>
+    <h2 id="dtitle">${esc(it.title)}</h2>${LIVE ? ib("star", t(it.star ? "unstarItem" : "starItem"), `data-act="star" data-on="${it.star ? "" : "1"}"`, "ghost" + (it.star ? " mk-chosen" : "")) : ""}${LIVE ? ib("edit", t("rename"), `data-act="edit"`, "ghost") : ""}${ib("link", t("copyLink"), `data-copy-link="${esc(it.dir)}"`, "ghost")}${ib("x", t("closeEsc"), "data-close", "ghost")}</div>
   <div class="db">
     ${preview(it)}
     <div class="dacts">${it.local ? `<a class="btn solid" href="${pageUrl(it)}" target="_blank" rel="noopener">${ic("ext")}${t("open")}</a>` : ""}
@@ -707,12 +735,13 @@ function renderDrawer() {
       <dt>${t("fCopy")}</dt><dd class="s-${it.status}" style="color:var(--c)">${it.status === "live" && L.liveBy[it.agent] || L.copyFull[it.status]}</dd><dt>${t("created")}</dt><dd>${fmt(it.created)}</dd><dt>${t("changed")}</dt><dd>${fmt(it.updated)}${it.updated.length > 10 ? ", " + it.updated.slice(11) : ""}</dd>
       ${it.issues.length ? `<dt>${t("issues")}</dt><dd class="issues">${it.issues.map(n => issueUrl(it, n) ? `<a class="issue" href="${issueUrl(it, n)}" target="_blank" rel="noopener">${ic("issue")}#${n}</a>` : `<span class="issue">${ic("issue")}#${n}</span>`).join("")}</dd>` : ""}</dl>
     ${it.desc ? `<p class="desc">${esc(it.desc)}</p>` : ""}
+    ${it.versions.length > 1 ? `<div class="film" role="list" aria-label="${t("filmstrip")}">${vs.map(v => `<a role="listitem" class="${v.n === cur.n ? "cur" : ""}" href="${verUrl(it, v)}" target="_blank" rel="noopener"><div class="fi${v.thumb ? "" : " none"}"${v.thumb ? ` style="background-image:url('${itemBase(it)}${v.dir}/_thumb.jpg')"` : ""}>${v.mark ? `<span class="mk mk-${v.mark}">${ic(v.mark === "chosen" ? "check" : "x")}</span>` : ""}</div><span>v${v.n} ${esc(v.at.slice(5, 10))}</span></a>`).join("")}</div>` : ""}
     ${it.versions.length ? `<div class="vsec"><div class="sec-h"><h2>${pl(it.versions.length, "version")}</h2>
       ${it.versions.length > 2 ? `<button class="btn" type="button" data-cmp-picked ${picked ? "" : "disabled"}>${ic("compare")}${picked ? t("comparePicked", Math.min(...S.pick), Math.max(...S.pick)) : t("pickTwo")}</button>` : ""}</div>
-      <ol class="tl t-${it.type}">${vs.map(v => `<li class="${S.pick.includes(v.n) ? "picked" : ""}"><div class="vh"><span class="vn">v${v.n}</span><span class="vl">${esc(v.label || (v.n === cur.n ? t("current") : t("noLabel")))}</span></div>
+      <ol class="tl t-${it.type}">${vs.map(v => `<li class="${S.pick.includes(v.n) ? "picked" : ""}"><div class="vh"><span class="vn">v${v.n}</span><span class="vl">${esc(v.label || (v.n === cur.n ? t("current") : t("noLabel")))}</span>${v.mark ? `<span class="mk-chip mk-${v.mark}">${ic(v.mark === "chosen" ? "check" : "x")}${t(v.mark === "chosen" ? "markChosen" : "markRejected")}</span>` : ""}</div>
         <small>${esc(v.at)}${sumText(it, v) ? ", " + esc(sumText(it, v)) : ""}</small>
         ${v.request ? `<p class="rq"${v.session ? ` title="${esc(v.session)}"` : ""}>${esc(v.request)}</p>` : ""}
-        <span class="va">${ia("ext", t("openV", v.n), verUrl(it, v), "sm ghost")}${v.n > 1 ? ib("compare", t("compareWith", v.n - 1), `data-cmp="${v.n - 1}|${v.n}"`, "sm ghost") : ""}${LIVE && v.n !== cur.n ? ib("restore", t("restoreV", v.n), `data-restore="${v.n}"`, "sm ghost") : ""}${it.versions.length > 2 ? `<label class="cb" data-tip="${t("pickTip")}"><input type="checkbox" data-pickv="${v.n}" ${S.pick.includes(v.n) ? "checked" : ""} aria-label="${t("pickV", v.n)}"><span class="box">${ic("check")}</span></label>` : ""}</span></li>`).join("")}</ol></div>` : ""}
+        <span class="va">${ia("ext", t("openV", v.n), verUrl(it, v), "sm ghost")}${LIVE ? ["chosen", "rejected"].map(k => ib(k === "chosen" ? "check" : "x", v.mark === k ? t("markClear") : t(k === "chosen" ? "markSet" : "markRejectSet"), `data-act="mark" data-n="${v.n}" data-mark="${v.mark === k ? "" : k}"`, "sm ghost" + (v.mark === k ? ` mk-${k} on` : ""))).join("") : ""}${v.n > 1 ? ib("compare", t("compareWith", v.n - 1), `data-cmp="${v.n - 1}|${v.n}"`, "sm ghost") : ""}${LIVE && v.n !== cur.n ? ib("restore", t("restoreV", v.n), `data-restore="${v.n}"`, "sm ghost") : ""}${it.versions.length > 2 ? `<label class="cb" data-tip="${t("pickTip")}"><input type="checkbox" data-pickv="${v.n}" ${S.pick.includes(v.n) ? "checked" : ""} aria-label="${t("pickV", v.n)}"><span class="box">${ic("check")}</span></label>` : ""}</span></li>`).join("")}</ol></div>` : ""}
   </div>`;
   dr.hidden = false; scrim.hidden = false;
 }
@@ -734,6 +763,17 @@ function diffBlock(it, a, b) {
     return f + `<span class="op ${l.op === "+" ? "add" : "rem"}">${l.op === "+" ? "+" : "−"}</span><span class="${l.op === "+" ? "add" : "rem"}">${esc(l.text)}</span>`; }).join("");
   return `<div class="diff${closed}"><div class="dh2">${ic("text")}<h3>${head}</h3>${toggle}</div><div class="dl">${lines}</div>${diff.more ? `<p class="more">${t("moreLines", diff.more)}</p>` : ""}</div>`;
 }
+function overlay(it, a, b) {
+  const va = it.versions.find(x => x.n === a), vb = it.versions.find(x => x.n === b), slider = S.mode === "slider";
+  return `<div class="ov${S.mode === "diff" ? " diff" : ""}" id="ov"><iframe class="ova" src="${verUrl(it, va)}" title="${t("left")}: v${va.n}"></iframe>
+    <iframe class="ovb" src="${verUrl(it, vb)}"${slider ? ` style="clip-path:inset(0 0 0 50%)"` : ""} title="${t("right")}: v${vb.n}"></iframe>
+    ${slider ? `<div class="ovl" style="left:50%"></div><input class="ovr" type="range" min="0" max="100" value="50" data-ovpos aria-label="${t("modeSlider")}">` : `<p class="ovnote">${t("modeDiffNote")}</p>`}</div>`;
+}
+document.addEventListener("input", e => {
+  const r = e.target.closest && e.target.closest("[data-ovpos]"); if (!r) return;
+  const ov = document.getElementById("ov"); if (!ov) return;
+  ov.querySelector(".ovb").style.clipPath = `inset(0 0 0 ${r.value}%)`; ov.querySelector(".ovl").style.left = r.value + "%";
+});
 function renderCompare() {
   const box = document.getElementById("cmp");
   if (!S.cmp) { box.hidden = true; return; }
@@ -743,8 +783,9 @@ function renderCompare() {
   box.className = "cmp" + (S.solo ? " solo" : "");
   box.innerHTML = `<div class="cmp-bar"><h2>${esc(it.title)}</h2>${ib("x", t("closeCmp"), "data-cmp-close")}
     <span class="grp">${ib("left", t("prevPair"), `data-pair="-1" ${Math.min(a, b) <= 1 ? "disabled" : ""}`)}${dropdown("cmp-a", t("left"), opts, a)}${ib("swap", t("swap"), "data-swap")}${dropdown("cmp-b", t("right"), opts, b, "right")}${ib("right", t("nextPair"), `data-pair="1" ${Math.max(a, b) >= last ? "disabled" : ""}`)}</span>
-    <span class="seg icons" role="group" aria-label="${t("layout")}">${[["", "compare", t("both")], ["1", "single", t("leftOnly")]].map(([k, i, tt]) => `<button type="button" data-solo="${k}" aria-pressed="${S.solo === !!k}" aria-label="${tt}" data-tip="${tt}">${ic(i)}</button>`).join("")}</span></div>
-    <div class="panes">${pane(a, "a")}${pane(b, "b")}</div>${diffBlock(it, a, b)}`;
+    <span class="seg" role="group" aria-label="${t("modeSide")}">${["side", "slider", "diff"].map(k => `<button type="button" data-mode="${k}" aria-pressed="${S.mode === k}">${t("mode" + k[0].toUpperCase() + k.slice(1))}</button>`).join("")}</span>
+    ${S.mode === "side" ? `<span class="seg icons" role="group" aria-label="${t("layout")}">${[["", "compare", t("both")], ["1", "single", t("leftOnly")]].map(([k, i, tt]) => `<button type="button" data-solo="${k}" aria-pressed="${S.solo === !!k}" aria-label="${tt}" data-tip="${tt}">${ic(i)}</button>`).join("")}</span>` : ""}</div>
+    ${S.mode === "side" ? `<div class="panes">${pane(a, "a")}${pane(b, "b")}</div>` : overlay(it, a, b)}${diffBlock(it, a, b)}`;
   box.hidden = false;
 }
 function openCompare(dir, a, b) { S.cmp = {dir, a: +a, b: +b}; renderCompare(); const c = document.querySelector("#cmp [data-cmp-close]"); if (c) c.focus(); }
@@ -786,7 +827,7 @@ document.addEventListener("click", e => {
   closeMenus();
   const act = e.target.closest("[data-act],[data-restore]");
   if (act && LIVE) { closeMenus(); liveAction(act); return; }
-  const el = e.target.closest("[data-open],[data-close],[data-tab],[data-view],[data-size],[data-reset],[data-cmp],[data-cmp-close],[data-cmp-picked],[data-toggle-facets],[data-copy-link],[data-quick-cmp],[data-unchip],[data-step],[data-pair],[data-swap],[data-solo],[data-diff-toggle],[data-help-close]");
+  const el = e.target.closest("[data-open],[data-close],[data-tab],[data-view],[data-size],[data-reset],[data-cmp],[data-cmp-close],[data-cmp-picked],[data-toggle-facets],[data-copy-link],[data-quick-cmp],[data-unchip],[data-step],[data-pair],[data-swap],[data-solo],[data-mode],[data-diff-toggle],[data-help-close]");
   if (!el) { if (e.target.id === "scrim") closeItem(); if (e.target.id === "help") e.target.hidden = true; return; }
   if (el.disabled) return;
   const d = el.dataset;
@@ -795,19 +836,20 @@ document.addEventListener("click", e => {
   else if (d.tab) { S.tab = d.tab; render(); }
   else if (d.view) { S.view = d.view; saveUi(); render(); }
   else if (d.size) { S.size = d.size; saveUi(); render(); }
-  else if (el.hasAttribute("data-reset")) { Object.assign(S, {q: "", projects: [], agents: [], types: [], copies: [], issuesOnly: false}); q.value = ""; render(); }
+  else if (el.hasAttribute("data-reset")) { Object.assign(S, {q: "", projects: [], agents: [], types: [], copies: [], issuesOnly: false, starredOnly: false, chosenOnly: false}); q.value = ""; render(); }
   else if (d.cmp) { const [a, b] = d.cmp.split("|"); openCompare(S.open, a, b); }
   else if (el.hasAttribute("data-cmp-picked")) { if (S.pick.length === 2) openCompare(S.open, Math.min(...S.pick), Math.max(...S.pick)); }
   else if (el.hasAttribute("data-cmp-close")) { S.cmp = null; renderCompare(); }
   else if (el.hasAttribute("data-toggle-facets")) { S.facetsOpen = !S.facetsOpen; render(); document.querySelector("[data-toggle-facets]").focus(); }
   else if (d.copyLink) { const it = items.find(i => i.dir === d.copyLink); copy(linkTo(it), t("copied", it.title)); }
   else if (d.quickCmp) { const it = items.find(i => i.dir === d.quickCmp); S.open = it.dir; S.pick = []; render(); openCompare(it.dir, 1, it.versions[it.versions.length - 1].n); }
-  else if (d.unchip) { const k = d.unchip; if (k === "q") { S.q = ""; q.value = ""; } else if (k === "issuesOnly") S.issuesOnly = false; else S[k].splice(S[k].indexOf(d.val), 1); render(); }
+  else if (d.unchip) { const k = d.unchip; if (k === "q") { S.q = ""; q.value = ""; } else if (k === "issuesOnly" || k === "starredOnly" || k === "chosenOnly") S[k] = false; else S[k].splice(S[k].indexOf(d.val), 1); render(); }
   else if (d.step) { const i = visibleOrder.indexOf(S.open) + +d.step; if (visibleOrder[i]) { S.open = visibleOrder[i]; S.pick = []; render(); const b = document.querySelector(`#drawer [data-step="${d.step}"]`); if (b && !b.disabled) b.focus(); else document.querySelector("#drawer [data-close]").focus(); } }
   else if (d.pair) { const st = +d.pair, it = items.find(i => i.dir === S.cmp.dir), last = it.versions[it.versions.length - 1].n, na = S.cmp.a + st, nb = S.cmp.b + st;
     if (Math.min(na, nb) >= 1 && Math.max(na, nb) <= last) { S.cmp.a = na; S.cmp.b = nb; renderCompare(); const b = document.querySelector(`#cmp [data-pair="${st}"]`); if (b && !b.disabled) b.focus(); } }
   else if (el.hasAttribute("data-swap")) { [S.cmp.a, S.cmp.b] = [S.cmp.b, S.cmp.a]; renderCompare(); document.querySelector("#cmp [data-swap]").focus(); }
   else if (d.solo !== undefined) { S.solo = !!d.solo; renderCompare(); }
+  else if (d.mode) { S.mode = d.mode; renderCompare(); }
   else if (el.hasAttribute("data-diff-toggle")) { S.diffClosed = !S.diffClosed; renderCompare(); document.querySelector("#cmp [data-diff-toggle]").focus(); }
   else if (el.hasAttribute("data-help-close")) document.getElementById("help").hidden = true;
 });
@@ -899,6 +941,10 @@ function liveAction(el) {
         const a = document.createElement("a"); a.href = URL.createObjectURL(await r.blob()); a.download = name; document.body.appendChild(a); a.click(); a.remove();
         toast(notes ? t("exportedNote", name, notes) : t("exported", name));
       }});
+  } else if (el.dataset.act === "mark") {
+    post("mark", {n: +el.dataset.n, mark: el.dataset.mark}).then(() => refresh(true)).catch(ex => toastErr(t("failed", ex.message)));
+  } else if (el.dataset.act === "star") {
+    post("star", {on: !!el.dataset.on}).then(() => refresh(true)).catch(ex => toastErr(t("failed", ex.message)));
   } else if (el.dataset.act === "delete") {
     dialog({title: t("delTitle"), body: `<p>${esc(t("delText", it.title))}</p>`, ok: t("delBtn"), danger: true,
       submit: async () => { await post("delete"); S.open = null; await refresh(true); toast(t("deleted", it.title)); }});

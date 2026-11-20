@@ -86,6 +86,10 @@ class App:
         st = self.store
         if action == "edit":
             st.edit(folder, body.get("title"), body.get("description"), body.get("project"))
+        elif action == "mark":
+            st.mark(folder, int(body["n"]), body.get("mark") or "")
+        elif action == "star":
+            st.star(folder, bool(body.get("on")))
         elif action == "restore":
             if not st.restore(folder, int(body["n"])):
                 return {"ok": True, "note": "unchanged"}
