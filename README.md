@@ -216,6 +216,7 @@ artikeep serve --open              # the same gallery as a local app
 artikeep search kitchen layout     # full-text, any language; --agent, --type, --project, --json
 artikeep add ~/Downloads/report.pdf --title "Q3 report"   # joins the repository you run it in; --project PATH, --no-project
 artikeep digest --days 7                     # what the agents made lately, by project (--format md to paste)
+artikeep merge --find                       # copies of one work (e.g. after an account change); then `artikeep merge ITEM ITEM`
 artikeep collection add "Portal splash" <id> <id>  # group related items; filter by it in the gallery, `search --collection`
 artikeep attach <id> --pr N [--from vA --to vB]  # before/after of a page as a PR comment (--dry-run shows it first)
 artikeep export <id> [--version N] [--format html|zip|pdf] [-o FILE]  # one file to send; also in `serve`

@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `artikeep merge --find` lists items that look like copies of one work (the same session and
+  source file, or the same canvas type and title), and `artikeep merge ITEM ITEM... [--dry-run]`
+  folds them into the first one: all the versions in time order and renumbered, the newest
+  version's files as the current ones, the earlier links in `former_urls`, and marks, requests,
+  stars and collections carried over. For the copies made before 0.5.1 when the Claude account
+  changed. The folded folders stay in the archive's git history.
+
 ## 0.5.1 — 2026-11-20
 
 ### Fixed
