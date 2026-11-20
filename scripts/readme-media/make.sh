@@ -16,4 +16,5 @@ SERVER=$!
 trap 'kill $SERVER 2>/dev/null; rm -rf "$DEMO"' EXIT
 sleep 2
 python3 "$HERE/capture.py" "$REPO/docs/media"
+python3 "$HERE/restore_demo.py" "$REPO/docs/media/restore.gif"
 python3 "$HERE/render.py"
