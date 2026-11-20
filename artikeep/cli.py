@@ -8,6 +8,7 @@
   artikeep search WORDS [--json]        search the archive (--agent, --type, --project)
   artikeep add PATH… [--title T]        keep any file or page folder by hand
   artikeep attach ITEM --pr N           before/after of an item as a pull request comment
+  artikeep digest [--days N] [--project P] [--format html|md]  what the agents made lately
   artikeep collection list|show|add|remove|delete|rename   group related items
   artikeep secrets                      what the secret check holds back from the push
   artikeep allow ITEM [--rule R]        mark what it found in ITEM as fine
@@ -109,6 +110,13 @@ def main(argv=None) -> int:
     p = sub.add_parser("serve", help="run the gallery as a local app on 127.0.0.1")
     p.add_argument("--port", type=int, default=8765, help="app port; archived files are served on port + 1")
     p.add_argument("--open", action="store_true", help="open it in the browser")
+
+    p = sub.add_parser("digest", help="what the agents made over the last days, grouped by project")
+    p.add_argument("--days", type=int, default=7)
+    p.add_argument("--project", help="only this project (a folder or its name)")
+    p.add_argument("--format", choices=["html", "md"], default="html")
+    p.add_argument("-o", "--output", help="file to write (html default: digest.html in the archive; md: printed)")
+    p.add_argument("--open", action="store_true", help="open the html in the browser")
 
     p = sub.add_parser("collection", help="group related items: list, show, add, remove, delete, rename")
     p.add_argument("action", choices=["list", "show", "add", "remove", "delete", "rename"])
@@ -243,6 +251,24 @@ def main(argv=None) -> int:
                 return 1
             print("in collection %s" % a.collection)
         store.kick()
+        return 0
+    if a.cmd == "digest":
+        from pathlib import Path
+        from artikeep import digest
+        d = digest.collect(store, a.days, a.project)
+        if a.format == "md":
+            text = digest.to_markdown(d, store)
+            if a.output:
+                Path(a.output).expanduser().write_text(text, encoding="utf-8")
+                print(Path(a.output).expanduser().resolve())
+            else:
+                print(text, end="")
+            return 0
+        out = Path(a.output).expanduser().resolve() if a.output else store.root / "digest.html"
+        out.write_text(digest.to_html(d, store, out.parent), encoding="utf-8")
+        print("%s: %d new, %d updated, %d version(s)" % (out, d["new"], d["updated"], d["versions"]))
+        if a.open:
+            subprocess.run(["open" if sys.platform == "darwin" else "xdg-open", str(out)], check=False)
         return 0
     if a.cmd == "collection":
         from artikeep import collections
