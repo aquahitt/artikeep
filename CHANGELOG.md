@@ -4,6 +4,11 @@
 
 ### Added
 
+- `artikeep digest [--days N] [--project P] [--format html|md] [-o FILE]` shows what the agents
+  made over the last week, grouped by project: new items and items with new versions, with a
+  thumbnail, the version count and the requests behind them. `html` (default) is written to
+  `digest.html` in the archive and opens like the gallery; `md` is printed, to paste into a
+  report or a chat.
 - Collections: named groups of related items (a page, its device screenshots, the icon set).
   `artikeep collection list|show|add|remove|rename|delete`, `artikeep add FILES --collection NAME`
   and `artikeep search --collection NAME` on the command line; in `artikeep serve`, an
